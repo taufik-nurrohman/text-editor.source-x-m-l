@@ -5,7 +5,7 @@
   "dependencies": {
     "@taufik-nurrohman/text-editor": "^3.3.0",
     "@taufik-nurrohman/text-editor.history": "^2.0.0",
-    "@taufik-nurrohman/text-editor.source": "^2.0.3"
+    "@taufik-nurrohman/text-editor.source": "^2.0.4"
   },
   "description": "XML source editor extension for text editor.",
   "devDependencies": {
