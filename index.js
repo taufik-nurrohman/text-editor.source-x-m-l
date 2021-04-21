@@ -44,6 +44,9 @@
     var offEventDefault = function offEventDefault(e) {
         return e && e.preventDefault();
     };
+    var toCount = function toCount(x) {
+        return x.length;
+    };
     var esc = function esc(pattern, extra) {
         if (extra === void 0) {
             extra = "";
@@ -69,19 +72,37 @@
             keyIsCtrl = e.ctrlKey,
             keyIsShift = e.shiftKey;
         let tagName = '[\\w:.-]+',
-            tagStart = '<(' + tagName + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)?>',
-            tagEnd = '</(' + tagName + ')>'; // Do nothing
+            tagStart = '<(' + tagName + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?>',
+            tagEnd = '</(' + tagName + ')>',
+            tagVoid = '<(' + tagName + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?/?>'; // Do nothing
         if (keyIsAlt || keyIsCtrl) {
             return true;
         }
-        if ('>' === key) {
+        if ('>' === key || '/' === key) {
             let {
                 after,
-                before
+                before,
+                start
             } = $.$(),
                 tagStartMatch = toPattern(tagStart + '$', "").exec(before + '>');
             if (tagStartMatch) {
-                $.wrap('>', '</' + tagStartMatch[1] + ('>' === after[0] ? "" : '>')).record();
+                if ('/' === key) {
+                    if ('>' === after[0]) {
+                        $.trim().insert(' /', -1).select(start + 3).record();
+                        offEventDefault(e);
+                        return false;
+                    }
+                    $.trim().insert(' />', -1).record();
+                    offEventDefault(e);
+                    return false;
+                } // `<div|></div>`
+                if ('></' + tagStartMatch[1] + '>' === after.slice(0, toCount(tagStartMatch[1]) + 4)) {
+                    $.select(start + 1).record(); // `<div|</div>`
+                } else if ('</' + tagStartMatch[1] + '>' === after.slice(0, toCount(tagStartMatch[1]) + 3)) {
+                    $.insert('>', -1).record(); // `<div|`
+                } else {
+                    $.wrap('>', '</' + tagStartMatch[1] + ('>' === after[0] ? "" : '>')).record();
+                }
                 offEventDefault(e);
                 return false;
             }
@@ -90,7 +111,7 @@
             let {
                 after,
                 before
-            } = $.$();
+            } = $.$(); // `<|`
             if ('<' === before.slice(-1)) {
                 $.wrap('?', '?' + ('>' === after[0] ? "" : '>')).record();
                 offEventDefault(e);
@@ -104,7 +125,7 @@
                 value
             } = $.$();
             if (!value) {
-                let tagMatch = toPattern('(?:' + tagEnd + '|' + tagStart + ')$', "").exec(before);
+                let tagMatch = toPattern('(?:' + tagEnd + '|' + tagStart + '|' + tagVoid + ')$', "").exec(before);
                 if (tagMatch) {
                     $.select(tagMatch.index, start);
                     offEventDefault(e);
@@ -119,9 +140,9 @@
                 value
             } = $.$();
             if (!value) {
-                let tagMatch = toPattern('^(?:' + tagEnd + '|' + tagStart + ')', "").exec(after);
+                let tagMatch = toPattern('^(?:' + tagEnd + '|' + tagStart + '|' + tagVoid + ')', "").exec(after);
                 if (tagMatch) {
-                    $.select(start, start + tagMatch[0].length);
+                    $.select(start, start + toCount(tagMatch[0]));
                     offEventDefault(e);
                     return false;
                 }
@@ -154,13 +175,13 @@
                 value
             } = $.$();
             if (!value) {
-                let tagPattern = toPattern('(?:' + tagEnd + '|' + tagStart + ')$', ""),
+                let tagPattern = toPattern('(?:' + tagEnd + '|' + tagStart + '|' + tagVoid + ')$', ""),
                     tagMatch = tagPattern.exec(before);
                 if (tagMatch) {
                     $.replace(tagPattern, "", -1);
-                    let name = tagMatch[0].slice(1).split(/\s+/)[0];
+                    let name = tagMatch[0].slice(1).split(/\s+|>/)[0];
                     if (tagMatch[0] && '/' !== tagMatch[0][1]) {
-                        if ('</' + name + '>' === after.slice(0, tagMatch[0].length)) {
+                        if ('</' + name + '>' === after.slice(0, toCount(name) + 3)) {
                             $.replace(toPattern('^</' + name + '>', ""), "", 1);
                         }
                     }
@@ -181,7 +202,7 @@
                 value
             } = $.$();
             if (!value) {
-                let tagPattern = toPattern('^(?:' + tagEnd + '|' + tagStart + ')', ""),
+                let tagPattern = toPattern('^(?:' + tagEnd + '|' + tagStart + '|' + tagVoid + ')', ""),
                     tagMatch = tagPattern.exec(after);
                 if (tagMatch) {
                     $.replace(tagPattern, "", 1).record();

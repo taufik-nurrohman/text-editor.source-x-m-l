@@ -105,6 +105,24 @@ block content
         input(checked onchange='this.checked ? setSourceEditor() : letSourceEditor();' type='checkbox')
         = ' '
         span Enable XML Source Editor
+    h2 Features
+    ul
+      li #[code &lt;div#[mark= '|']] or #[code &lt;div#[mark= '|']&gt;] then press #[kbd= '>'].
+      li #[code &lt;div#[mark= '|']] or #[code &lt;div#[mark= '|']&gt;] then press #[kbd= '/'].
+      li #[code &lt;div&gt;#[mark= '|']] then press #[kbd= '↵'].
+      li #[code &lt;div&gt;#[mark= '|']&lt;/div&gt;] then press #[kbd= '↵'].
+      li #[code &lt;div&gt;#[mark= '|']] then press #[kbd= '⌫'].
+      li #[code &lt;div/&gt;#[mark= '|']] then press #[kbd= '⌫'].
+      li #[code &lt;div&gt;#[mark= '|']&lt;/div&gt;] then press #[kbd= '⌫'].
+      li #[code #[mark= '|']&lt;div&gt;] then press #[kbd= '⌦']
+      li #[code #[mark= '|']&lt;div/&gt;] then press #[kbd= '⌦']
+      li #[code #[mark= '|']&lt;/div&gt;] then press #[kbd= '⌦']
+      li #[code &lt;div&gt;#[mark= '|']] then press #[kbd= '←']
+      li #[code &lt;div/&gt;#[mark= '|']] then press #[kbd= '←']
+      li #[code &lt;/div&gt;#[mark= '|']] then press #[kbd= '←']
+      li #[code #[mark= '|']&lt;div&gt;] then press #[kbd= '→']
+      li #[code #[mark= '|']&lt;div/&gt;] then press #[kbd= '→']
+      li #[code #[mark= '|']&lt;/div&gt;] then press #[kbd= '→']
     h2 Usage
     h4 Browser
     pre: code

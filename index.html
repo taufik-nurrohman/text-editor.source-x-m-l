@@ -76,6 +76,25 @@
       <p><textarea placeholder="Code goes here&hellip;" spellcheck="false">foo &lt;bar&gt;baz&lt;/bar&gt; qux</textarea></p>
       <p tabindex="0">Next tabbable element.</p>
       <p><label><input checked onchange="this.checked ? setSourceEditor() : letSourceEditor();" type="checkbox"> <span>Enable XML Source Editor</span></label></p>
+      <h2>Features</h2>
+      <ul>
+        <li><code>&lt;div<mark>|</mark></code> or <code>&lt;div<mark>|</mark>&gt;</code> then press <kbd>&gt;</kbd>.</li>
+        <li><code>&lt;div<mark>|</mark></code> or <code>&lt;div<mark>|</mark>&gt;</code> then press <kbd>/</kbd>.</li>
+        <li><code>&lt;div&gt;<mark>|</mark></code> then press <kbd>↵</kbd>.</li>
+        <li><code>&lt;div&gt;<mark>|</mark>&lt;/div&gt;</code> then press <kbd>↵</kbd>.</li>
+        <li><code>&lt;div&gt;<mark>|</mark></code> then press <kbd>⌫</kbd>.</li>
+        <li><code>&lt;div/&gt;<mark>|</mark></code> then press <kbd>⌫</kbd>.</li>
+        <li><code>&lt;div&gt;<mark>|</mark>&lt;/div&gt;</code> then press <kbd>⌫</kbd>.</li>
+        <li><code><mark>|</mark>&lt;div&gt;</code> then press <kbd>⌦</kbd></li>
+        <li><code><mark>|</mark>&lt;div/&gt;</code> then press <kbd>⌦</kbd></li>
+        <li><code><mark>|</mark>&lt;/div&gt;</code> then press <kbd>⌦</kbd></li>
+        <li><code>&lt;div&gt;<mark>|</mark></code> then press <kbd>←</kbd></li>
+        <li><code>&lt;div/&gt;<mark>|</mark></code> then press <kbd>←</kbd></li>
+        <li><code>&lt;/div&gt;<mark>|</mark></code> then press <kbd>←</kbd></li>
+        <li><code><mark>|</mark>&lt;div&gt;</code> then press <kbd>→</kbd></li>
+        <li><code><mark>|</mark>&lt;div/&gt;</code> then press <kbd>→</kbd></li>
+        <li><code><mark>|</mark>&lt;/div&gt;</code> then press <kbd>→</kbd></li>
+      </ul>
       <h2>Usage</h2>
       <h4>Browser</h4>
       <pre><code>&lt;script src="<a href="../text-editor/index.min.js" target="_blank">./text-editor/index.min.js</a>"&gt;&lt;/script&gt;
