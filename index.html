@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta content="width=device-width" name="viewport">
+    <meta content="XML source editor extension for text editor." name="description">
+    <title>Text Editor Source XML 1.0.0</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      :root {
+        background: #fff;
+        color: #000;
+        border-top: 4px solid;
+        font: normal normal 16px/1.25 serif;
+      }
+      a {
+        color: #009;
+        text-decoration: none;
+      }
+      a,
+      code {
+        word-wrap: break-word;
+      }
+      code {
+        font-family: monospace;
+        font-size: 80%;
+      }
+      footer,
+      header,
+      main,
+      nav {
+        max-width: 700px;
+        margin: 0 auto;
+      }
+      hr {
+        border: 0;
+        color: inherit;
+        border-top: 1px dashed;
+        height: 0;
+      }
+      pre {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+      pre code {
+        display: block;
+        background: #eee;
+        padding: 1em;
+      }
+      table {
+        width: 100%;
+      }
+      td,
+      th {
+        text-align: left;
+        vertical-align: top;
+      }
+      textarea {
+        display: block;
+        box-sizing: border-box;
+        width: 100%;
+        height: 20em;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Text Editor Source XML 1.0.0</h1>
+      <p>XML source code editor extension for <a href="../text-editor/index.html">text editor</a>.</p>
+      <hr>
+    </header>
+    <main>
+      <p tabindex="0">Previous tabbable element.</p>
+      <p><textarea placeholder="Code goes here&hellip;" spellcheck="false">foo &lt;bar&gt;baz&lt;/bar&gt; qux</textarea></p>
+      <p tabindex="0">Next tabbable element.</p>
+      <p><label><input checked onchange="this.checked ? setSourceEditor() : letSourceEditor();" type="checkbox"> <span>Enable Source Editor</span></label></p>
+      <h2>Usage</h2>
+      <h4>Browser</h4>
+      <pre><code>&lt;script src="<a href="../text-editor/index.min.js" target="_blank">./text-editor/index.min.js</a>"&gt;&lt;/script&gt;
+&lt;script src="<a href="../text-editor.history/index.min.js" target="_blank">./text-editor.history/index.min.js</a>"&gt;&lt;/script&gt;
+&lt;script src="<a href="../text-editor.source/index.min.js" target="_blank">./text-editor.source/index.min.js</a>"&gt;&lt;/script&gt;
+&lt;script src="<a href="../text-editor.source-x-m-l/index.min.js" target="_blank">./text-editor.source-x-m-l/index.min.js</a>"&gt;&lt;/script&gt;
+&lt;script&gt;
+Object.assign(TE.prototype, TE.History);
+const editor = new TE(document.querySelector('textarea'));
+editor.self.addEventListener('keydown', function(e) {
+    TE.SourceXML.onKeyDown.call(this, e, editor) &&
+    TE.Source.onKeyDown.call(this, e, editor) &&
+    TE.Source.onKeyDownHistory.call(this, e, editor) &&
+    TE.Source.onKeyDownTab.call(this, e, editor);
+});
+editor.self.addEventListener('keyup', function(e) {
+    TE.Source.onKeyUp.call(this, e, editor);
+});
+editor.record(); // Record the first history data
+&lt;/script&gt;</code></pre>
+      <h4>CommonJS</h4>
+      <pre><code>const TE = require('@taufik-nurrohman/text-editor');
+const TE_History = require('@taufik-nurrohman/text-editor.history');
+const {onKeyDown, onKeyDownHistory, onKeyDownTab, onKeyUp} = require('@taufik-nurrohman/text-editor.source');
+const {onKeyDown as onKeyDownXML} = require('@taufik-nurrohman/text-editor.source-x-m-l');
+
+Object.assign(TE.prototype, TE_History);
+
+const editor = new TE(document.querySelector('textarea'));
+
+editor.self.addEventListener('keydown', function(e) {
+    onKeyDownXML.call(this, e, editor) &&
+    onKeyDown.call(this, e, editor) &&
+    onKeyDownHistory.call(this, e, editor) &&
+    onKeyDownTab.call(this, e, editor);
+});
+
+editor.self.addEventListener('keyup', function(e) {
+    onKeyUp.call(this, e, editor);
+});
+
+editor.record();</code></pre>
+      <h4>ECMAScript</h4>
+      <pre><code>import TE from '@taufik-nurrohman/text-editor';
+import * as TE_History from '@taufik-nurrohman/text-editor.history';
+import {onKeyDown, onKeyDownHistory, onKeyDownTab, onKeyUp} from '@taufik-nurrohman/text-editor.source';
+import {onKeyDown as onKeyDownXML} from '@taufik-nurrohman/text-editor.source-x-m-l';
+
+Object.assign(TE.prototype, TE_History);
+
+const editor = new TE(document.querySelector('textarea'));
+
+editor.self.addEventListener('keydown', function(e) {
+    onKeyDownXML.call(this, e, editor) &&
+    onKeyDown.call(this, e, editor) &&
+    onKeyDownHistory.call(this, e, editor) &&
+    onKeyDownTab.call(this, e, editor);
+});
+
+editor.self.addEventListener('keyup', function(e) {
+    onKeyUp.call(this, e, editor);
+});
+
+editor.record();</code></pre>
+      <h3>Events</h3>
+      <p>Events can either return <code>false</code> or <code>true</code>. If it returns <code>false</code>, it means that this extension has manipulated the existing value, and current event has also been default prevented. If it returns <code>true</code>, it means that current event works normally.</p>
+      <h4>onKeyDown(e, editor)</h4>
+      <p>This will handle tasks such as automatic <abbr title="Extensible Markup Language">XML</abbr> tag closing and automatic indentation on enter.</p>
+    </main>
+    <footer>
+      <hr>
+      <p>&copy; 2021 <a href="/">Taufik Nurrohman</a></p>
+    </footer>
+    <script src="../text-editor/index.min.js"></script>
+    <script src="../text-editor.history/index.min.js"></script>
+    <script src="../text-editor.source/index.min.js"></script>
+    <script src="index.min.js"></script>
+    <script>
+      Object.assign(TE.prototype, TE.History);
+
+      let editor = new TE(document.querySelector('textarea'), '  ');
+
+      function onKeyDown(e) {
+          TE.SourceXML.onKeyDown.call(this, e, editor) &&
+              TE.Source.onKeyDown.call(this, e, editor) &&
+              TE.Source.onKeyDownDent.call(this, e, editor) &&
+              TE.Source.onKeyDownHistory.call(this, e, editor)
+      }
+
+      function onKeyUp(e) {
+          TE.Source.onKeyUp.call(this, e, editor);
+      }
+
+      function letSourceEditor() {
+          editor.self.removeEventListener('keydown', onKeyDown);
+          editor.self.removeEventListener('keyup', onKeyUp);
+          editor.loss(true); // Remove all history data
+      }
+
+      function setSourceEditor() {
+          editor.self.addEventListener('keydown', onKeyDown, false);
+          editor.self.addEventListener('keyup', onKeyUp, false);
+          editor.record(); // Record the first history data
+      }
+
+      setSourceEditor();
+    </script>
+  </body>
+</html>

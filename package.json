@@ -1,0 +1,54 @@
+{
+  "author": "Taufik Nurrohman",
+  "browser": "index.min.js",
+  "bugs": "https://github.com/taufik-nurrohman/text-editor.source-x-m-l/issues",
+  "dependencies": {
+    "@taufik-nurrohman/text-editor": "^3.3.0",
+    "@taufik-nurrohman/text-editor.history": "^2.0.0",
+    "@taufik-nurrohman/text-editor.source": "^2.0.3"
+  },
+  "description": "XML source editor extension for text editor.",
+  "devDependencies": {
+    "@taufik-nurrohman/event": "^0.2.0",
+    "@taufik-nurrohman/factory": "^0.1.11",
+    "@taufik-nurrohman/pattern": "^0.1.5"
+  },
+  "exports": {
+    "import": "./index.mjs",
+    "require": "./index.js"
+  },
+  "files": [
+    "index.js",
+    "index.min.js",
+    "index.mjs"
+  ],
+  "funding": {
+    "url": "https://paypal.me/tatautaufik"
+  },
+  "homepage": "https://taufik-nurrohman.js.org/text-editor",
+  "keywords": [
+    "code",
+    "editor",
+    "extension",
+    "ide",
+    "markup",
+    "range",
+    "selection",
+    "source",
+    "text",
+    "xml"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "module": "index.mjs",
+  "name": "@taufik-nurrohman/text-editor.source-x-m-l",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/taufik-nurrohman/text-editor.source-x-m-l.git"
+  },
+  "scripts": {
+    "pack": "pack --clean=false --from=.github/source --js-format=umd --js-name=TE.SourceXML --js-top='%(js.license)' --mjs=true --to=."
+  },
+  "type": "module",
+  "version": "1.0.0"
+}

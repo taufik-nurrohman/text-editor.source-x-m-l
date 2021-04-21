@@ -1,0 +1,183 @@
+extends _index.pug
+
+block state
+  - const title = 'Text Editor Source XML ' + version
+  - const scripts = ['../text-editor/index.min.js', '../text-editor.history/index.min.js', '../text-editor.source/index.min.js', 'index.min.js']
+
+block script
+  script
+    | Object.assign(TE.prototype, TE.History);
+    |
+    | let editor = new TE(document.querySelector('textarea'), '  ');
+    |
+    | function onKeyDown(e) {
+    |     TE.SourceXML.onKeyDown.call(this, e, editor) &&
+    |     TE.Source.onKeyDown.call(this, e, editor) &&
+    |     TE.Source.onKeyDownDent.call(this, e, editor) &&
+    |     TE.Source.onKeyDownHistory.call(this, e, editor)
+    | }
+    |
+    | function onKeyUp(e) {
+    |     TE.Source.onKeyUp.call(this, e, editor);
+    | }
+    |
+    | function letSourceEditor() {
+    |     editor.self.removeEventListener('keydown', onKeyDown);
+    |     editor.self.removeEventListener('keyup', onKeyUp);
+    |     editor.loss(true); // Remove all history data
+    | }
+    |
+    | function setSourceEditor() {
+    |     editor.self.addEventListener('keydown', onKeyDown, false);
+    |     editor.self.addEventListener('keyup', onKeyUp, false);
+    |     editor.record(); // Record the first history data
+    | }
+    |
+    | setSourceEditor();
+
+block style
+  style
+    | * {
+    |   box-sizing: border-box;
+    | }
+    | :root {
+    |   background: #fff;
+    |   color: #000;
+    |   border-top: 4px solid;
+    |   font: normal normal 16px/1.25 serif;
+    | }
+    | a {
+    |   color: #009;
+    |   text-decoration: none;
+    | }
+    | a, code {
+    |   word-wrap: break-word;
+    | }
+    | code {
+    |   font-family: monospace;
+    |   font-size: 80%;
+    | }
+    | footer, header, main, nav {
+    |   max-width: 700px;
+    |   margin: 0 auto;
+    | }
+    | hr {
+    |   border: 0;
+    |   color: inherit;
+    |   border-top: 1px dashed;
+    |   height: 0;
+    | }
+    | pre {
+    |   white-space: pre-wrap;
+    |   word-wrap: break-word;
+    | }
+    | pre code {
+    |   display: block;
+    |   background: #eee;
+    |   padding: 1em;
+    | }
+    | table {
+    |   width: 100%;
+    | }
+    | td, th {
+    |   text-align: left;
+    |   vertical-align: top;
+    | }
+    | textarea {
+    |   display: block;
+    |   box-sizing: border-box;
+    |   width: 100%;
+    |   height: 20em;
+    | }
+
+block content
+  header
+    h1= title
+    p XML source code editor extension for #[a(href='../text-editor/index.html') text editor].
+    hr
+  main
+    p(tabindex='0') Previous tabbable element.
+    p: textarea(placeholder!='Code goes here&hellip;' spellcheck='false')
+      | foo &lt;bar&gt;baz&lt;/bar&gt; qux
+    p(tabindex='0') Next tabbable element.
+    p
+      label
+        input(checked onchange='this.checked ? setSourceEditor() : letSourceEditor();' type='checkbox')
+        = ' '
+        span Enable Source Editor
+    h2 Usage
+    h4 Browser
+    pre: code
+      | &lt;script src="#[a(href='../text-editor/index.min.js' target='_blank') ./text-editor/index.min.js]"&gt;&lt;/script&gt;
+      | &lt;script src="#[a(href='../text-editor.history/index.min.js' target='_blank') ./text-editor.history/index.min.js]"&gt;&lt;/script&gt;
+      | &lt;script src="#[a(href='../text-editor.source/index.min.js' target='_blank') ./text-editor.source/index.min.js]"&gt;&lt;/script&gt;
+      | &lt;script src="#[a(href='../text-editor.source-x-m-l/index.min.js' target='_blank') ./text-editor.source-x-m-l/index.min.js]"&gt;&lt;/script&gt;
+      | &lt;script&gt;
+      | Object.assign(TE.prototype, TE.History);
+      | const editor = new TE(document.querySelector('textarea'));
+      | editor.self.addEventListener('keydown', function(e) {
+      |     TE.SourceXML.onKeyDown.call(this, e, editor) &&
+      |     TE.Source.onKeyDown.call(this, e, editor) &&
+      |     TE.Source.onKeyDownHistory.call(this, e, editor) &&
+      |     TE.Source.onKeyDownTab.call(this, e, editor);
+      | });
+      | editor.self.addEventListener('keyup', function(e) {
+      |     TE.Source.onKeyUp.call(this, e, editor);
+      | });
+      | editor.record(); // Record the first history data
+      | &lt;/script&gt;
+    h4 CommonJS
+    pre: code
+      | const TE = require('@taufik-nurrohman/text-editor');
+      | const TE_History = require('@taufik-nurrohman/text-editor.history');
+      | const {onKeyDown, onKeyDownHistory, onKeyDownTab, onKeyUp} = require('@taufik-nurrohman/text-editor.source');
+      | const {onKeyDown as onKeyDownXML} = require('@taufik-nurrohman/text-editor.source-x-m-l');
+      |
+      | Object.assign(TE.prototype, TE_History);
+      |
+      | const editor = new TE(document.querySelector('textarea'));
+      |
+      | editor.self.addEventListener('keydown', function(e) {
+      |     onKeyDownXML.call(this, e, editor) &&
+      |     onKeyDown.call(this, e, editor) &&
+      |     onKeyDownHistory.call(this, e, editor) &&
+      |     onKeyDownTab.call(this, e, editor);
+      | });
+      |
+      | editor.self.addEventListener('keyup', function(e) {
+      |     onKeyUp.call(this, e, editor);
+      | });
+      |
+      | editor.record();
+    h4 ECMAScript
+    pre: code
+      | import TE from '@taufik-nurrohman/text-editor';
+      | import * as TE_History from '@taufik-nurrohman/text-editor.history';
+      | import {onKeyDown, onKeyDownHistory, onKeyDownTab, onKeyUp} from '@taufik-nurrohman/text-editor.source';
+      | import {onKeyDown as onKeyDownXML} from '@taufik-nurrohman/text-editor.source-x-m-l';
+      |
+      | Object.assign(TE.prototype, TE_History);
+      |
+      | const editor = new TE(document.querySelector('textarea'));
+      |
+      | editor.self.addEventListener('keydown', function(e) {
+      |     onKeyDownXML.call(this, e, editor) &&
+      |     onKeyDown.call(this, e, editor) &&
+      |     onKeyDownHistory.call(this, e, editor) &&
+      |     onKeyDownTab.call(this, e, editor);
+      | });
+      |
+      | editor.self.addEventListener('keyup', function(e) {
+      |     onKeyUp.call(this, e, editor);
+      | });
+      |
+      | editor.record();
+    h3 Events
+    p Events can either return #[code false] or #[code true]. If it returns #[code false], it means that this extension has manipulated the existing value, and current event has also been default prevented. If it returns #[code true], it means that current event works normally.
+    h4 onKeyDown(e, editor)
+    p This will handle tasks such as automatic <abbr title="Extensible Markup Language">XML</abbr> tag closing and automatic indentation on enter.
+  footer
+    hr
+    p
+      != '&copy; ' + year + ' '
+      a(href='/') Taufik Nurrohman
