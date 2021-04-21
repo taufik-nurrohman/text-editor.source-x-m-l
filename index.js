@@ -74,6 +74,29 @@
         if (keyIsAlt || keyIsCtrl) {
             return true;
         }
+        if ('>' === key) {
+            let {
+                after,
+                before
+            } = $.$(),
+                tagStartMatch = toPattern(tagStart + '$', "").exec(before + '>');
+            if (tagStartMatch) {
+                $.wrap('>', '</' + tagStartMatch[1] + ('>' === after[0] ? "" : '>')).record();
+                offEventDefault(e);
+                return false;
+            }
+        }
+        if ('?' === key) {
+            let {
+                after,
+                before
+            } = $.$();
+            if ('<' === before.slice(-1)) {
+                $.wrap('?', '?' + ('>' === after[0] ? "" : '>')).record();
+                offEventDefault(e);
+                return false;
+            }
+        }
         if ('ArrowLeft' === key && !keyIsShift) {
             let {
                 before,

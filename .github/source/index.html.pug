@@ -104,7 +104,7 @@ block content
       label
         input(checked onchange='this.checked ? setSourceEditor() : letSourceEditor();' type='checkbox')
         = ' '
-        span Enable Source Editor
+        span Enable XML Source Editor
     h2 Usage
     h4 Browser
     pre: code
@@ -116,7 +116,7 @@ block content
       | Object.assign(TE.prototype, TE.History);
       | const editor = new TE(document.querySelector('textarea'));
       | editor.self.addEventListener('keydown', function(e) {
-      |     TE.SourceXML.onKeyDown.call(this, e, editor) &&
+      |     #[mark= 'TE.SourceXML.onKeyDown.call(this, e, editor)'] &&
       |     TE.Source.onKeyDown.call(this, e, editor) &&
       |     TE.Source.onKeyDownHistory.call(this, e, editor) &&
       |     TE.Source.onKeyDownTab.call(this, e, editor);
@@ -138,7 +138,7 @@ block content
       | const editor = new TE(document.querySelector('textarea'));
       |
       | editor.self.addEventListener('keydown', function(e) {
-      |     onKeyDownXML.call(this, e, editor) &&
+      |     #[mark= 'onKeyDownXML.call(this, e, editor)'] &&
       |     onKeyDown.call(this, e, editor) &&
       |     onKeyDownHistory.call(this, e, editor) &&
       |     onKeyDownTab.call(this, e, editor);
@@ -161,7 +161,7 @@ block content
       | const editor = new TE(document.querySelector('textarea'));
       |
       | editor.self.addEventListener('keydown', function(e) {
-      |     onKeyDownXML.call(this, e, editor) &&
+      |     #[mark= 'onKeyDownXML.call(this, e, editor)'] &&
       |     onKeyDown.call(this, e, editor) &&
       |     onKeyDownHistory.call(this, e, editor) &&
       |     onKeyDownTab.call(this, e, editor);
@@ -175,7 +175,7 @@ block content
     h3 Events
     p Events can either return #[code false] or #[code true]. If it returns #[code false], it means that this extension has manipulated the existing value, and current event has also been default prevented. If it returns #[code true], it means that current event works normally.
     h4 onKeyDown(e, editor)
-    p This will handle tasks such as automatic <abbr title="Extensible Markup Language">XML</abbr> tag closing and automatic indentation on enter.
+    p This will handle tasks such as automatic <abbr title="Extensible Markup Language">XML</abbr> tag closing and automatic indentation by pressing the #[kbd= '↵'] key.
   footer
     hr
     p

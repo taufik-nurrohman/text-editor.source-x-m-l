@@ -75,7 +75,7 @@
       <p tabindex="0">Previous tabbable element.</p>
       <p><textarea placeholder="Code goes here&hellip;" spellcheck="false">foo &lt;bar&gt;baz&lt;/bar&gt; qux</textarea></p>
       <p tabindex="0">Next tabbable element.</p>
-      <p><label><input checked onchange="this.checked ? setSourceEditor() : letSourceEditor();" type="checkbox"> <span>Enable Source Editor</span></label></p>
+      <p><label><input checked onchange="this.checked ? setSourceEditor() : letSourceEditor();" type="checkbox"> <span>Enable XML Source Editor</span></label></p>
       <h2>Usage</h2>
       <h4>Browser</h4>
       <pre><code>&lt;script src="<a href="../text-editor/index.min.js" target="_blank">./text-editor/index.min.js</a>"&gt;&lt;/script&gt;
@@ -86,7 +86,7 @@
 Object.assign(TE.prototype, TE.History);
 const editor = new TE(document.querySelector('textarea'));
 editor.self.addEventListener('keydown', function(e) {
-    TE.SourceXML.onKeyDown.call(this, e, editor) &&
+    <mark>TE.SourceXML.onKeyDown.call(this, e, editor)</mark> &&
     TE.Source.onKeyDown.call(this, e, editor) &&
     TE.Source.onKeyDownHistory.call(this, e, editor) &&
     TE.Source.onKeyDownTab.call(this, e, editor);
@@ -107,7 +107,7 @@ Object.assign(TE.prototype, TE_History);
 const editor = new TE(document.querySelector('textarea'));
 
 editor.self.addEventListener('keydown', function(e) {
-    onKeyDownXML.call(this, e, editor) &&
+    <mark>onKeyDownXML.call(this, e, editor)</mark> &&
     onKeyDown.call(this, e, editor) &&
     onKeyDownHistory.call(this, e, editor) &&
     onKeyDownTab.call(this, e, editor);
@@ -129,7 +129,7 @@ Object.assign(TE.prototype, TE_History);
 const editor = new TE(document.querySelector('textarea'));
 
 editor.self.addEventListener('keydown', function(e) {
-    onKeyDownXML.call(this, e, editor) &&
+    <mark>onKeyDownXML.call(this, e, editor)</mark> &&
     onKeyDown.call(this, e, editor) &&
     onKeyDownHistory.call(this, e, editor) &&
     onKeyDownTab.call(this, e, editor);
@@ -143,7 +143,7 @@ editor.record();</code></pre>
       <h3>Events</h3>
       <p>Events can either return <code>false</code> or <code>true</code>. If it returns <code>false</code>, it means that this extension has manipulated the existing value, and current event has also been default prevented. If it returns <code>true</code>, it means that current event works normally.</p>
       <h4>onKeyDown(e, editor)</h4>
-      <p>This will handle tasks such as automatic <abbr title="Extensible Markup Language">XML</abbr> tag closing and automatic indentation on enter.</p>
+      <p>This will handle tasks such as automatic <abbr title="Extensible Markup Language">XML</abbr> tag closing and automatic indentation by pressing the <kbd>↵</kbd> key.</p>
     </main>
     <footer>
       <hr>
