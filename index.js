@@ -109,8 +109,9 @@
     const that = {};
 
     function toAttributes(attributes) {
-        let out = "";
-        for (let attribute in attributes) {
+        let attribute,
+            out = "";
+        for (attribute in attributes) {
             out += ' ' + attribute + '="' + fromHTML(fromValue(attributes[attribute])) + '"';
         }
         return out;
