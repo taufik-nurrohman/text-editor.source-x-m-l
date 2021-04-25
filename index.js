@@ -29,6 +29,9 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() : typeof define === 'function' && define.amd ? define(factory) : (global = typeof globalThis !== 'undefined' ? globalThis : global || self, (global.TE = global.TE || {}, global.TE.SourceXML = factory()));
 })(this, function() {
     'use strict';
+    var isArray = function isArray(x) {
+        return Array.isArray(x);
+    };
     var isDefined = function isDefined(x) {
         return 'undefined' !== typeof x;
     };
@@ -38,8 +41,43 @@
     var isNull = function isNull(x) {
         return null === x;
     };
+    var isObject = function isObject(x, isPlain) {
+        if (isPlain === void 0) {
+            isPlain = true;
+        }
+        if ('object' !== typeof x) {
+            return false;
+        }
+        return isPlain ? isInstance(x, Object) : true;
+    };
     var isSet = function isSet(x) {
         return isDefined(x) && !isNull(x);
+    };
+    var fromHTML = function fromHTML(x) {
+        return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;');
+    };
+    var fromValue = function fromValue(x) {
+        if (isArray(x)) {
+            return x.map(function(v) {
+                return fromValue(x);
+            });
+        }
+        if (isObject(x)) {
+            for (var k in x) {
+                x[k] = fromValue(x[k]);
+            }
+            return x;
+        }
+        if (false === x) {
+            return 'false';
+        }
+        if (null === x) {
+            return 'null';
+        }
+        if (true === x) {
+            return 'true';
+        }
+        return "" + x;
     };
     var toCount = function toCount(x) {
         return x.length;
@@ -68,6 +106,42 @@
         tagEnd = '</(' + tagName + ')>',
         tagVoid = '<(' + tagName + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?/?>',
         tagPreamble = '<\\?((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)\\?>';
+    const that = {};
+
+    function toAttributes(attributes) {
+        let out = "";
+        for (let attribute in attributes) {
+            out += ' ' + attribute + '="' + fromHTML(fromValue(attributes[attribute])) + '"';
+        }
+        return out;
+    }
+    that.toggle = function(name, content, attributes = {}) {
+        let t = this,
+            {
+                after,
+                before,
+                value
+            } = t.$(),
+            tagStart = '<(' + name + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?>',
+            tagEnd = '</(' + name + ')>',
+            tagStartPattern = toPattern(tagStart + '$', ""),
+            tagEndPattern = toPattern('^' + tagEnd, ""),
+            tagStartMatch = tagStartPattern.test(before),
+            tagEndMatch = tagEndPattern.test(after);
+        if (tagEndMatch && tagStartMatch) {
+            return t.replace(tagEndPattern, "", 1).replace(tagStartPattern, "", -1);
+        }
+        tagStartPattern = toPattern('^' + tagStart, "");
+        tagEndPattern = toPattern(tagEnd + '$', "");
+        tagStartMatch = tagStartPattern.test(value);
+        tagEndMatch = tagEndPattern.test(value);
+        if (value && tagEndMatch && tagStartMatch) {
+            t.insert(value.replace(tagEndPattern, "").replace(tagStartPattern, ""));
+        } else if (content) {
+            t.insert(content);
+        }
+        return t.wrap('<' + name + toAttributes(attributes) + '>', '</' + name + '>');
+    };
 
     function canKeyDown(key, {
         a,
@@ -99,10 +173,10 @@
                     if ('/' === key) {
                         // `<div|>`
                         if ('>' === after[0]) {
-                            that.trim().insert(' /', -1).select(start + 3).record();
+                            that.trim("", false).insert(' /', -1).select(that.$().start + 1).record();
                             return false;
                         }
-                        that.trim().insert(' />', -1).record();
+                        that.trim("", false).insert(' />', -1).record();
                         return false;
                     } // `<div|></div>`
                     if ('></' + tagStartMatch[1] + '>' === after.slice(0, toCount(tagStartMatch[1]) + 4)) {
@@ -130,6 +204,7 @@
                 }
             }
         }
+        let anyTagToken = '(?:' + tagComment + '|' + tagData + '|' + tagEnd + '|' + tagPreamble + '|' + tagStart + '|' + tagVoid + ')';
         if ('ArrowLeft' === key && !s) {
             let {
                 before,
@@ -137,7 +212,7 @@
                 value
             } = that.$();
             if (!value) {
-                let tagMatch = toPattern('(?:' + tagComment + '|' + tagData + '|' + tagEnd + '|' + tagPreamble + '|' + tagStart + '|' + tagVoid + ')$', "").exec(before); // `<foo>|bar`
+                let tagMatch = toPattern(anyTagToken + '$', "").exec(before); // `<foo>|bar`
                 if (tagMatch) {
                     that.select(tagMatch.index, start);
                     return false;
@@ -151,7 +226,7 @@
                 value
             } = that.$();
             if (!value) {
-                let tagMatch = toPattern('^(?:' + tagComment + '|' + tagData + '|' + tagEnd + '|' + tagPreamble + '|' + tagStart + '|' + tagVoid + ')', "").exec(after); // `foo|<bar>`
+                let tagMatch = toPattern('^' + anyTagToken, "").exec(after); // `foo|<bar>`
                 if (tagMatch) {
                     that.select(start, start + toCount(tagMatch[0]));
                     return false;
@@ -209,9 +284,18 @@
                     that.record();
                     return false;
                 }
-                let tagPattern = toPattern('(?:' + tagComment + '|' + tagData + '|' + tagEnd + '|' + tagPreamble + '|' + tagStart + '|' + tagVoid + ')$', ""),
+                let tagPattern = toPattern(anyTagToken + '$', ""),
                     tagMatch = tagPattern.exec(before);
                 if (tagMatch) {
+                    // `<div />|`
+                    if (' />' === before.slice(-3)) {
+                        that.replace(/ \/>$/, '/>', -1).record();
+                        return false;
+                    } // `<div/>|`
+                    if ('/>' === before.slice(-2)) {
+                        that.replace(/\/>$/, '>', -1).record();
+                        return false;
+                    }
                     that.replace(tagPattern, "", -1);
                     let name = tagMatch[0].slice(1).split(/\s+|>/)[0];
                     if (tagMatch[0] && '/' !== tagMatch[0][1]) {
@@ -243,7 +327,7 @@
                     that.replace(/^\?>/, "", 1).record();
                     return false;
                 }
-                let tagPattern = toPattern('^(?:' + tagComment + '|' + tagData + '|' + tagEnd + '|' + tagPreamble + '|' + tagStart + '|' + tagVoid + ')', ""),
+                let tagPattern = toPattern('^' + anyTagToken, ""),
                     tagMatch = tagPattern.exec(after);
                 if (tagMatch) {
                     that.replace(tagPattern, "", 1).record();
@@ -254,7 +338,8 @@
         return true;
     }
     var _virtual_entry = {
-        canKeyDown
+        canKeyDown,
+        that
     };
     return _virtual_entry;
 });

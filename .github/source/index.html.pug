@@ -6,7 +6,9 @@ block state
 
 block script
   script
-    | Object.assign(TE.prototype, TE.History.that);
+    | Object.assign(TE.prototype, TE.History.that, TE.Source.that);
+    |
+    | TE.prototype.toggleXML = TE.SourceXML.that.toggle;
     |
     | let editor = new TE(document.querySelector('textarea'), '  '),
     |     {canKeyDown, canKeyDownDent, canKeyDownHistory, canKeyUp} = TE.Source,
@@ -26,6 +28,13 @@ block script
     |     let key = e.key,
     |         keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
     |     canKeyUp(key, keys, editor) || e.preventDefault();
+    | }
+    |
+    | function toggleTime() {
+    |     let date = new Date;
+    |     return editor.toggleXML('time', 'text goes here...', {
+    |         datetime: date.toISOString()
+    |     }).record();
     | }
     |
     | function letSourceEditor() {
@@ -98,10 +107,10 @@ block style
     |   height: 20em;
     | }
     | .source {
-    |   background: #000;
-    |   color: #fff;
-    |   border: 2px inset #fff;
-    |   padding: 1em;
+    |   background: #ccc;
+    |   color: #000;
+    |   border: 1px solid #000;
+    |   padding: 2px;
     | }
 
 block content
@@ -133,7 +142,7 @@ block content
       |   &lt;/channel&gt;
       | &lt;/rss&gt;
       | &lt;!-- This is a comment. --&gt;
-    p(tabindex='0') Next tabbable element.
+    p(tabindex='0'): button(onclick='toggleTime();') Toggle Test
     p
       label
         input(checked onchange='this.checked ? setSourceEditor() : letSourceEditor();' type='checkbox')
@@ -146,6 +155,7 @@ block content
       li #[code &lt;div&gt;#[mark= '|']] then press #[kbd= '↵'].
       li #[code &lt;div&gt;#[mark= '|']&lt;/div&gt;] then press #[kbd= '↵'].
       li #[code &lt;div&gt;#[mark= '|']] then press #[kbd= '⌫'].
+      li #[code &lt;div /&gt;#[mark= '|']] then press #[kbd= '⌫'].
       li #[code &lt;div/&gt;#[mark= '|']] then press #[kbd= '⌫'].
       li #[code &lt;div&gt;#[mark= '|']&lt;/div&gt;] then press #[kbd= '⌫'].
       li #[code #[mark= '|']&lt;div&gt;] then press #[kbd= '⌦'].
@@ -172,10 +182,11 @@ block content
       | &lt;script src="#[a(href='../text-editor.source/index.min.js' target='_blank') ./text-editor.source/index.min.js]"&gt;&lt;/script&gt;
       | &lt;script src="#[a(href='../text-editor.source-x-m-l/index.min.js' target='_blank') ./text-editor.source-x-m-l/index.min.js]"&gt;&lt;/script&gt;
       | &lt;script&gt;
-      | Object.assign(TE.prototype, TE.History.that);
+      | Object.assign(TE.prototype, TE.History.that, TE.Source.that);
+      | #[mark= 'TE.prototype.toggleXML = TE.SourceXML.that.toggle'];
       | const editor = new TE(document.querySelector('textarea')),
       | const {canKeyDown, canKeyDownHistory, canKeyDownTab, canKeyUp} = TE.Source;
-      | const {canKeyDown: canKeyDownXML} = TE.SourceXML;
+      | const {canKeyDown: #[mark canKeyDownXML]} = TE.SourceXML;
       | editor.self.addEventListener('keydown', e =&gt; {
       |     let key = e.key,
       |         keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
@@ -206,14 +217,18 @@ block content
       |     canKeyDown,
       |     canKeyDownHistory,
       |     canKeyDownTab,
-      |     canKeyUp
+      |     canKeyUp,
+      |     that: thatSource
       | } = require('@taufik-nurrohman/text-editor.source');
       |
       | const {
-      |     canKeyDown: canKeyDownXML
+      |     canKeyDown: #[mark canKeyDownXML],
+      |     that: #[mark thatSourceXML]
       | } = require('@taufik-nurrohman/text-editor.source-x-m-l');
       |
-      | Object.assign(TE.prototype, that);
+      | Object.assign(TE.prototype, that, thatSource);
+      |
+      | #[mark= 'TE.prototype.toggleXML = thatSourceXML.toggle'];
       |
       | const editor = new TE(document.querySelector('textarea'));
       |
@@ -248,14 +263,18 @@ block content
       |     canKeyDown,
       |     canKeyDownHistory,
       |     canKeyDownTab,
-      |     canKeyUp
+      |     canKeyUp,
+      |     that: thatSource
       | } from '@taufik-nurrohman/text-editor.source';
       |
       | import {
-      |     canKeyDown: canKeyDownXML
+      |     canKeyDown: #[mark canKeyDownXML],
+      |     that: #[mark thatSourceXML]
       | } from '@taufik-nurrohman/text-editor.source-x-m-l';
       |
-      | Object.assign(TE.prototype, that);
+      | Object.assign(TE.prototype, that, thatSource);
+      |
+      | #[mark= 'TE.prototype.toggleXML = thatSourceXML.toggle'];
       |
       | const editor = new TE(document.querySelector('textarea'));
       |
@@ -281,6 +300,9 @@ block content
       | });
       |
       | editor.record();
+    h3 Methods
+    h4 editor.toggleXML(name, content, attributes = {})
+    p Toggle wrap and peel of an #[abbr(title='Extensible Markup Language') XML] tag.
     h3 Strokes
     p Strokes can either return #[code false] or #[code true]. If it returns #[code false], it means that this extension has manipulated the existing value. If it returns #[code true], it means that current stroke works normally.
     h4 TE.SourceXML.canKeyDown(key, {a, c, s}, that)

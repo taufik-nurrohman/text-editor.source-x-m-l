@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta content="width=device-width" name="viewport">
     <meta content="Provides a set of key strokes to generate responses like in a typical XML source code editor." name="description">
-    <title>Text Editor Source XML 1.1.0</title>
+    <title>Text Editor Source XML 1.1.1</title>
     <style>
       * {
         box-sizing: border-box;
@@ -63,16 +63,16 @@
         height: 20em;
       }
       .source {
-        background: #000;
-        color: #fff;
-        border: 2px inset #fff;
-        padding: 1em;
+        background: #ccc;
+        color: #000;
+        border: 1px solid #000;
+        padding: 2px;
       }
     </style>
   </head>
   <body>
     <header>
-      <h1>Text Editor Source XML 1.1.0</h1>
+      <h1>Text Editor Source XML 1.1.1</h1>
       <p>XML source code editor extension for <a href="../text-editor/index.html">text editor</a>.</p>
       <hr>
       <p>Provides a set of key strokes to generate responses like in a typical <abbr title="Extensible Markup Language">XML</abbr> source code editor.</p>
@@ -99,7 +99,7 @@
   &lt;/channel&gt;
 &lt;/rss&gt;
 &lt;!-- This is a comment. --&gt;</textarea></p>
-      <p tabindex="0">Next tabbable element.</p>
+      <p tabindex="0"><button onclick="toggleTime();">Toggle Test</button></p>
       <p><label><input checked onchange="this.checked ? setSourceEditor() : letSourceEditor();" type="checkbox"> <span>Enable XML Source Editor</span></label></p>
       <h2>Features</h2>
       <ul>
@@ -108,6 +108,7 @@
         <li><code>&lt;div&gt;<mark>|</mark></code> then press <kbd>↵</kbd>.</li>
         <li><code>&lt;div&gt;<mark>|</mark>&lt;/div&gt;</code> then press <kbd>↵</kbd>.</li>
         <li><code>&lt;div&gt;<mark>|</mark></code> then press <kbd>⌫</kbd>.</li>
+        <li><code>&lt;div /&gt;<mark>|</mark></code> then press <kbd>⌫</kbd>.</li>
         <li><code>&lt;div/&gt;<mark>|</mark></code> then press <kbd>⌫</kbd>.</li>
         <li><code>&lt;div&gt;<mark>|</mark>&lt;/div&gt;</code> then press <kbd>⌫</kbd>.</li>
         <li><code><mark>|</mark>&lt;div&gt;</code> then press <kbd>⌦</kbd>.</li>
@@ -134,10 +135,11 @@
 &lt;script src="<a href="../text-editor.source/index.min.js" target="_blank">./text-editor.source/index.min.js</a>"&gt;&lt;/script&gt;
 &lt;script src="<a href="../text-editor.source-x-m-l/index.min.js" target="_blank">./text-editor.source-x-m-l/index.min.js</a>"&gt;&lt;/script&gt;
 &lt;script&gt;
-Object.assign(TE.prototype, TE.History.that);
+Object.assign(TE.prototype, TE.History.that, TE.Source.that);
+<mark>TE.prototype.toggleXML = TE.SourceXML.that.toggle</mark>;
 const editor = new TE(document.querySelector('textarea')),
 const {canKeyDown, canKeyDownHistory, canKeyDownTab, canKeyUp} = TE.Source;
-const {canKeyDown: canKeyDownXML} = TE.SourceXML;
+const {canKeyDown: <mark>canKeyDownXML</mark>} = TE.SourceXML;
 editor.self.addEventListener('keydown', e =&gt; {
     let key = e.key,
         keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
@@ -167,14 +169,18 @@ const {
     canKeyDown,
     canKeyDownHistory,
     canKeyDownTab,
-    canKeyUp
+    canKeyUp,
+    that: thatSource
 } = require('@taufik-nurrohman/text-editor.source');
 
 const {
-    canKeyDown: canKeyDownXML
+    canKeyDown: <mark>canKeyDownXML</mark>,
+    that: <mark>thatSourceXML</mark>
 } = require('@taufik-nurrohman/text-editor.source-x-m-l');
 
-Object.assign(TE.prototype, that);
+Object.assign(TE.prototype, that, thatSource);
+
+<mark>TE.prototype.toggleXML = thatSourceXML.toggle</mark>;
 
 const editor = new TE(document.querySelector('textarea'));
 
@@ -208,14 +214,18 @@ import {
     canKeyDown,
     canKeyDownHistory,
     canKeyDownTab,
-    canKeyUp
+    canKeyUp,
+    that: thatSource
 } from '@taufik-nurrohman/text-editor.source';
 
 import {
-    canKeyDown: canKeyDownXML
+    canKeyDown: <mark>canKeyDownXML</mark>,
+    that: <mark>thatSourceXML</mark>
 } from '@taufik-nurrohman/text-editor.source-x-m-l';
 
-Object.assign(TE.prototype, that);
+Object.assign(TE.prototype, that, thatSource);
+
+<mark>TE.prototype.toggleXML = thatSourceXML.toggle</mark>;
 
 const editor = new TE(document.querySelector('textarea'));
 
@@ -241,6 +251,9 @@ editor.self.addEventListener('keyup', e =&gt; {
 });
 
 editor.record();</code></pre>
+      <h3>Methods</h3>
+      <h4>editor.toggleXML(name, content, attributes = {})</h4>
+      <p>Toggle wrap and peel of an <abbr title="Extensible Markup Language">XML</abbr> tag.</p>
       <h3>Strokes</h3>
       <p>Strokes can either return <code>false</code> or <code>true</code>. If it returns <code>false</code>, it means that this extension has manipulated the existing value. If it returns <code>true</code>, it means that current stroke works normally.</p>
       <h4>TE.SourceXML.canKeyDown(key, {a, c, s}, that)</h4>
@@ -255,7 +268,9 @@ editor.record();</code></pre>
     <script src="../text-editor.source/index.min.js"></script>
     <script src="index.min.js"></script>
     <script>
-      Object.assign(TE.prototype, TE.History.that);
+      Object.assign(TE.prototype, TE.History.that, TE.Source.that);
+
+      TE.prototype.toggleXML = TE.SourceXML.that.toggle;
 
       let editor = new TE(document.querySelector('textarea'), '  '),
           {
@@ -290,6 +305,13 @@ editor.record();</code></pre>
                   s: e.shiftKey
               };
           canKeyUp(key, keys, editor) || e.preventDefault();
+      }
+
+      function toggleTime() {
+          let date = new Date;
+          return editor.toggleXML('time', 'text goes here...', {
+              datetime: date.toISOString()
+          }).record();
       }
 
       function letSourceEditor() {

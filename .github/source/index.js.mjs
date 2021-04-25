@@ -1,3 +1,4 @@
+import {fromHTML, fromValue} from '@taufik-nurrohman/from';
 import {esc, toPattern} from '@taufik-nurrohman/pattern';
 import {toCount} from '@taufik-nurrohman/to';
 
@@ -9,6 +10,40 @@ let tagComment = '<!--([\\s\\S]*?)-->',
     tagVoid = '<(' + tagName + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?/?>',
     tagContainer = tagStart + '([\\s\\S]*?)</(\\1)>',
     tagPreamble = '<\\?((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)\\?>';
+
+const that = {};
+
+function toAttributes(attributes) {
+    let out = "";
+    for (let attribute in attributes) {
+        out += ' ' + attribute + '="' + fromHTML(fromValue(attributes[attribute])) + '"';
+    }
+    return out;
+}
+
+that.toggle = function(name, content, attributes = {}) {
+    let t = this,
+        {after, before, value} = t.$(),
+        tagStart = '<(' + name + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?>',
+        tagEnd = '</(' + name + ')>',
+        tagStartPattern = toPattern(tagStart + '$', ""),
+        tagEndPattern = toPattern('^' + tagEnd, ""),
+        tagStartMatch = tagStartPattern.test(before),
+        tagEndMatch = tagEndPattern.test(after);
+    if (tagEndMatch && tagStartMatch) {
+        return t.replace(tagEndPattern, "", 1).replace(tagStartPattern, "", -1);
+    }
+    tagStartPattern = toPattern('^' + tagStart, "");
+    tagEndPattern = toPattern(tagEnd + '$', "");
+    tagStartMatch = tagStartPattern.test(value);
+    tagEndMatch = tagEndPattern.test(value);
+    if (value && tagEndMatch && tagStartMatch) {
+        t.insert(value.replace(tagEndPattern, "").replace(tagStartPattern, ""));
+    } else if (content) {
+        t.insert(content);
+    }
+    return t.wrap('<' + name + toAttributes(attributes) + '>', '</' + name + '>');
+};
 
 function canKeyDown(key, {a, c, s}, that) {
     let charAfter,
@@ -34,10 +69,10 @@ function canKeyDown(key, {a, c, s}, that) {
                 if ('/' === key) {
                     // `<div|>`
                     if ('>' === after[0]) {
-                        that.trim().insert(' /', -1).select(start + 3).record();
+                        that.trim("", false).insert(' /', -1).select(that.$().start + 1).record();
                         return false;
                     }
-                    that.trim().insert(' />', -1).record();
+                    that.trim("", false).insert(' />', -1).record();
                     return false;
                 }
                 // `<div|></div>`
@@ -68,10 +103,11 @@ function canKeyDown(key, {a, c, s}, that) {
             }
         }
     }
+    let anyTagToken = '(?:' + tagComment + '|' + tagData + '|' + tagEnd + '|' + tagPreamble + '|' + tagStart + '|' + tagVoid + ')';
     if ('ArrowLeft' === key && !s) {
         let {before, start, value} = that.$();
         if (!value) {
-            let tagMatch = toPattern('(?:' + tagComment + '|' + tagData + '|' + tagEnd + '|' + tagPreamble + '|' + tagStart + '|' + tagVoid + ')$', "").exec(before);
+            let tagMatch = toPattern(anyTagToken + '$', "").exec(before);
             // `<foo>|bar`
             if (tagMatch) {
                 that.select(tagMatch.index, start);
@@ -82,7 +118,7 @@ function canKeyDown(key, {a, c, s}, that) {
     if ('ArrowRight' === key && !s) {
         let {after, start, value} = that.$();
         if (!value) {
-            let tagMatch = toPattern('^(?:' + tagComment + '|' + tagData + '|' + tagEnd + '|' + tagPreamble + '|' + tagStart + '|' + tagVoid + ')', "").exec(after);
+            let tagMatch = toPattern('^' + anyTagToken, "").exec(after);
             // `foo|<bar>`
             if (tagMatch) {
                 that.select(start, start + toCount(tagMatch[0]));
@@ -137,9 +173,19 @@ function canKeyDown(key, {a, c, s}, that) {
                 that.record();
                 return false;
             }
-            let tagPattern = toPattern('(?:' + tagComment + '|' + tagData + '|' + tagEnd + '|' + tagPreamble + '|' + tagStart + '|' + tagVoid + ')$', ""),
+            let tagPattern = toPattern(anyTagToken + '$', ""),
                 tagMatch = tagPattern.exec(before);
             if (tagMatch) {
+                // `<div />|`
+                if (' />' === before.slice(-3)) {
+                    that.replace(/ \/>$/, '/>', -1).record();
+                    return false;
+                }
+                // `<div/>|`
+                if ('/>' === before.slice(-2)) {
+                    that.replace(/\/>$/, '>', -1).record();
+                    return false;
+                }
                 that.replace(tagPattern, "", -1);
                 let name = tagMatch[0].slice(1).split(/\s+|>/)[0];
                 if (tagMatch[0] && '/' !== tagMatch[0][1]) {
@@ -172,7 +218,7 @@ function canKeyDown(key, {a, c, s}, that) {
                 that.replace(/^\?>/, "", 1).record();
                 return false;
             }
-            let tagPattern = toPattern('^(?:' + tagComment + '|' + tagData + '|' + tagEnd + '|' + tagPreamble + '|' + tagStart + '|' + tagVoid + ')', ""),
+            let tagPattern = toPattern('^' + anyTagToken, ""),
                 tagMatch = tagPattern.exec(after);
             if (tagMatch) {
                 that.replace(tagPattern, "", 1).record();
@@ -183,4 +229,4 @@ function canKeyDown(key, {a, c, s}, that) {
     return true;
 }
 
-export default {canKeyDown};
+export default {canKeyDown, that};
