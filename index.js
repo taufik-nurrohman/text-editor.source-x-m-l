@@ -106,18 +106,11 @@
         tagEnd = name => '</(' + name + ')>',
         tagVoid = name => '<(' + name + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?/?>',
         tagPreamble = '<\\?((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)\\?>',
-        anyTagToken = '(?:' + tagComment + '|' + tagData + '|' + tagEnd(tagName) + '|' + tagPreamble + '|' + tagStart(tagName) + '|' + tagVoid(tagName) + ')';
+        tagTokens = '(?:' + tagComment + '|' + tagData + '|' + tagEnd(tagName) + '|' + tagPreamble + '|' + tagStart(tagName) + '|' + tagVoid(tagName) + ')';
     const defaults = {};
     const that = {};
 
-    function toXMLString(name, content, attributes) {
-        if (isObject(attributes)) {
-            attributes = toXMLAttributeString(attributes);
-        }
-        return '<' + name + attributes + (false === content ? ' />' : '>' + content + '</' + name + '>');
-    }
-
-    function toXMLAttributeString(attributes) {
+    function toAttributes(attributes) {
         let attribute,
             out = "";
         for (attribute in attributes) {
@@ -125,7 +118,7 @@
         }
         return out;
     }
-    that.toggle = function(name, content, attributes = {}) {
+    that.toggle = function(name, content = "", attributes = {}) {
         let t = this,
             {
                 after,
@@ -134,10 +127,10 @@
             } = t.$(),
             tagStartLocal = tagStart(name),
             tagEndLocal = tagEnd(name),
-            tagStartLocalPattern = toPattern(tagStart + '$', ""),
-            tagEndLocalPattern = toPattern('^' + tagEnd, ""),
-            tagStartLocalMatch = tagStartPattern.test(before),
-            tagEndLocalMatch = tagEndPattern.test(after);
+            tagStartLocalPattern = toPattern(tagStartLocal + '$', ""),
+            tagEndLocalPattern = toPattern('^' + tagEndLocal, ""),
+            tagStartLocalMatch = tagStartLocalPattern.test(before),
+            tagEndLocalMatch = tagEndLocalPattern.test(after);
         if (tagEndLocalMatch && tagStartLocalMatch) {
             return t.replace(tagEndLocalPattern, "", 1).replace(tagStartLocalPattern, "", -1);
         }
@@ -150,7 +143,7 @@
         } else if (content) {
             t.insert(content);
         }
-        return t.wrap(toXMLString(name, "", attributes));
+        return t.wrap('<' + name + toAttributes(attributes) + '>', '</' + name + '>');
     };
 
     function canKeyDown(key, {
@@ -178,7 +171,7 @@
                 }
             }
             if ('>' === key || '/' === key) {
-                let tagStartMatch = toPattern(tagStart + '$', "").exec(before + '>');
+                let tagStartMatch = toPattern(tagStart(tagName) + '$', "").exec(before + '>');
                 if (!value && tagStartMatch) {
                     // `<div|`
                     if ('/' === key) {
@@ -222,7 +215,7 @@
                 value
             } = that.$();
             if (!value) {
-                let tagMatch = toPattern(anyTagToken + '$', "").exec(before); // `<foo>|bar`
+                let tagMatch = toPattern(tagTokens + '$', "").exec(before); // `<foo>|bar`
                 if (tagMatch) {
                     that.select(tagMatch.index, start);
                     return false;
@@ -236,7 +229,7 @@
                 value
             } = that.$();
             if (!value) {
-                let tagMatch = toPattern('^' + anyTagToken, "").exec(after); // `foo|<bar>`
+                let tagMatch = toPattern('^' + tagTokens, "").exec(after); // `foo|<bar>`
                 if (tagMatch) {
                     that.select(start, start + toCount(tagMatch[0]));
                     return false;
@@ -252,7 +245,7 @@
                 lineBefore = before.split('\n').pop(),
                 lineMatch = lineBefore.match(/^(\s+)/),
                 lineMatchIndent = lineMatch && lineMatch[1] || "",
-                tagStartMatch = before.match(toPattern(tagStart + '$', "")); // `<!--|-->`
+                tagStartMatch = before.match(toPattern(tagStart(tagName) + '$', "")); // `<!--|-->`
             if (!value && /^[ \t]*-->/.test(after) && /<!--[ \t]*$/.test(before)) {
                 that.trim().wrap('\n\n' + lineMatchIndent, '\n\n' + lineMatchIndent).record();
                 return false;
@@ -294,7 +287,7 @@
                     that.record();
                     return false;
                 }
-                let tagPattern = toPattern(anyTagToken + '$', ""),
+                let tagPattern = toPattern(tagTokens + '$', ""),
                     tagMatch = tagPattern.exec(before);
                 if (tagMatch) {
                     // `<div />|`
@@ -316,7 +309,7 @@
                     that.record();
                     return false;
                 }
-                if (toPattern(tagStart + '\\n(?:' + esc(charIndent) + ')?$', "").test(before) && toPattern('^\\s*' + tagEnd, "").test(after)) {
+                if (toPattern(tagStart(tagName) + '\\n(?:' + esc(charIndent) + ')?$', "").test(before) && toPattern('^\\s*' + tagEnd(tagName), "").test(after)) {
                     that.trim().record(); // Collapse!
                     return false;
                 }
@@ -337,7 +330,7 @@
                     that.replace(/^\?>/, "", 1).record();
                     return false;
                 }
-                let tagPattern = toPattern('^' + anyTagToken, ""),
+                let tagPattern = toPattern('^' + tagTokens, ""),
                     tagMatch = tagPattern.exec(after);
                 if (tagMatch) {
                     that.replace(tagPattern, "", 1).record();
@@ -357,12 +350,12 @@
             } = that.$();
             if (!value) {
                 let caret = '\ufeff',
-                    anyTagTokenLocal = anyTagToken.split('(' + tagName + ')').join('((?:[\\w:.-]|' + caret + ')+)'),
-                    anyTagTokenLocalPattern = toPattern(anyTagTokenLocal),
+                    tagTokensLocal = tagTokens.split('(' + tagName + ')').join('((?:[\\w:.-]|' + caret + ')+)'),
+                    tagTokensLocalPattern = toPattern(tagTokensLocal),
                     content = before + value + caret + after,
                     m,
                     v;
-                while (m = anyTagTokenLocalPattern.exec(content)) {
+                while (m = tagTokensLocalPattern.exec(content)) {
                     if (-1 !== m[0].indexOf(caret)) {
                         that.select(v = m.index, v + toCount(m[0]) - 1);
                         break;
