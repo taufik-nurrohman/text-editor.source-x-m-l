@@ -102,13 +102,22 @@
     let tagComment = '<!--([\\s\\S]*?)-->',
         tagData = '<!((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)>',
         tagName = '[\\w:.-]+',
-        tagStart = '<(' + tagName + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?>',
-        tagEnd = '</(' + tagName + ')>',
-        tagVoid = '<(' + tagName + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?/?>',
-        tagPreamble = '<\\?((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)\\?>';
+        tagStart = name => '<(' + name + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?>',
+        tagEnd = name => '</(' + name + ')>',
+        tagVoid = name => '<(' + name + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?/?>',
+        tagPreamble = '<\\?((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)\\?>',
+        anyTagToken = '(?:' + tagComment + '|' + tagData + '|' + tagEnd(tagName) + '|' + tagPreamble + '|' + tagStart(tagName) + '|' + tagVoid(tagName) + ')';
+    const defaults = {};
     const that = {};
 
-    function toAttributes(attributes) {
+    function toXMLString(name, content, attributes) {
+        if (isObject(attributes)) {
+            attributes = toXMLAttributeString(attributes);
+        }
+        return '<' + name + attributes + (false === content ? ' />' : '>' + content + '</' + name + '>');
+    }
+
+    function toXMLAttributeString(attributes) {
         let attribute,
             out = "";
         for (attribute in attributes) {
@@ -123,25 +132,25 @@
                 before,
                 value
             } = t.$(),
-            tagStart = '<(' + name + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?>',
-            tagEnd = '</(' + name + ')>',
-            tagStartPattern = toPattern(tagStart + '$', ""),
-            tagEndPattern = toPattern('^' + tagEnd, ""),
-            tagStartMatch = tagStartPattern.test(before),
-            tagEndMatch = tagEndPattern.test(after);
-        if (tagEndMatch && tagStartMatch) {
-            return t.replace(tagEndPattern, "", 1).replace(tagStartPattern, "", -1);
+            tagStartLocal = tagStart(name),
+            tagEndLocal = tagEnd(name),
+            tagStartLocalPattern = toPattern(tagStart + '$', ""),
+            tagEndLocalPattern = toPattern('^' + tagEnd, ""),
+            tagStartLocalMatch = tagStartPattern.test(before),
+            tagEndLocalMatch = tagEndPattern.test(after);
+        if (tagEndLocalMatch && tagStartLocalMatch) {
+            return t.replace(tagEndLocalPattern, "", 1).replace(tagStartLocalPattern, "", -1);
         }
-        tagStartPattern = toPattern('^' + tagStart, "");
-        tagEndPattern = toPattern(tagEnd + '$', "");
-        tagStartMatch = tagStartPattern.test(value);
-        tagEndMatch = tagEndPattern.test(value);
-        if (value && tagEndMatch && tagStartMatch) {
-            t.insert(value.replace(tagEndPattern, "").replace(tagStartPattern, ""));
+        tagStartLocalPattern = toPattern('^' + tagStartLocal, "");
+        tagEndLocalPattern = toPattern(tagEndLocal + '$', "");
+        tagStartLocalMatch = tagStartLocalPattern.test(value);
+        tagEndLocalMatch = tagEndLocalPattern.test(value);
+        if (value && tagEndLocalMatch && tagStartLocalMatch) {
+            t.insert(value.replace(tagEndLocalPattern, "").replace(tagStartLocalPattern, ""));
         } else if (content) {
             t.insert(content);
         }
-        return t.wrap('<' + name + toAttributes(attributes) + '>', '</' + name + '>');
+        return t.wrap(toXMLString(name, "", attributes));
     };
 
     function canKeyDown(key, {
@@ -149,7 +158,8 @@
         c,
         s
     }, that) {
-        let charIndent = that.state.tab || '\t'; // Do nothing
+        let state = that.state,
+            charIndent = state.tab || '\t'; // Do nothing
         if (a || c) {
             return true;
         }
@@ -205,7 +215,6 @@
                 }
             }
         }
-        let anyTagToken = '(?:' + tagComment + '|' + tagData + '|' + tagEnd + '|' + tagPreamble + '|' + tagStart + '|' + tagVoid + ')';
         if ('ArrowLeft' === key && !s) {
             let {
                 before,
@@ -338,8 +347,35 @@
         }
         return true;
     }
+
+    function canMouseDown(that) {
+        setTimeout(() => {
+            let {
+                after,
+                before,
+                value
+            } = that.$();
+            if (!value) {
+                let caret = '\ufeff',
+                    anyTagTokenLocal = anyTagToken.split('(' + tagName + ')').join('((?:[\\w:.-]|' + caret + ')+)'),
+                    anyTagTokenLocalPattern = toPattern(anyTagTokenLocal),
+                    content = before + value + caret + after,
+                    m,
+                    v;
+                while (m = anyTagTokenLocalPattern.exec(content)) {
+                    if (-1 !== m[0].indexOf(caret)) {
+                        that.select(v = m.index, v + toCount(m[0]) - 1);
+                        break;
+                    }
+                }
+            }
+        }, 1);
+        return true;
+    }
     var _virtual_entry = {
         canKeyDown,
+        canMouseDown,
+        state: defaults,
         that
     };
     return _virtual_entry;

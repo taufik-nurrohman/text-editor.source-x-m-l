@@ -11,23 +11,29 @@ block script
     | TE.prototype.toggleXML = TE.SourceXML.that.toggle;
     |
     | let editor = new TE(document.querySelector('textarea'), '  '),
-    |     {canKeyDown, canKeyDownDent, canKeyDownHistory, canKeyUp} = TE.Source,
-    |     {canKeyDown: canKeyDownXML} = TE.SourceXML;
+    |     {canKeyDown: canKeyDownSource, canKeyDownDent: canKeyDownDentSource, canKeyDownHistory: canKeyDownHistorySource, canKeyUp: canKeyUpSource} = TE.Source,
+    |     {canKeyDown: canKeyDownSourceXML, canMouseDown: canMouseDownSourceXML} = TE.SourceXML;
+    |
+    | Object.assign(editor.state, TE.Source.state, TE.SourceXML.state);
     |
     | function onKeyDown(e) {
     |     let key = e.key,
     |         keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
-    |     canKeyDownXML(key, keys, editor) &&
-    |     canKeyDown(key, keys, editor) &&
-    |     canKeyDownDent(key, keys, editor) &&
-    |     canKeyDownHistory(key, keys, editor) ||
+    |     canKeyDownSourceXML(key, keys, editor) &&
+    |     canKeyDownSource(key, keys, editor) &&
+    |     canKeyDownDentSource(key, keys, editor) &&
+    |     canKeyDownHistorySource(key, keys, editor) ||
     |     e.preventDefault();
     | }
     |
     | function onKeyUp(e) {
     |     let key = e.key,
     |         keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
-    |     canKeyUp(key, keys, editor) || e.preventDefault();
+    |     canKeyUpSource(key, keys, editor) || e.preventDefault();
+    | }
+    |
+    | function onMouseDown(e) {
+    |     canMouseDownSourceXML(editor) || e.preventDefault();
     | }
     |
     | function toggleTime() {
@@ -41,6 +47,8 @@ block script
     |     editor.self.classList.remove('source');
     |     editor.self.removeEventListener('keydown', onKeyDown);
     |     editor.self.removeEventListener('keyup', onKeyUp);
+    |     editor.self.removeEventListener('mousedown', onMouseDown);
+    |     editor.self.removeEventListener('touchstart', onMouseDown);
     |     editor.loss(true); // Remove all history data
     | }
     |
@@ -48,6 +56,8 @@ block script
     |     editor.self.classList.add('source');
     |     editor.self.addEventListener('keydown', onKeyDown, false);
     |     editor.self.addEventListener('keyup', onKeyUp, false);
+    |     editor.self.addEventListener('mousedown', onMouseDown, false);
+    |     editor.self.addEventListener('touchstart', onMouseDown, false);
     |     editor.record(); // Record the first history data
     | }
     |
@@ -142,7 +152,7 @@ block content
       |   &lt;/channel&gt;
       | &lt;/rss&gt;
       | &lt;!-- This is a comment. --&gt;
-    p(tabindex='0'): button(onclick='toggleTime();') Toggle Test
+    p: button(onclick='toggleTime();') Toggle Test
     p
       label
         input(checked onchange='this.checked ? setSourceEditor() : letSourceEditor();' type='checkbox')
@@ -182,64 +192,92 @@ block content
       | &lt;script src="#[a(href='../text-editor.source/index.min.js' target='_blank') ./text-editor.source/index.min.js]"&gt;&lt;/script&gt;
       | &lt;script src="#[a(href='../text-editor.source-x-m-l/index.min.js' target='_blank') ./text-editor.source-x-m-l/index.min.js]"&gt;&lt;/script&gt;
       | &lt;script&gt;
+      |
       | Object.assign(TE.prototype, TE.History.that, TE.Source.that);
-      | #[mark= 'TE.prototype.toggleXML = TE.SourceXML.that.toggle'];
+      |
+      | TE.prototype.toggleXML = TE.SourceXML.that.toggle;
+      |
       | const editor = new TE(document.querySelector('textarea')),
-      | const {canKeyDown, canKeyDownHistory, canKeyDownTab, canKeyUp} = TE.Source;
-      | const {canKeyDown: #[mark canKeyDownXML]} = TE.SourceXML;
+      |
+      | const {
+      |     canKeyDown: canKeyDownSource,
+      |     canKeyDownHistory: canKeyDownHistorySource,
+      |     canKeyDownTab: canKeyDownTabSource,
+      |     canKeyUp: canKeyUpSource
+      | } = TE.Source;
+      |
+      | const {
+      |     canKeyDown: canKeyDownSourceXML,
+      |     canMouseDown: canMouseDownSourceXML
+      | } = TE.SourceXML;
+      |
+      | Object.assign(editor.state, TE.Source.state, TE.SourceXML.state);
+      |
       | editor.self.addEventListener('keydown', e =&gt; {
       |     let key = e.key,
       |         keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
       |     if (
-      |         #[mark= 'canKeyDownXML(key, keys, editor)'] &amp;&amp;
-      |         canKeyDown(key, keys, editor) &amp;&amp;
-      |         canKeyDownHistory(key, keys, editor) &amp;&amp;
-      |         canKeyDownTab(key, keys, editor)
+      |         canKeyDownSourceXML(key, keys, editor) &amp;&amp;
+      |         canKeyDownSource(key, keys, editor) &amp;&amp;
+      |         canKeyDownHistorySource(key, keys, editor) &amp;&amp;
+      |         canKeyDownTabSource(key, keys, editor)
       |     ) {
       |         // Normal key strokes. Add more key strokes extension here!
       |     } else {
       |         e.preventDefault();
       |     }
       | });
+      |
       | editor.self.addEventListener('keyup', e =&gt; {
       |     let key = e.key,
       |         keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
-      |     canKeyUp(key, keys, editor) || e.preventDefault();
+      |     canKeyUpSource(key, keys, editor) || e.preventDefault();
       | });
+      |
+      | editor.self.addEventListener('mousedown', e =&gt; {
+      |     canMouseDownSourceXML(editor) || e.preventDefault();
+      | });
+      |
       | editor.record(); // Record the first history data
+      |
       | &lt;/script&gt;
     h4 CommonJS
     pre: code
       | const TE = require('@taufik-nurrohman/text-editor');
-      | const {that} = require('@taufik-nurrohman/text-editor.history');
+      | const {that: thatHistory} = require('@taufik-nurrohman/text-editor.history');
       |
       | const {
-      |     canKeyDown,
-      |     canKeyDownHistory,
-      |     canKeyDownTab,
-      |     canKeyUp,
+      |     canKeyDown: canKeyDownSource,
+      |     canKeyDownHistory: canKeyDownHistorySource,
+      |     canKeyDownTab: canKeyDownTabSource,
+      |     canKeyUp: canKeyUpSource,
+      |     state: stateSource,
       |     that: thatSource
       | } = require('@taufik-nurrohman/text-editor.source');
       |
       | const {
-      |     canKeyDown: #[mark canKeyDownXML],
-      |     that: #[mark thatSourceXML]
+      |     canKeyDown: canKeyDownSourceXML,
+      |     canMouseDown: canMouseDownSourceXML,
+      |     state: stateSourceXML,
+      |     that: thatSourceXML
       | } = require('@taufik-nurrohman/text-editor.source-x-m-l');
       |
-      | Object.assign(TE.prototype, that, thatSource);
+      | Object.assign(TE.prototype, thatHistory, thatSource);
       |
-      | #[mark= 'TE.prototype.toggleXML = thatSourceXML.toggle'];
+      | TE.prototype.toggleXML = thatSourceXML.toggle;
       |
       | const editor = new TE(document.querySelector('textarea'));
+      |
+      | Object.assign(editor.state, stateSource, stateSourceXML);
       |
       | editor.self.addEventListener('keydown', e =&gt; {
       |     let key = e.key,
       |         keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
       |     if (
-      |         #[mark= 'canKeyDownXML(key, keys, editor)'] &amp;&amp;
-      |         canKeyDown(key, keys, editor) &amp;&amp;
-      |         canKeyDownHistory(key, keys, editor) &amp;&amp;
-      |         canKeyDownTab(key, keys, editor)
+      |         canKeyDownSourceXML(key, keys, editor) &amp;&amp;
+      |         canKeyDownSource(key, keys, editor) &amp;&amp;
+      |         canKeyDownHistorySource(key, keys, editor) &amp;&amp;
+      |         canKeyDownTabSource(key, keys, editor)
       |     ) {
       |         // Normal key strokes. Add more key strokes extension here!
       |     } else {
@@ -250,42 +288,51 @@ block content
       | editor.self.addEventListener('keyup', e =&gt; {
       |     let key = e.key,
       |         keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
-      |     canKeyUp(key, keys, editor) || e.preventDefault();
+      |     canKeyUpSource(key, keys, editor) || e.preventDefault();
+      | });
+      |
+      | editor.self.addEventListener('mousedown', e =&gt; {
+      |     canMouseDownSourceXML(editor) || e.preventDefault();
       | });
       |
       | editor.record();
     h4 ECMAScript
     pre: code
       | import TE from '@taufik-nurrohman/text-editor';
-      | import {that} from '@taufik-nurrohman/text-editor.history';
+      | import {that: thatHistory} from '@taufik-nurrohman/text-editor.history';
       |
       | import {
-      |     canKeyDown,
-      |     canKeyDownHistory,
-      |     canKeyDownTab,
-      |     canKeyUp,
+      |     canKeyDown: canKeyDownSource,
+      |     canKeyDownHistory: canKeyDownHistorySource,
+      |     canKeyDownTab: canKeyDownTabSource,
+      |     canKeyUp: canKeyUpSource,
+      |     state: stateSource,
       |     that: thatSource
       | } from '@taufik-nurrohman/text-editor.source';
       |
       | import {
-      |     canKeyDown: #[mark canKeyDownXML],
-      |     that: #[mark thatSourceXML]
+      |     canKeyDown: canKeyDownSourceXML,
+      |     canMouseDown: canMouseDownSourceXML,
+      |     state: stateSourceXML,
+      |     that: thatSourceXML
       | } from '@taufik-nurrohman/text-editor.source-x-m-l';
       |
-      | Object.assign(TE.prototype, that, thatSource);
+      | Object.assign(TE.prototype, thatHistory, thatSource);
       |
-      | #[mark= 'TE.prototype.toggleXML = thatSourceXML.toggle'];
+      | TE.prototype.toggleXML = thatSourceXML.toggle;
       |
       | const editor = new TE(document.querySelector('textarea'));
+      |
+      | Object.assign(editor.state, stateSource, stateSourceXML);
       |
       | editor.self.addEventListener('keydown', e =&gt; {
       |     let key = e.key,
       |         keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
       |     if (
-      |         #[mark= 'canKeyDownXML(key, keys, editor)'] &amp;&amp;
-      |         canKeyDown(key, keys, editor) &amp;&amp;
-      |         canKeyDownHistory(key, keys, editor) &amp;&amp;
-      |         canKeyDownTab(key, keys, editor)
+      |         canKeyDownSourceXML(key, keys, editor) &amp;&amp;
+      |         canKeyDownSource(key, keys, editor) &amp;&amp;
+      |         canKeyDownHistorySource(key, keys, editor) &amp;&amp;
+      |         canKeyDownTabSource(key, keys, editor)
       |     ) {
       |         // Normal key strokes. Add more key strokes extension here!
       |     } else {
@@ -296,17 +343,26 @@ block content
       | editor.self.addEventListener('keyup', e =&gt; {
       |     let key = e.key,
       |         keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
-      |     canKeyUp(key, keys, editor) || e.preventDefault();
+      |     canKeyUpSource(key, keys, editor) || e.preventDefault();
+      | });
+      |
+      | editor.self.addEventListener('mousedown', e =&gt; {
+      |     canMouseDownSourceXML(editor) || e.preventDefault();
       | });
       |
       | editor.record();
     h3 Methods
     h4 editor.toggleXML(name, content, attributes = {})
     p Toggle wrap and peel of an #[abbr(title='Extensible Markup Language') XML] tag.
+    h3 Properties
+    h4 TE.SourceXML.state
+    p Return the default state to be merged with #[code editor.state].
     h3 Strokes
     p Strokes can either return #[code false] or #[code true]. If it returns #[code false], it means that this extension has manipulated the existing value. If it returns #[code true], it means that current stroke works normally.
     h4 TE.SourceXML.canKeyDown(key, {a, c, s}, that)
     p This will handle tasks such as automatic #[abbr(title='Extensible Markup Language') XML] tag closing and automatic indentation by pressing the #[kbd= '↵'] key.
+    h4 TE.SourceXML.canMouseDown(that)
+    p This will handle tasks such as automatic tag pattern selection on click.
   footer
     hr
     p
