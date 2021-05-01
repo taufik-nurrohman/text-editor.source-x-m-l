@@ -138,9 +138,10 @@
         tagEndLocalPattern = toPattern(tagEndLocal + '$', "");
         tagStartLocalMatch = tagStartLocalPattern.test(value);
         tagEndLocalMatch = tagEndLocalPattern.test(value);
-        if (value && tagEndLocalMatch && tagStartLocalMatch) {
-            t.insert(value.replace(tagEndLocalPattern, "").replace(tagStartLocalPattern, ""));
-        } else if (content) {
+        if (tagEndLocalMatch && tagStartLocalMatch) {
+            t.insert(value = value.replace(tagEndLocalPattern, "").replace(tagStartLocalPattern, ""));
+        }
+        if (!value && content) {
             t.insert(content);
         }
         return t.wrap('<' + name + toAttributes(attributes) + '>', '</' + name + '>');
