@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta content="width=device-width" name="viewport">
     <meta content="Provides a set of key strokes to generate responses like in a typical XML source code editor." name="description">
-    <title>Text Editor Source XML 1.1.4</title>
+    <title>Text Editor Source XML 1.1.5</title>
     <style>
       * {
         box-sizing: border-box;
@@ -73,59 +73,40 @@
   </head>
   <body>
     <header>
-      <h1>Text Editor Source XML 1.1.4</h1>
+      <h1>Text Editor Source XML 1.1.5</h1>
       <p><abbr title="Extensible Markup Language">XML</abbr> source code editor extension for <a href="../text-editor/index.html">text editor</a>.</p>
       <hr>
       <p>Provides a set of key strokes to generate responses like in a typical <abbr title="Extensible Markup Language">XML</abbr> source code editor.</p>
     </header>
     <main>
       <p tabindex="0">Previous tabbable element.</p>
-      <p><textarea placeholder="Code goes here&hellip;" spellcheck="false">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
-&lt;rss version=&quot;2.0&quot;&gt;
-  &lt;channel&gt;
-    &lt;title&gt;RSS Title&lt;/title&gt;
-    &lt;description&gt;This is an example of an RSS feed.&lt;/description&gt;
-    &lt;link&gt;http://www.example.com/main.html&lt;/link&gt;
-    &lt;copyright&gt;2020 Example.com All rights reserved.&lt;/copyright&gt;
-    &lt;lastBuildDate&gt;Mon, 06 Sep 2010 00:01:00 +0000&lt;/lastBuildDate&gt;
-    &lt;pubDate&gt;Sun, 06 Sep 2009 16:20:00 +0000&lt;/pubDate&gt;
-    &lt;ttl&gt;1800&lt;/ttl&gt;
-    &lt;item&gt;
-      &lt;title&gt;Example Entry&lt;/title&gt;
-      &lt;description&gt;Here is some text containing an interesting description.&lt;/description&gt;
-      &lt;link&gt;http://www.example.com/blog/post/1&lt;/link&gt;
-      &lt;guid isPermaLink=&quot;false&quot;&gt;7bd204c6-1655-4c27-aeee-53f933c5395f&lt;/guid&gt;
-      &lt;pubDate&gt;Sun, 06 Sep 2009 16:20:00 +0000&lt;/pubDate&gt;
-    &lt;/item&gt;
-  &lt;/channel&gt;
-&lt;/rss&gt;
-&lt;!-- This is a comment. --&gt;</textarea></p>
+      <p><textarea placeholder="Code goes here&hellip;" spellcheck="false"></textarea></p>
       <p><button onclick="toggleTime();">Toggle Test</button></p>
       <p><label><input checked onchange="this.checked ? setSourceEditor() : letSourceEditor();" type="checkbox"> <span>Enable XML Source Editor</span></label></p>
       <h2>Features</h2>
       <ul>
-        <li><code>&lt;div<mark>|</mark></code> or <code>&lt;div<mark>|</mark>&gt;</code> then press <kbd>&gt;</kbd>.</li>
-        <li><code>&lt;div<mark>|</mark></code> or <code>&lt;div<mark>|</mark>&gt;</code> then press <kbd>/</kbd>.</li>
-        <li><code>&lt;div&gt;<mark>|</mark></code> then press <kbd>↵</kbd>.</li>
-        <li><code>&lt;div&gt;<mark>|</mark>&lt;/div&gt;</code> then press <kbd>↵</kbd>.</li>
-        <li><code>&lt;div&gt;<mark>|</mark></code> then press <kbd>⌫</kbd>.</li>
-        <li><code>&lt;div /&gt;<mark>|</mark></code> then press <kbd>⌫</kbd>.</li>
-        <li><code>&lt;div/&gt;<mark>|</mark></code> then press <kbd>⌫</kbd>.</li>
-        <li><code>&lt;div&gt;<mark>|</mark>&lt;/div&gt;</code> then press <kbd>⌫</kbd>.</li>
-        <li><code><mark>|</mark>&lt;div&gt;</code> then press <kbd>⌦</kbd>.</li>
-        <li><code><mark>|</mark>&lt;div/&gt;</code> then press <kbd>⌦</kbd>.</li>
-        <li><code><mark>|</mark>&lt;/div&gt;</code> then press <kbd>⌦</kbd>.</li>
-        <li><code>&lt;div&gt;<mark>|</mark></code> then press <kbd>←</kbd>.</li>
-        <li><code>&lt;div/&gt;<mark>|</mark></code> then press <kbd>←</kbd>.</li>
-        <li><code>&lt;/div&gt;<mark>|</mark></code> then press <kbd>←</kbd>.</li>
-        <li><code><mark>|</mark>&lt;div&gt;</code> then press <kbd>→</kbd>.</li>
-        <li><code><mark>|</mark>&lt;div/&gt;</code> then press <kbd>→</kbd>.</li>
-        <li><code><mark>|</mark>&lt;/div&gt;</code> then press <kbd>→</kbd>.</li>
-        <li><code>&lt;<mark>|</mark></code> or <code>&lt;<mark>|</mark>&gt;</code> then press <kbd>?</kbd>.</li>
-        <li><code>&lt;?<mark>|</mark></code> or <code>&lt;?<mark>|</mark>?&gt;</code> then press <kbd>⌫</kbd>.</li>
-        <li><code>&lt;!-<mark>|</mark></code> or <code>&lt;!-<mark>|</mark>&gt;</code> then press <kbd>-</kbd>.</li>
         <li><code>&lt;!-- <mark>|</mark> --&gt;</code> then press <kbd>↵</kbd>.</li>
         <li><code>&lt;!-- <mark>|</mark></code> or <code>&lt;!-- <mark>|</mark> --&gt;</code> then press <kbd>⌫</kbd>.</li>
+        <li><code>&lt;!-<mark>|</mark></code> or <code>&lt;!-<mark>|</mark>&gt;</code> then press <kbd>-</kbd>.</li>
+        <li><code>&lt;/div&gt;<mark>|</mark></code> then press <kbd>←</kbd>.</li>
+        <li><code>&lt;<mark>|</mark></code> or <code>&lt;<mark>|</mark>&gt;</code> then press <kbd>?</kbd>.</li>
+        <li><code>&lt;?<mark>|</mark></code> or <code>&lt;?<mark>|</mark>?&gt;</code> then press <kbd>⌫</kbd>.</li>
+        <li><code>&lt;div /&gt;<mark>|</mark></code> then press <kbd>⌫</kbd>.</li>
+        <li><code>&lt;div&gt;<mark>|</mark>&lt;/div&gt;</code> then press <kbd>↵</kbd>.</li>
+        <li><code>&lt;div&gt;<mark>|</mark>&lt;/div&gt;</code> then press <kbd>⌫</kbd>.</li>
+        <li><code>&lt;div&gt;<mark>|</mark></code> then press <kbd>←</kbd>.</li>
+        <li><code>&lt;div&gt;<mark>|</mark></code> then press <kbd>↵</kbd>.</li>
+        <li><code>&lt;div&gt;<mark>|</mark></code> then press <kbd>⌫</kbd>.</li>
+        <li><code>&lt;div/&gt;<mark>|</mark></code> then press <kbd>←</kbd>.</li>
+        <li><code>&lt;div/&gt;<mark>|</mark></code> then press <kbd>⌫</kbd>.</li>
+        <li><code>&lt;div<mark>|</mark></code> or <code>&lt;div<mark>|</mark>&gt;</code> then press <kbd>&gt;</kbd>.</li>
+        <li><code>&lt;div<mark>|</mark></code> or <code>&lt;div<mark>|</mark>&gt;</code> then press <kbd>/</kbd>.</li>
+        <li><code><mark>|</mark>&lt;/div&gt;</code> then press <kbd>→</kbd>.</li>
+        <li><code><mark>|</mark>&lt;/div&gt;</code> then press <kbd>⌦</kbd>.</li>
+        <li><code><mark>|</mark>&lt;div&gt;</code> then press <kbd>→</kbd>.</li>
+        <li><code><mark>|</mark>&lt;div&gt;</code> then press <kbd>⌦</kbd>.</li>
+        <li><code><mark>|</mark>&lt;div/&gt;</code> then press <kbd>→</kbd>.</li>
+        <li><code><mark>|</mark>&lt;div/&gt;</code> then press <kbd>⌦</kbd>.</li>
         <li><code><mark>|</mark>--&gt;</code> then press <kbd>⌦</kbd>.</li>
         <li><code><mark>|</mark>?&gt;</code> then press <kbd>⌦</kbd>.</li>
       </ul>
