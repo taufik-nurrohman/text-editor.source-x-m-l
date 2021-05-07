@@ -26,8 +26,8 @@
  *
  */
 (function(global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() : typeof define === 'function' && define.amd ? define(factory) : (global = typeof globalThis !== 'undefined' ? globalThis : global || self, (global.TE = global.TE || {}, global.TE.SourceXML = factory()));
-})(this, function() {
+    typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) : typeof define === 'function' && define.amd ? define(['exports'], factory) : (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory((global.TE = global.TE || {}, global.TE.SourceXML = {})));
+})(this, function(exports) {
     'use strict';
     var isArray = function isArray(x) {
         return Array.isArray(x);
@@ -107,7 +107,9 @@
         tagVoid = name => '<(' + name + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?/?>',
         tagPreamble = '<\\?((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)\\?>',
         tagTokens = '(?:' + tagComment + '|' + tagData + '|' + tagEnd(tagName) + '|' + tagPreamble + '|' + tagStart(tagName) + '|' + tagVoid(tagName) + ')';
-    const defaults = {};
+    const defaults = {
+        sourceXML: {}
+    };
     const that = {};
 
     function toAttributes(attributes) {
@@ -366,11 +368,9 @@
         }, 1);
         return true;
     }
-    var _virtual_entry = {
-        canKeyDown,
-        canMouseDown,
-        state: defaults,
-        that
-    };
-    return _virtual_entry;
+    const state = defaults;
+    exports.canKeyDown = canKeyDown;
+    exports.canMouseDown = canMouseDown;
+    exports.state = state;
+    exports.that = that;
 });

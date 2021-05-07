@@ -280,22 +280,22 @@ block content
     h4 ECMAScript
     pre: code
       | import TE from '@taufik-nurrohman/text-editor';
-      | import {that: thatHistory} from '@taufik-nurrohman/text-editor.history';
+      | import {that as thatHistory} from '@taufik-nurrohman/text-editor.history';
       |
       | import {
-      |     canKeyDown: canKeyDownSource,
-      |     canKeyDownHistory: canKeyDownHistorySource,
-      |     canKeyDownTab: canKeyDownTabSource,
-      |     canKeyUp: canKeyUpSource,
-      |     state: stateSource,
-      |     that: thatSource
+      |     canKeyDown as canKeyDownSource,
+      |     canKeyDownHistory as canKeyDownHistorySource,
+      |     canKeyDownTab as canKeyDownTabSource,
+      |     canKeyUp as canKeyUpSource,
+      |     state as stateSource,
+      |     that as thatSource
       | } from '@taufik-nurrohman/text-editor.source';
       |
       | import {
-      |     canKeyDown: canKeyDownSourceXML,
-      |     canMouseDown: canMouseDownSourceXML,
-      |     state: stateSourceXML,
-      |     that: thatSourceXML
+      |     canKeyDown as canKeyDownSourceXML,
+      |     canMouseDown as canMouseDownSourceXML,
+      |     state as stateSourceXML,
+      |     that as thatSourceXML
       | } from '@taufik-nurrohman/text-editor.source-x-m-l';
       |
       | Object.assign(TE.prototype, thatHistory, thatSource);

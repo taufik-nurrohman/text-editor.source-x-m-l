@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta content="width=device-width" name="viewport">
     <meta content="Provides a set of key strokes to generate responses like in a typical XML source code editor." name="description">
-    <title>Text Editor Source XML 1.1.5</title>
+    <title>Text Editor Source XML 1.1.6</title>
     <style>
       * {
         box-sizing: border-box;
@@ -73,7 +73,7 @@
   </head>
   <body>
     <header>
-      <h1>Text Editor Source XML 1.1.5</h1>
+      <h1>Text Editor Source XML 1.1.6</h1>
       <p><abbr title="Extensible Markup Language">XML</abbr> source code editor extension for <a href="../text-editor/index.html">text editor</a>.</p>
       <hr>
       <p>Provides a set of key strokes to generate responses like in a typical <abbr title="Extensible Markup Language">XML</abbr> source code editor.</p>
@@ -222,22 +222,22 @@ editor.self.addEventListener('mousedown', e =&gt; {
 editor.record();</code></pre>
       <h4>ECMAScript</h4>
       <pre><code>import TE from '@taufik-nurrohman/text-editor';
-import {that: thatHistory} from '@taufik-nurrohman/text-editor.history';
+import {that as thatHistory} from '@taufik-nurrohman/text-editor.history';
 
 import {
-    canKeyDown: canKeyDownSource,
-    canKeyDownHistory: canKeyDownHistorySource,
-    canKeyDownTab: canKeyDownTabSource,
-    canKeyUp: canKeyUpSource,
-    state: stateSource,
-    that: thatSource
+    canKeyDown as canKeyDownSource,
+    canKeyDownHistory as canKeyDownHistorySource,
+    canKeyDownTab as canKeyDownTabSource,
+    canKeyUp as canKeyUpSource,
+    state as stateSource,
+    that as thatSource
 } from '@taufik-nurrohman/text-editor.source';
 
 import {
-    canKeyDown: canKeyDownSourceXML,
-    canMouseDown: canMouseDownSourceXML,
-    state: stateSourceXML,
-    that: thatSourceXML
+    canKeyDown as canKeyDownSourceXML,
+    canMouseDown as canMouseDownSourceXML,
+    state as stateSourceXML,
+    that as thatSourceXML
 } from '@taufik-nurrohman/text-editor.source-x-m-l';
 
 Object.assign(TE.prototype, thatHistory, thatSource);

@@ -12,9 +12,11 @@ let tagComment = '<!--([\\s\\S]*?)-->',
     tagPreamble = '<\\?((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)\\?>',
     tagTokens = '(?:' + tagComment + '|' + tagData + '|' + tagEnd(tagName) + '|' + tagPreamble + '|' + tagStart(tagName) + '|' + tagVoid(tagName) + ')';
 
-const defaults = {};
+const defaults = {
+    sourceXML: {}
+};
 
-const that = {};
+export const that = {};
 
 function toAttributes(attributes) {
     let attribute, out = "";
@@ -49,7 +51,7 @@ that.toggle = function(name, content = "", attributes = {}) {
     return t.wrap('<' + name + toAttributes(attributes) + '>', '</' + name + '>');
 };
 
-function canKeyDown(key, {a, c, s}, that) {
+export function canKeyDown(key, {a, c, s}, that) {
     let state = that.state,
         charAfter,
         charBefore,
@@ -233,7 +235,7 @@ function canKeyDown(key, {a, c, s}, that) {
     return true;
 }
 
-function canMouseDown(that) {
+export function canMouseDown(that) {
     setTimeout(() => {
         let {after, before, value} = that.$();
         if (!value) {
@@ -252,9 +254,4 @@ function canMouseDown(that) {
     return true;
 }
 
-export default {
-    canKeyDown,
-    canMouseDown,
-    state: defaults,
-    that
-};
+export const state = defaults;
