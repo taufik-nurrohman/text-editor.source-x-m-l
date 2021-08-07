@@ -97,7 +97,7 @@
         return new RegExp(pattern, isSet(opt) ? opt : 'g');
     };
     var x = "!$^*()+=[]{}|:<>,.?/-";
-    let tagComment = '<!--([\\s\\S]*?)-->',
+    let tagComment = '<!--([\\s\\S](?!-->)*)-->',
         tagData = '<!((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)>',
         tagName = '[\\w:.-]+',
         tagStart = name => '<(' + name + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?>',
@@ -218,7 +218,7 @@
             if (!value) {
                 let tagMatch = toPattern(tagTokens + '$', "").exec(before); // `<foo>|bar`
                 if (tagMatch) {
-                    that.select(tagMatch.index, start);
+                    that.select(start - toCount(tagMatch[0]), start);
                     return false;
                 }
             }

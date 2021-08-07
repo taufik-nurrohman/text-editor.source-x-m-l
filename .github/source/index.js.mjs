@@ -3,7 +3,7 @@ import {isObject} from '@taufik-nurrohman/is';
 import {esc, toPattern} from '@taufik-nurrohman/pattern';
 import {toCount} from '@taufik-nurrohman/to';
 
-let tagComment = '<!--([\\s\\S]*?)-->',
+let tagComment = '<!--([\\s\\S](?!-->)*)-->',
     tagData = '<!((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)>',
     tagName = '[\\w:.-]+',
     tagStart = name => '<(' + name + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?>',
@@ -116,7 +116,7 @@ export function canKeyDown(key, {a, c, s}, that) {
             let tagMatch = toPattern(tagTokens + '$', "").exec(before);
             // `<foo>|bar`
             if (tagMatch) {
-                that.select(tagMatch.index, start);
+                that.select(start - toCount(tagMatch[0]), start);
                 return false;
             }
         }
