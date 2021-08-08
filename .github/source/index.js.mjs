@@ -19,6 +19,9 @@ const defaults = {
 export const that = {};
 
 function toAttributes(attributes) {
+    if (!attributes) {
+        return "";
+    }
     let attribute, out = "";
     for (attribute in attributes) {
         out += ' ' + attribute + '="' + fromHTML(fromValue(attributes[attribute])) + '"';
@@ -49,11 +52,10 @@ that.toggle = function(name, content = "", attributes = {}, tidy = false) {
         t.insert(content);
     }
     if (false !== tidy) {
-        if (true === tidy) {
-            tidy = ["", ""];
-        }
         if (isString(tidy)) {
             tidy = [tidy, tidy];
+        } else {
+            tidy = ["", ""];
         }
         t.trim(tidy[0], tidy[1] || tidy[0]);
     }
@@ -64,7 +66,7 @@ export function canKeyDown(key, {a, c, s}, that) {
     let state = that.state,
         charAfter,
         charBefore,
-        charIndent = state.sourceXML?.tab || state.tab || '\t';
+        charIndent = state.sourceXML.tab || state.tab || '\t';
     // Do nothing
     if (a || c) {
         return true;
@@ -118,7 +120,7 @@ export function canKeyDown(key, {a, c, s}, that) {
                     that.wrap(' ', ' ').record();
                     return false;
                 }
-                if (/<\?\w*$/.test(before) && '?>' === after.slice(0, 2)) {
+                if (/<\?\S*$/.test(before) && '?>' === after.slice(0, 2)) {
                     that.wrap(' ', ' ').record();
                     return false;
                 }
@@ -160,7 +162,7 @@ export function canKeyDown(key, {a, c, s}, that) {
                 return false;
             }
             // `<?xml|?>`
-            if (/^[ \t]*\?>/.test(after) && /<\?\w*[ \t]*$/.test(before)) {
+            if (/^[ \t]*\?>/.test(after) && /<\?\S*[ \t]*$/.test(before)) {
                 that.trim().wrap('\n\n' + lineMatchIndent, '\n\n' + lineMatchIndent).record();
                 return false;
             }
@@ -192,8 +194,8 @@ export function canKeyDown(key, {a, c, s}, that) {
                 return false;
             }
             // `<?|`
-            if ('<?' === before.slice(-2)) {
-                that.replace(/<\?$/, "", -1);
+            if (/<\?\S*$/.test(before)) {
+                that.replace(/<\?\S*$/, "", -1);
                 // `<?|?>`
                 if ('?>' === after.slice(0, 2)) {
                     that.replace(/^\?>/, "", 1);
@@ -201,7 +203,7 @@ export function canKeyDown(key, {a, c, s}, that) {
                 that.record();
                 return false;
             }
-            if (/^\s+\?>/.test(after) && /<\?\w*\s+$/.test(before)) {
+            if (/^\s+\?>/.test(after) && /<\?\S*\s+$/.test(before)) {
                 that.trim(' ' === before.slice(-1) ? "" : ' ', ' ' === after[0] ? "" : ' ').record();
                 return false;
             }

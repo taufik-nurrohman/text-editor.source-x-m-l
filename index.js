@@ -1,19 +1,19 @@
 /*!
  *
  * The MIT License (MIT)
- *
+
  * Copyright © 2021 Taufik Nurrohman <https://github.com/taufik-nurrohman>
- *
+
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the “Software”), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
+
  * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -114,6 +114,9 @@
     const that = {};
 
     function toAttributes(attributes) {
+        if (!attributes) {
+            return "";
+        }
         let attribute,
             out = "";
         for (attribute in attributes) {
@@ -148,11 +151,10 @@
             t.insert(content);
         }
         if (false !== tidy) {
-            if (true === tidy) {
-                tidy = ["", ""];
-            }
             if (isString(tidy)) {
                 tidy = [tidy, tidy];
+            } else {
+                tidy = ["", ""];
             }
             t.trim(tidy[0], tidy[1] || tidy[0]);
         }
@@ -165,7 +167,7 @@
         s
     }, that) {
         let state = that.state,
-            charIndent = state.sourceXML?.tab || state.tab || '\t'; // Do nothing
+            charIndent = state.sourceXML.tab || state.tab || '\t'; // Do nothing
         if (a || c) {
             return true;
         }
@@ -220,7 +222,7 @@
                         that.wrap(' ', ' ').record();
                         return false;
                     }
-                    if (/<\?\w*$/.test(before) && '?>' === after.slice(0, 2)) {
+                    if (/<\?\S*$/.test(before) && '?>' === after.slice(0, 2)) {
                         that.wrap(' ', ' ').record();
                         return false;
                     }
@@ -271,7 +273,7 @@
                     that.trim().wrap('\n\n' + lineMatchIndent, '\n\n' + lineMatchIndent).record();
                     return false;
                 } // `<?xml|?>`
-                if (/^[ \t]*\?>/.test(after) && /<\?\w*[ \t]*$/.test(before)) {
+                if (/^[ \t]*\?>/.test(after) && /<\?\S*[ \t]*$/.test(before)) {
                     that.trim().wrap('\n\n' + lineMatchIndent, '\n\n' + lineMatchIndent).record();
                     return false;
                 }
@@ -305,15 +307,15 @@
                     that.trim(' ' === before.slice(-1) ? "" : ' ', ' ' === after[0] ? "" : ' ').record();
                     return false;
                 } // `<?|`
-                if ('<?' === before.slice(-2)) {
-                    that.replace(/<\?$/, "", -1); // `<?|?>`
+                if (/<\?\S*$/.test(before)) {
+                    that.replace(/<\?\S*$/, "", -1); // `<?|?>`
                     if ('?>' === after.slice(0, 2)) {
                         that.replace(/^\?>/, "", 1);
                     }
                     that.record();
                     return false;
                 }
-                if (/^\s+\?>/.test(after) && /<\?\w*\s+$/.test(before)) {
+                if (/^\s+\?>/.test(after) && /<\?\S*\s+$/.test(before)) {
                     that.trim(' ' === before.slice(-1) ? "" : ' ', ' ' === after[0] ? "" : ' ').record();
                     return false;
                 }
