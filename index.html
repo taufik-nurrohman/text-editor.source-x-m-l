@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta content="width=device-width" name="viewport">
     <meta content="Provides a set of key strokes to generate responses like in a typical XML source code editor." name="description">
-    <title>Text Editor Source XML 1.1.10</title>
+    <title>Text Editor Source XML 1.1.11</title>
     <style>
       * {
         box-sizing: border-box;
@@ -41,6 +41,14 @@
         border-top: 1px dashed;
         height: 0;
       }
+      mark {
+        display: inline-block;
+        vertical-align: middle;
+        height: 1.25em;
+        background: #ff0;
+        border: 1px solid #f00;
+        min-width: 3px;
+      }
       pre {
         white-space: pre-wrap;
         word-wrap: break-word;
@@ -73,7 +81,7 @@
   </head>
   <body>
     <header>
-      <h1>Text Editor Source XML 1.1.10</h1>
+      <h1>Text Editor Source XML 1.1.11</h1>
       <p><abbr title="Extensible Markup Language">XML</abbr> source code editor extension for <a href="../text-editor/index.html">text editor</a>.</p>
       <hr>
       <p>Provides a set of key strokes to generate responses like in a typical <abbr title="Extensible Markup Language">XML</abbr> source code editor.</p>
@@ -85,30 +93,31 @@
       <p><label><input checked onchange="this.checked ? setSourceEditor() : letSourceEditor();" type="checkbox"> <span>Enable XML Source Editor</span></label></p>
       <h2>Features</h2>
       <ul>
-        <li><code>&lt;!-- <mark>|</mark> --&gt;</code> then press <kbd>↵</kbd>.</li>
-        <li><code>&lt;!-- <mark>|</mark></code> or <code>&lt;!-- <mark>|</mark> --&gt;</code> then press <kbd>⌫</kbd>.</li>
-        <li><code>&lt;!-<mark>|</mark></code> or <code>&lt;!-<mark>|</mark>&gt;</code> then press <kbd>-</kbd>.</li>
-        <li><code>&lt;/div&gt;<mark>|</mark></code> then press <kbd>←</kbd>.</li>
-        <li><code>&lt;<mark>|</mark></code> or <code>&lt;<mark>|</mark>&gt;</code> then press <kbd>?</kbd>.</li>
-        <li><code>&lt;?<mark>|</mark></code> or <code>&lt;?<mark>|</mark>?&gt;</code> then press <kbd>⌫</kbd>.</li>
-        <li><code>&lt;div /&gt;<mark>|</mark></code> then press <kbd>⌫</kbd>.</li>
-        <li><code>&lt;div&gt;<mark>|</mark>&lt;/div&gt;</code> then press <kbd>↵</kbd>.</li>
-        <li><code>&lt;div&gt;<mark>|</mark>&lt;/div&gt;</code> then press <kbd>⌫</kbd>.</li>
-        <li><code>&lt;div&gt;<mark>|</mark></code> then press <kbd>←</kbd>.</li>
-        <li><code>&lt;div&gt;<mark>|</mark></code> then press <kbd>↵</kbd>.</li>
-        <li><code>&lt;div&gt;<mark>|</mark></code> then press <kbd>⌫</kbd>.</li>
-        <li><code>&lt;div/&gt;<mark>|</mark></code> then press <kbd>←</kbd>.</li>
-        <li><code>&lt;div/&gt;<mark>|</mark></code> then press <kbd>⌫</kbd>.</li>
-        <li><code>&lt;div<mark>|</mark></code> or <code>&lt;div<mark>|</mark>&gt;</code> then press <kbd>&gt;</kbd>.</li>
-        <li><code>&lt;div<mark>|</mark></code> or <code>&lt;div<mark>|</mark>&gt;</code> then press <kbd>/</kbd>.</li>
-        <li><code><mark>|</mark>&lt;/div&gt;</code> then press <kbd>→</kbd>.</li>
-        <li><code><mark>|</mark>&lt;/div&gt;</code> then press <kbd>⌦</kbd>.</li>
-        <li><code><mark>|</mark>&lt;div&gt;</code> then press <kbd>→</kbd>.</li>
-        <li><code><mark>|</mark>&lt;div&gt;</code> then press <kbd>⌦</kbd>.</li>
-        <li><code><mark>|</mark>&lt;div/&gt;</code> then press <kbd>→</kbd>.</li>
-        <li><code><mark>|</mark>&lt;div/&gt;</code> then press <kbd>⌦</kbd>.</li>
-        <li><code><mark>|</mark>--&gt;</code> then press <kbd>⌦</kbd>.</li>
-        <li><code><mark>|</mark>?&gt;</code> then press <kbd>⌦</kbd>.</li>
+        <li><code>&lt;!-- <mark></mark> --&gt;</code> then press <kbd>↵</kbd>.</li>
+        <li><code>&lt;!-- <mark></mark></code> or <code>&lt;!-- <mark></mark> --&gt;</code> then press <kbd>⌫</kbd>.</li>
+        <li><code>&lt;!-<mark></mark></code> or <code>&lt;!-<mark></mark>&gt;</code> then press <kbd>-</kbd>.</li>
+        <li><code>&lt;/div&gt;<mark></mark></code> then press <kbd>←</kbd>.</li>
+        <li><code>&lt;<mark></mark></code> or <code>&lt;<mark></mark>&gt;</code> then press <kbd>?</kbd>.</li>
+        <li><code>&lt;?<mark></mark></code> or <code>&lt;?<mark></mark>?&gt;</code> then press <kbd>⌫</kbd>.</li>
+        <li><code>&lt;?xml<mark></mark>?&gt;</code> then press <kbd>↵</kbd>.</li>
+        <li><code>&lt;div /&gt;<mark></mark></code> then press <kbd>⌫</kbd>.</li>
+        <li><code>&lt;div&gt;<mark></mark>&lt;/div&gt;</code> then press <kbd>↵</kbd>.</li>
+        <li><code>&lt;div&gt;<mark></mark>&lt;/div&gt;</code> then press <kbd>⌫</kbd>.</li>
+        <li><code>&lt;div&gt;<mark></mark></code> then press <kbd>←</kbd>.</li>
+        <li><code>&lt;div&gt;<mark></mark></code> then press <kbd>↵</kbd>.</li>
+        <li><code>&lt;div&gt;<mark></mark></code> then press <kbd>⌫</kbd>.</li>
+        <li><code>&lt;div/&gt;<mark></mark></code> then press <kbd>←</kbd>.</li>
+        <li><code>&lt;div/&gt;<mark></mark></code> then press <kbd>⌫</kbd>.</li>
+        <li><code>&lt;div<mark></mark></code> or <code>&lt;div<mark></mark>&gt;</code> then press <kbd>&gt;</kbd>.</li>
+        <li><code>&lt;div<mark></mark></code> or <code>&lt;div<mark></mark>&gt;</code> then press <kbd>/</kbd>.</li>
+        <li><code><mark></mark>&lt;/div&gt;</code> then press <kbd>→</kbd>.</li>
+        <li><code><mark></mark>&lt;/div&gt;</code> then press <kbd>⌦</kbd>.</li>
+        <li><code><mark></mark>&lt;div&gt;</code> then press <kbd>→</kbd>.</li>
+        <li><code><mark></mark>&lt;div&gt;</code> then press <kbd>⌦</kbd>.</li>
+        <li><code><mark></mark>&lt;div/&gt;</code> then press <kbd>→</kbd>.</li>
+        <li><code><mark></mark>&lt;div/&gt;</code> then press <kbd>⌦</kbd>.</li>
+        <li><code><mark></mark>--&gt;</code> then press <kbd>⌦</kbd>.</li>
+        <li><code><mark></mark>?&gt;</code> then press <kbd>⌦</kbd>.</li>
       </ul>
       <h2>Usage</h2>
       <h4>Browser</h4>
@@ -126,7 +135,9 @@ const editor = new TE(document.querySelector('textarea')),
 
 const {
     canKeyDown: canKeyDownSource,
+    canKeyDownEnter: canKeyDownEnterSource,
     canKeyDownHistory: canKeyDownHistorySource,
+    canKeyDownMove: canKeyDownMoveSource,
     canKeyDownTab: canKeyDownTabSource,
     canKeyUp: canKeyUpSource
 } = TE.Source;
@@ -144,7 +155,9 @@ editor.self.addEventListener('keydown', e =&gt; {
     if (
         canKeyDownSourceXML(key, keys, editor) &amp;&amp;
         canKeyDownSource(key, keys, editor) &amp;&amp;
+        canKeyDownEnterSource(key, keys, editor) &amp;&amp;
         canKeyDownHistorySource(key, keys, editor) &amp;&amp;
+        canKeyDownMoveSource(key, keys, editor) &amp;&amp;
         canKeyDownTabSource(key, keys, editor)
     ) {
         // Normal key strokes. Add more key strokes extension here!
@@ -172,7 +185,9 @@ const {that: thatHistory} = require('@taufik-nurrohman/text-editor.history');
 
 const {
     canKeyDown: canKeyDownSource,
+    canKeyDownEnter: canKeyDownEnterSource,
     canKeyDownHistory: canKeyDownHistorySource,
+    canKeyDownMove: canKeyDownMoveSource,
     canKeyDownTab: canKeyDownTabSource,
     canKeyUp: canKeyUpSource,
     state: stateSource,
@@ -200,7 +215,9 @@ editor.self.addEventListener('keydown', e =&gt; {
     if (
         canKeyDownSourceXML(key, keys, editor) &amp;&amp;
         canKeyDownSource(key, keys, editor) &amp;&amp;
+        canKeyDownEnterSource(key, keys, editor) &amp;&amp;
         canKeyDownHistorySource(key, keys, editor) &amp;&amp;
+        canKeyDownMoveSource(key, keys, editor) &amp;&amp;
         canKeyDownTabSource(key, keys, editor)
     ) {
         // Normal key strokes. Add more key strokes extension here!
@@ -226,7 +243,9 @@ import {that as thatHistory} from '@taufik-nurrohman/text-editor.history';
 
 import {
     canKeyDown as canKeyDownSource,
+    canKeyDownEnter as canKeyDownEnterSource,
     canKeyDownHistory as canKeyDownHistorySource,
+    canKeyDownMove as canKeyDownMoveSource,
     canKeyDownTab as canKeyDownTabSource,
     canKeyUp as canKeyUpSource,
     state as stateSource,
@@ -254,7 +273,9 @@ editor.self.addEventListener('keydown', e =&gt; {
     if (
         canKeyDownSourceXML(key, keys, editor) &amp;&amp;
         canKeyDownSource(key, keys, editor) &amp;&amp;
+        canKeyDownEnterSource(key, keys, editor) &amp;&amp;
         canKeyDownHistorySource(key, keys, editor) &amp;&amp;
+        canKeyDownMoveSource(key, keys, editor) &amp;&amp;
         canKeyDownTabSource(key, keys, editor)
     ) {
         // Normal key strokes. Add more key strokes extension here!
@@ -275,7 +296,7 @@ editor.self.addEventListener('mousedown', e =&gt; {
 
 editor.record();</code></pre>
       <h3>Methods</h3>
-      <h4>editor.toggleXML(name, content, attributes = {})</h4>
+      <h4>editor.toggleXML(name, content, attributes = {}, tidy = false)</h4>
       <p>Toggle wrap and peel of an <abbr title="Extensible Markup Language">XML</abbr> tag.</p>
       <h3>Properties</h3>
       <h4>TE.SourceXML.state</h4>
@@ -304,7 +325,9 @@ editor.record();</code></pre>
           {
               canKeyDown: canKeyDownSource,
               canKeyDownDent: canKeyDownDentSource,
+              canKeyDownEnter: canKeyDownEnterSource,
               canKeyDownHistory: canKeyDownHistorySource,
+              canKeyDownMove: canKeyDownMoveSource,
               canKeyUp: canKeyUpSource
           } = TE.Source,
           {
@@ -323,8 +346,10 @@ editor.record();</code></pre>
               };
           canKeyDownSourceXML(key, keys, editor) &&
               canKeyDownSource(key, keys, editor) &&
+              canKeyDownEnterSource(key, keys, editor) &&
               canKeyDownDentSource(key, keys, editor) &&
-              canKeyDownHistorySource(key, keys, editor) ||
+              canKeyDownHistorySource(key, keys, editor) &&
+              canKeyDownMoveSource(key, keys, editor) ||
               e.preventDefault();
       }
 

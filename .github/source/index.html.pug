@@ -11,7 +11,7 @@ block script
     | TE.prototype.toggleXML = TE.SourceXML.that.toggle;
     |
     | let editor = new TE(document.querySelector('textarea'), '  '),
-    |     {canKeyDown: canKeyDownSource, canKeyDownDent: canKeyDownDentSource, canKeyDownHistory: canKeyDownHistorySource, canKeyUp: canKeyUpSource} = TE.Source,
+    |     {canKeyDown: canKeyDownSource, canKeyDownDent: canKeyDownDentSource, canKeyDownEnter: canKeyDownEnterSource, canKeyDownHistory: canKeyDownHistorySource, canKeyDownMove: canKeyDownMoveSource, canKeyUp: canKeyUpSource} = TE.Source,
     |     {canKeyDown: canKeyDownSourceXML, canMouseDown: canMouseDownSourceXML} = TE.SourceXML;
     |
     | Object.assign(editor.state, TE.Source.state, TE.SourceXML.state);
@@ -21,8 +21,10 @@ block script
     |         keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
     |     canKeyDownSourceXML(key, keys, editor) &&
     |     canKeyDownSource(key, keys, editor) &&
+    |     canKeyDownEnterSource(key, keys, editor) &&
     |     canKeyDownDentSource(key, keys, editor) &&
-    |     canKeyDownHistorySource(key, keys, editor) ||
+    |     canKeyDownHistorySource(key, keys, editor) &&
+    |     canKeyDownMoveSource(key, keys, editor) ||
     |     e.preventDefault();
     | }
     |
@@ -96,6 +98,14 @@ block style
     |   border-top: 1px dashed;
     |   height: 0;
     | }
+    | mark {
+    |   display: inline-block;
+    |   vertical-align: middle;
+    |   height: 1.25em;
+    |   background: #ff0;
+    |   border: 1px solid #f00;
+    |   min-width: 3px;
+    | }
     | pre {
     |   white-space: pre-wrap;
     |   word-wrap: break-word;
@@ -141,30 +151,31 @@ block content
         span Enable XML Source Editor
     h2 Features
     ul
-      li <code>&lt;!-- <mark>|</mark> --&gt;</code> then press <kbd>↵</kbd>.
-      li <code>&lt;!-- <mark>|</mark></code> or <code>&lt;!-- <mark>|</mark> --&gt;</code> then press <kbd>⌫</kbd>.
-      li <code>&lt;!-<mark>|</mark></code> or <code>&lt;!-<mark>|</mark>&gt;</code> then press <kbd>-</kbd>.
-      li <code>&lt;/div&gt;<mark>|</mark></code> then press <kbd>←</kbd>.
-      li <code>&lt;<mark>|</mark></code> or <code>&lt;<mark>|</mark>&gt;</code> then press <kbd>?</kbd>.
-      li <code>&lt;?<mark>|</mark></code> or <code>&lt;?<mark>|</mark>?&gt;</code> then press <kbd>⌫</kbd>.
-      li <code>&lt;div /&gt;<mark>|</mark></code> then press <kbd>⌫</kbd>.
-      li <code>&lt;div&gt;<mark>|</mark>&lt;/div&gt;</code> then press <kbd>↵</kbd>.
-      li <code>&lt;div&gt;<mark>|</mark>&lt;/div&gt;</code> then press <kbd>⌫</kbd>.
-      li <code>&lt;div&gt;<mark>|</mark></code> then press <kbd>←</kbd>.
-      li <code>&lt;div&gt;<mark>|</mark></code> then press <kbd>↵</kbd>.
-      li <code>&lt;div&gt;<mark>|</mark></code> then press <kbd>⌫</kbd>.
-      li <code>&lt;div/&gt;<mark>|</mark></code> then press <kbd>←</kbd>.
-      li <code>&lt;div/&gt;<mark>|</mark></code> then press <kbd>⌫</kbd>.
-      li <code>&lt;div<mark>|</mark></code> or <code>&lt;div<mark>|</mark>&gt;</code> then press <kbd>&gt;</kbd>.
-      li <code>&lt;div<mark>|</mark></code> or <code>&lt;div<mark>|</mark>&gt;</code> then press <kbd>/</kbd>.
-      li <code><mark>|</mark>&lt;/div&gt;</code> then press <kbd>→</kbd>.
-      li <code><mark>|</mark>&lt;/div&gt;</code> then press <kbd>⌦</kbd>.
-      li <code><mark>|</mark>&lt;div&gt;</code> then press <kbd>→</kbd>.
-      li <code><mark>|</mark>&lt;div&gt;</code> then press <kbd>⌦</kbd>.
-      li <code><mark>|</mark>&lt;div/&gt;</code> then press <kbd>→</kbd>.
-      li <code><mark>|</mark>&lt;div/&gt;</code> then press <kbd>⌦</kbd>.
-      li <code><mark>|</mark>--&gt;</code> then press <kbd>⌦</kbd>.
-      li <code><mark>|</mark>?&gt;</code> then press <kbd>⌦</kbd>.
+      li <code>&lt;!-- <mark></mark> --&gt;</code> then press <kbd>↵</kbd>.
+      li <code>&lt;!-- <mark></mark></code> or <code>&lt;!-- <mark></mark> --&gt;</code> then press <kbd>⌫</kbd>.
+      li <code>&lt;!-<mark></mark></code> or <code>&lt;!-<mark></mark>&gt;</code> then press <kbd>-</kbd>.
+      li <code>&lt;/div&gt;<mark></mark></code> then press <kbd>←</kbd>.
+      li <code>&lt;<mark></mark></code> or <code>&lt;<mark></mark>&gt;</code> then press <kbd>?</kbd>.
+      li <code>&lt;?<mark></mark></code> or <code>&lt;?<mark></mark>?&gt;</code> then press <kbd>⌫</kbd>.
+      li <code>&lt;?xml<mark></mark>?&gt;</code> then press <kbd>↵</kbd>.
+      li <code>&lt;div /&gt;<mark></mark></code> then press <kbd>⌫</kbd>.
+      li <code>&lt;div&gt;<mark></mark>&lt;/div&gt;</code> then press <kbd>↵</kbd>.
+      li <code>&lt;div&gt;<mark></mark>&lt;/div&gt;</code> then press <kbd>⌫</kbd>.
+      li <code>&lt;div&gt;<mark></mark></code> then press <kbd>←</kbd>.
+      li <code>&lt;div&gt;<mark></mark></code> then press <kbd>↵</kbd>.
+      li <code>&lt;div&gt;<mark></mark></code> then press <kbd>⌫</kbd>.
+      li <code>&lt;div/&gt;<mark></mark></code> then press <kbd>←</kbd>.
+      li <code>&lt;div/&gt;<mark></mark></code> then press <kbd>⌫</kbd>.
+      li <code>&lt;div<mark></mark></code> or <code>&lt;div<mark></mark>&gt;</code> then press <kbd>&gt;</kbd>.
+      li <code>&lt;div<mark></mark></code> or <code>&lt;div<mark></mark>&gt;</code> then press <kbd>/</kbd>.
+      li <code><mark></mark>&lt;/div&gt;</code> then press <kbd>→</kbd>.
+      li <code><mark></mark>&lt;/div&gt;</code> then press <kbd>⌦</kbd>.
+      li <code><mark></mark>&lt;div&gt;</code> then press <kbd>→</kbd>.
+      li <code><mark></mark>&lt;div&gt;</code> then press <kbd>⌦</kbd>.
+      li <code><mark></mark>&lt;div/&gt;</code> then press <kbd>→</kbd>.
+      li <code><mark></mark>&lt;div/&gt;</code> then press <kbd>⌦</kbd>.
+      li <code><mark></mark>--&gt;</code> then press <kbd>⌦</kbd>.
+      li <code><mark></mark>?&gt;</code> then press <kbd>⌦</kbd>.
     h2 Usage
     h4 Browser
     pre: code
@@ -182,7 +193,9 @@ block content
       |
       | const {
       |     canKeyDown: canKeyDownSource,
+      |     canKeyDownEnter: canKeyDownEnterSource,
       |     canKeyDownHistory: canKeyDownHistorySource,
+      |     canKeyDownMove: canKeyDownMoveSource,
       |     canKeyDownTab: canKeyDownTabSource,
       |     canKeyUp: canKeyUpSource
       | } = TE.Source;
@@ -200,7 +213,9 @@ block content
       |     if (
       |         canKeyDownSourceXML(key, keys, editor) &amp;&amp;
       |         canKeyDownSource(key, keys, editor) &amp;&amp;
+      |         canKeyDownEnterSource(key, keys, editor) &amp;&amp;
       |         canKeyDownHistorySource(key, keys, editor) &amp;&amp;
+      |         canKeyDownMoveSource(key, keys, editor) &amp;&amp;
       |         canKeyDownTabSource(key, keys, editor)
       |     ) {
       |         // Normal key strokes. Add more key strokes extension here!
@@ -229,7 +244,9 @@ block content
       |
       | const {
       |     canKeyDown: canKeyDownSource,
+      |     canKeyDownEnter: canKeyDownEnterSource,
       |     canKeyDownHistory: canKeyDownHistorySource,
+      |     canKeyDownMove: canKeyDownMoveSource,
       |     canKeyDownTab: canKeyDownTabSource,
       |     canKeyUp: canKeyUpSource,
       |     state: stateSource,
@@ -257,7 +274,9 @@ block content
       |     if (
       |         canKeyDownSourceXML(key, keys, editor) &amp;&amp;
       |         canKeyDownSource(key, keys, editor) &amp;&amp;
+      |         canKeyDownEnterSource(key, keys, editor) &amp;&amp;
       |         canKeyDownHistorySource(key, keys, editor) &amp;&amp;
+      |         canKeyDownMoveSource(key, keys, editor) &amp;&amp;
       |         canKeyDownTabSource(key, keys, editor)
       |     ) {
       |         // Normal key strokes. Add more key strokes extension here!
@@ -284,7 +303,9 @@ block content
       |
       | import {
       |     canKeyDown as canKeyDownSource,
+      |     canKeyDownEnter as canKeyDownEnterSource,
       |     canKeyDownHistory as canKeyDownHistorySource,
+      |     canKeyDownMove as canKeyDownMoveSource,
       |     canKeyDownTab as canKeyDownTabSource,
       |     canKeyUp as canKeyUpSource,
       |     state as stateSource,
@@ -312,7 +333,9 @@ block content
       |     if (
       |         canKeyDownSourceXML(key, keys, editor) &amp;&amp;
       |         canKeyDownSource(key, keys, editor) &amp;&amp;
+      |         canKeyDownEnterSource(key, keys, editor) &amp;&amp;
       |         canKeyDownHistorySource(key, keys, editor) &amp;&amp;
+      |         canKeyDownMoveSource(key, keys, editor) &amp;&amp;
       |         canKeyDownTabSource(key, keys, editor)
       |     ) {
       |         // Normal key strokes. Add more key strokes extension here!
@@ -333,7 +356,7 @@ block content
       |
       | editor.record();
     h3 Methods
-    h4 editor.toggleXML(name, content, attributes = {})
+    h4 editor.toggleXML(name, content, attributes = {}, tidy = false)
     p Toggle wrap and peel of an #[abbr(title='Extensible Markup Language') XML] tag.
     h3 Properties
     h4 TE.SourceXML.state

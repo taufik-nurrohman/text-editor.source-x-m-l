@@ -51,6 +51,9 @@
     var isSet = function isSet(x) {
         return isDefined(x) && !isNull(x);
     };
+    var isString = function isString(x) {
+        return 'string' === typeof x;
+    };
     var fromHTML = function fromHTML(x) {
         return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;');
     };
@@ -118,7 +121,7 @@
         }
         return out;
     }
-    that.toggle = function(name, content = "", attributes = {}) {
+    that.toggle = function(name, content = "", attributes = {}, tidy = false) {
         let t = this,
             {
                 after,
@@ -144,6 +147,15 @@
         if (!value && content) {
             t.insert(content);
         }
+        if (false !== tidy) {
+            if (true === tidy) {
+                tidy = ["", ""];
+            }
+            if (isString(tidy)) {
+                tidy = [tidy, tidy];
+            }
+            t.trim(tidy[0], tidy[1] || tidy[0]);
+        }
         return t.wrap('<' + name + toAttributes(attributes) + '>', '</' + name + '>');
     };
 
@@ -153,7 +165,7 @@
         s
     }, that) {
         let state = that.state,
-            charIndent = state.tab || '\t'; // Do nothing
+            charIndent = state.sourceXML?.tab || state.tab || '\t'; // Do nothing
         if (a || c) {
             return true;
         }
@@ -202,10 +214,16 @@
                 }
             }
             if (' ' === key) {
-                // `<!--|-->`
-                if (!value && '<!--' === before.slice(-4) && '-->' === after.slice(0, 3)) {
-                    that.wrap(' ', ' ').record();
-                    return false;
+                if (!value) {
+                    // `<!--|-->`
+                    if ('<!--' === before.slice(-4) && '-->' === after.slice(0, 3)) {
+                        that.wrap(' ', ' ').record();
+                        return false;
+                    }
+                    if (/<\?\w*$/.test(before) && '?>' === after.slice(0, 2)) {
+                        that.wrap(' ', ' ').record();
+                        return false;
+                    }
                 }
             }
         }
@@ -246,18 +264,25 @@
                 lineBefore = before.split('\n').pop(),
                 lineMatch = lineBefore.match(/^(\s+)/),
                 lineMatchIndent = lineMatch && lineMatch[1] || "",
-                tagStartMatch = before.match(toPattern(tagStart(tagName) + '$', "")); // `<!--|-->`
-            if (!value && /^[ \t]*-->/.test(after) && /<!--[ \t]*$/.test(before)) {
-                that.trim().wrap('\n\n' + lineMatchIndent, '\n\n' + lineMatchIndent).record();
-                return false;
-            }
-            if (!value && tagStartMatch) {
-                if (toPattern('^</' + tagStartMatch[1] + '>', "").test(after)) {
-                    that.record().trim().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent).record();
-                } else {
-                    that.record().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent + '</' + tagStartMatch[1] + '>').record();
+                tagStartMatch = before.match(toPattern(tagStart(tagName) + '$', ""));
+            if (!value) {
+                // `<!--|-->`
+                if (/^[ \t]*-->/.test(after) && /<!--[ \t]*$/.test(before)) {
+                    that.trim().wrap('\n\n' + lineMatchIndent, '\n\n' + lineMatchIndent).record();
+                    return false;
+                } // `<?xml|?>`
+                if (/^[ \t]*\?>/.test(after) && /<\?\w*[ \t]*$/.test(before)) {
+                    that.trim().wrap('\n\n' + lineMatchIndent, '\n\n' + lineMatchIndent).record();
+                    return false;
                 }
-                return false;
+                if (tagStartMatch) {
+                    if (toPattern('^</' + tagStartMatch[1] + '>', "").test(after)) {
+                        that.record().trim().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent).record();
+                    } else {
+                        that.record().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent + '</' + tagStartMatch[1] + '>').record();
+                    }
+                    return false;
+                }
             }
         }
         if ('Backspace' === key && !s) {
@@ -286,6 +311,10 @@
                         that.replace(/^\?>/, "", 1);
                     }
                     that.record();
+                    return false;
+                }
+                if (/^\s+\?>/.test(after) && /<\?\w*\s+$/.test(before)) {
+                    that.trim(' ' === before.slice(-1) ? "" : ' ', ' ' === after[0] ? "" : ' ').record();
                     return false;
                 }
                 let tagPattern = toPattern(tagTokens + '$', ""),
