@@ -14,7 +14,8 @@ block script
     |     {canKeyDown: canKeyDownSource, canKeyDownDent: canKeyDownDentSource, canKeyDownEnter: canKeyDownEnterSource, canKeyDownHistory: canKeyDownHistorySource, canKeyDownMove: canKeyDownMoveSource, canKeyUp: canKeyUpSource} = TE.Source,
     |     {canKeyDown: canKeyDownSourceXML, canMouseDown: canMouseDownSourceXML} = TE.SourceXML;
     |
-    | Object.assign(editor.state, TE.Source.state, TE.SourceXML.state);
+    | editor.state = Object.assign({}, editor.state, TE.Source.state, TE.SourceXML.state);
+    | editor.state.source = Object.assign({}, editor.state.source, TE.Source.state.source, TE.SourceXML.state.source);
     |
     | function onKeyDown(e) {
     |     let key = e.key,

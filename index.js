@@ -54,6 +54,9 @@
     var isString = function isString(x) {
         return 'string' === typeof x;
     };
+    var toCount = function toCount(x) {
+        return x.length;
+    };
     var fromHTML = function fromHTML(x) {
         return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;');
     };
@@ -80,9 +83,6 @@
         }
         return "" + x;
     };
-    var toCount = function toCount(x) {
-        return x.length;
-    };
     var esc = function esc(pattern, extra) {
         if (extra === void 0) {
             extra = "";
@@ -108,7 +108,10 @@
         tagVoid = name => '<(' + name + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?/?>',
         tagPreamble = '<\\?((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)\\?>',
         tagTokens = '(?:' + tagComment + '|' + tagData + '|' + tagEnd(tagName) + '|' + tagPreamble + '|' + tagStart(tagName) + '|' + tagVoid(tagName) + ')';
-    const defaults = {
+    let defaults = {
+        source: {
+            type: 'XML'
+        },
         sourceXML: {}
     };
     const that = {};
@@ -123,6 +126,20 @@
             out += ' ' + attribute + '="' + fromHTML(fromValue(attributes[attribute])) + '"';
         }
         return out;
+    }
+
+    function toTidy(tidy) {
+        if (false !== tidy) {
+            if (isString(tidy)) {
+                tidy = [tidy, tidy];
+            } else {
+                tidy = ["", ""];
+            }
+            if (!isSet(tidy[1])) {
+                tidy[1] = tidy[0];
+            }
+        }
+        return tidy; // Return `[…]` or `false`
     }
     that.toggle = function(name, content = "", attributes = {}, tidy = false) {
         let t = this,
@@ -150,13 +167,8 @@
         if (!value && content) {
             t.insert(content);
         }
-        if (false !== tidy) {
-            if (isString(tidy)) {
-                tidy = [tidy, tidy];
-            } else {
-                tidy = ["", ""];
-            }
-            t.trim(tidy[0], tidy[1] || tidy[0]);
+        if (false !== (tidy = toTidy(tidy))) {
+            t.trim(tidy[0], tidy[1]);
         }
         return t.wrap('<' + name + toAttributes(attributes) + '>', '</' + name + '>');
     };
@@ -397,7 +409,7 @@
         }, 1);
         return true;
     }
-    const state = defaults;
+    let state = defaults;
     exports.canKeyDown = canKeyDown;
     exports.canMouseDown = canMouseDown;
     exports.state = state;

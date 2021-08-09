@@ -1,5 +1,5 @@
 import {fromHTML, fromStates, fromValue} from '@taufik-nurrohman/from';
-import {isObject, isString} from '@taufik-nurrohman/is';
+import {isObject, isSet, isString} from '@taufik-nurrohman/is';
 import {esc, toPattern} from '@taufik-nurrohman/pattern';
 import {toCount} from '@taufik-nurrohman/to';
 
@@ -12,7 +12,10 @@ let tagComment = '<!--([\\s\\S](?!-->)*)-->',
     tagPreamble = '<\\?((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)\\?>',
     tagTokens = '(?:' + tagComment + '|' + tagData + '|' + tagEnd(tagName) + '|' + tagPreamble + '|' + tagStart(tagName) + '|' + tagVoid(tagName) + ')';
 
-const defaults = {
+let defaults = {
+    source: {
+        type: 'XML'
+    },
     sourceXML: {}
 };
 
@@ -27,6 +30,20 @@ function toAttributes(attributes) {
         out += ' ' + attribute + '="' + fromHTML(fromValue(attributes[attribute])) + '"';
     }
     return out;
+}
+
+function toTidy(tidy) {
+    if (false !== tidy) {
+        if (isString(tidy)) {
+            tidy = [tidy, tidy];
+        } else {
+            tidy = ["", ""];
+        }
+        if (!isSet(tidy[1])) {
+            tidy[1] = tidy[0];
+        }
+    }
+    return tidy; // Return `[…]` or `false`
 }
 
 that.toggle = function(name, content = "", attributes = {}, tidy = false) {
@@ -51,13 +68,8 @@ that.toggle = function(name, content = "", attributes = {}, tidy = false) {
     if (!value && content) {
         t.insert(content);
     }
-    if (false !== tidy) {
-        if (isString(tidy)) {
-            tidy = [tidy, tidy];
-        } else {
-            tidy = ["", ""];
-        }
-        t.trim(tidy[0], tidy[1] || tidy[0]);
+    if (false !== (tidy = toTidy(tidy))) {
+        t.trim(tidy[0], tidy[1]);
     }
     return t.wrap('<' + name + toAttributes(attributes) + '>', '</' + name + '>');
 };
@@ -282,4 +294,4 @@ export function canMouseDown(that) {
     return true;
 }
 
-export const state = defaults;
+export let state = defaults;
