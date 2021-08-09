@@ -1,5 +1,5 @@
-import {fromHTML, fromStates, fromValue} from '@taufik-nurrohman/from';
-import {isObject, isSet, isString} from '@taufik-nurrohman/is';
+import {fromHTML, fromValue} from '@taufik-nurrohman/from';
+import {isSet, isString} from '@taufik-nurrohman/is';
 import {esc, toPattern} from '@taufik-nurrohman/pattern';
 import {toCount} from '@taufik-nurrohman/to';
 

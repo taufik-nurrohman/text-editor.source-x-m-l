@@ -186,60 +186,63 @@ block content
       | &lt;script src="#[a(href='../text-editor.source-x-m-l/index.min.js' target='_blank') ./text-editor.source-x-m-l/index.min.js]"&gt;&lt;/script&gt;
       | &lt;script&gt;
       |
-      | Object.assign(TE.prototype, TE.History.that, TE.Source.that);
+      |   Object.assign(TE.prototype, TE.History.that, TE.Source.that);
       |
-      | TE.prototype.toggleXML = TE.SourceXML.that.toggle;
+      |   TE.prototype.toggleXML = TE.SourceXML.that.toggle;
       |
-      | const editor = new TE(document.querySelector('textarea')),
+      |   const editor = new TE(document.querySelector('textarea')),
       |
-      | const {
-      |     canKeyDown: canKeyDownSource,
-      |     canKeyDownEnter: canKeyDownEnterSource,
-      |     canKeyDownHistory: canKeyDownHistorySource,
-      |     canKeyDownMove: canKeyDownMoveSource,
-      |     canKeyDownTab: canKeyDownTabSource,
-      |     canKeyUp: canKeyUpSource
-      | } = TE.Source;
+      |   const {
+      |       canKeyDown: canKeyDownSource,
+      |       canKeyDownEnter: canKeyDownEnterSource,
+      |       canKeyDownHistory: canKeyDownHistorySource,
+      |       canKeyDownMove: canKeyDownMoveSource,
+      |       canKeyDownTab: canKeyDownTabSource,
+      |       canKeyUp: canKeyUpSource
+      |   } = TE.Source;
       |
-      | const {
-      |     canKeyDown: canKeyDownSourceXML,
-      |     canMouseDown: canMouseDownSourceXML
-      | } = TE.SourceXML;
+      |   const {
+      |       canKeyDown: canKeyDownSourceXML,
+      |       canMouseDown: canMouseDownSourceXML
+      |   } = TE.SourceXML;
       |
-      | Object.assign(editor.state, TE.Source.state, TE.SourceXML.state);
+      |   function fromStates(...lot) { #[a(href='https://github.com/taufik-nurrohman/from/blob/v0.0.8/index.mjs#L31-L57' target='_blank') &hellip;] }
       |
-      | editor.self.addEventListener('keydown', e =&gt; {
-      |     let key = e.key,
-      |         keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
-      |     if (
-      |         canKeyDownSourceXML(key, keys, editor) &amp;&amp;
-      |         canKeyDownSource(key, keys, editor) &amp;&amp;
-      |         canKeyDownEnterSource(key, keys, editor) &amp;&amp;
-      |         canKeyDownHistorySource(key, keys, editor) &amp;&amp;
-      |         canKeyDownMoveSource(key, keys, editor) &amp;&amp;
-      |         canKeyDownTabSource(key, keys, editor)
-      |     ) {
-      |         // Normal key strokes. Add more key strokes extension here!
-      |     } else {
-      |         e.preventDefault();
-      |     }
-      | });
+      |   editor.state = fromStates({}, editor.state, TE.Source.state, TE.SourceXML.state);
       |
-      | editor.self.addEventListener('keyup', e =&gt; {
-      |     let key = e.key,
-      |         keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
-      |     canKeyUpSource(key, keys, editor) || e.preventDefault();
-      | });
+      |   editor.self.addEventListener('keydown', e =&gt; {
+      |       let key = e.key,
+      |           keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
+      |       if (
+      |           canKeyDownSourceXML(key, keys, editor) &amp;&amp;
+      |           canKeyDownSource(key, keys, editor) &amp;&amp;
+      |           canKeyDownEnterSource(key, keys, editor) &amp;&amp;
+      |           canKeyDownHistorySource(key, keys, editor) &amp;&amp;
+      |           canKeyDownMoveSource(key, keys, editor) &amp;&amp;
+      |           canKeyDownTabSource(key, keys, editor)
+      |       ) {
+      |           // Normal key strokes. Add more key strokes extension here!
+      |       } else {
+      |           e.preventDefault();
+      |       }
+      |   });
       |
-      | editor.self.addEventListener('mousedown', e =&gt; {
-      |     canMouseDownSourceXML(editor) || e.preventDefault();
-      | });
+      |   editor.self.addEventListener('keyup', e =&gt; {
+      |       let key = e.key,
+      |           keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
+      |       canKeyUpSource(key, keys, editor) || e.preventDefault();
+      |   });
       |
-      | editor.record(); // Record the first history data
+      |   editor.self.addEventListener('mousedown', e =&gt; {
+      |       canMouseDownSourceXML(editor) || e.preventDefault();
+      |   });
+      |
+      |   editor.record(); // Record the first history data
       |
       | &lt;/script&gt;
     h4 CommonJS
     pre: code
+      | const {fromStates} = require('@taufik-nurrohman/from');
       | const TE = require('@taufik-nurrohman/text-editor');
       | const {that: thatHistory} = require('@taufik-nurrohman/text-editor.history');
       |
@@ -267,7 +270,7 @@ block content
       |
       | const editor = new TE(document.querySelector('textarea'));
       |
-      | Object.assign(editor.state, stateSource, stateSourceXML);
+      | editor.state = fromStates({}, editor.state, stateSource, stateSourceXML);
       |
       | editor.self.addEventListener('keydown', e =&gt; {
       |     let key = e.key,
@@ -299,6 +302,7 @@ block content
       | editor.record();
     h4 ECMAScript
     pre: code
+      | import {fromStates} from '@taufik-nurrohman/from';
       | import TE from '@taufik-nurrohman/text-editor';
       | import {that as thatHistory} from '@taufik-nurrohman/text-editor.history';
       |
@@ -326,7 +330,7 @@ block content
       |
       | const editor = new TE(document.querySelector('textarea'));
       |
-      | Object.assign(editor.state, stateSource, stateSourceXML);
+      | editor.state = fromStates({}, editor.state, stateSource, stateSourceXML);
       |
       | editor.self.addEventListener('keydown', e =&gt; {
       |     let key = e.key,
