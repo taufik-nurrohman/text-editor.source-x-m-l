@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta content="width=device-width" name="viewport">
     <meta content="Provides a set of key strokes to generate responses like in a typical XML source code editor." name="description">
-    <title>Text Editor Source XML 1.1.15</title>
+    <title>Text Editor Source XML 1.1.16</title>
     <style>
       * {
         box-sizing: border-box;
@@ -81,7 +81,7 @@
   </head>
   <body>
     <header>
-      <h1>Text Editor Source XML 1.1.15</h1>
+      <h1>Text Editor Source XML 1.1.16</h1>
       <p><abbr title="Extensible Markup Language">XML</abbr> source code editor extension for <a href="../text-editor/index.html">text editor</a>.</p>
       <hr>
       <p>Provides a set of key strokes to generate responses like in a typical <abbr title="Extensible Markup Language">XML</abbr> source code editor.</p>
@@ -177,7 +177,9 @@
   });
 
   editor.self.addEventListener('mousedown', e =&gt; {
-      canMouseDownSourceXML(editor) || e.preventDefault();
+      let key = e.key,
+          keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
+      canMouseDownSourceXML(key, keys, editor) || e.preventDefault();
   });
 
   editor.record(); // Record the first history data
@@ -240,7 +242,9 @@ editor.self.addEventListener('keyup', e =&gt; {
 });
 
 editor.self.addEventListener('mousedown', e =&gt; {
-    canMouseDownSourceXML(editor) || e.preventDefault();
+    let key = e.key,
+        keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
+    canMouseDownSourceXML(key, keys, editor) || e.preventDefault();
 });
 
 editor.record();</code></pre>
@@ -301,7 +305,9 @@ editor.self.addEventListener('keyup', e =&gt; {
 });
 
 editor.self.addEventListener('mousedown', e =&gt; {
-    canMouseDownSourceXML(editor) || e.preventDefault();
+    let key = e.key,
+        keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
+    canMouseDownSourceXML(key, keys, editor) || e.preventDefault();
 });
 
 editor.record();</code></pre>
@@ -319,7 +325,7 @@ editor.record();</code></pre>
       <p>Strokes can either return <code>false</code> or <code>true</code>. If it returns <code>false</code>, it means that this extension has manipulated the existing value. If it returns <code>true</code>, it means that current stroke works normally.</p>
       <h4>TE.SourceXML.canKeyDown(key, {a, c, s}, that)</h4>
       <p>This will handle tasks such as automatic <abbr title="Extensible Markup Language">XML</abbr> tag closing and automatic indentation by pressing the <kbd>↵</kbd> key.</p>
-      <h4>TE.SourceXML.canMouseDown(that)</h4>
+      <h4>TE.SourceXML.canMouseDown(key, {a, c, s}, that)</h4>
       <p>This will handle tasks such as automatic tag pattern selection on click.</p>
     </main>
     <footer>
@@ -381,7 +387,13 @@ editor.record();</code></pre>
       }
 
       function onMouseDown(e) {
-          canMouseDownSourceXML(editor) || e.preventDefault();
+          let key = e.key,
+              keys = {
+                  a: e.altKey,
+                  c: e.ctrlKey,
+                  s: e.shiftKey
+              };
+          canMouseDownSourceXML(key, keys, editor) || e.preventDefault();
       }
 
       function toggleTimeXML() {

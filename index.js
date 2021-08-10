@@ -27,6 +27,9 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) : typeof define === 'function' && define.amd ? define(['exports'], factory) : (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory((global.TE = global.TE || {}, global.TE.SourceXML = {})));
 })(this, function(exports) {
     'use strict';
+    var hasValue = function hasValue(x, data) {
+        return -1 !== data.indexOf(x);
+    };
     var isArray = function isArray(x) {
         return Array.isArray(x);
     };
@@ -83,6 +86,7 @@
         }
         return "" + x;
     };
+    var W = window;
     var esc = function esc(pattern, extra) {
         if (extra === void 0) {
             extra = "";
@@ -407,28 +411,34 @@
         return true;
     }
 
-    function canMouseDown(that) {
-        setTimeout(() => {
-            let {
-                after,
-                before,
-                value
-            } = that.$();
-            if (!value) {
-                let caret = '\ufeff',
-                    tagTokensLocal = tagTokens.split('(' + tagName + ')').join('((?:[\\w:.-]|' + caret + ')+)'),
-                    tagTokensLocalPattern = toPattern(tagTokensLocal),
-                    content = before + value + caret + after,
-                    m,
-                    v;
-                while (m = tagTokensLocalPattern.exec(content)) {
-                    if (-1 !== m[0].indexOf(caret)) {
-                        that.select(v = m.index, v + toCount(m[0]) - 1);
-                        break;
+    function canMouseDown(key, {
+        a,
+        c,
+        s
+    }, that) {
+        if (!c) {
+            W.setTimeout(() => {
+                let {
+                    after,
+                    before,
+                    value
+                } = that.$();
+                if (!value) {
+                    let caret = '\ufeff',
+                        tagTokensLocal = tagTokens.split('(' + tagName + ')').join('((?:[\\w:.-]|' + caret + ')+)'),
+                        tagTokensLocalPattern = toPattern(tagTokensLocal),
+                        content = before + value + caret + after,
+                        m,
+                        v;
+                    while (m = tagTokensLocalPattern.exec(content)) {
+                        if (hasValue(caret, m[0])) {
+                            that.select(v = m.index, v + toCount(m[0]) - 1);
+                            break;
+                        }
                     }
                 }
-            }
-        }, 1);
+            }, 1);
+        }
         return true;
     }
     const state = defaults;

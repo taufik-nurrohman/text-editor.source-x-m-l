@@ -1,6 +1,8 @@
-import {fromHTML, fromValue} from '@taufik-nurrohman/from';
-import {isArray, isSet, isString} from '@taufik-nurrohman/is';
+import {W} from '@taufik-nurrohman/document';
 import {esc, toPattern} from '@taufik-nurrohman/pattern';
+import {fromHTML, fromValue} from '@taufik-nurrohman/from';
+import {hasValue} from '@taufik-nurrohman/has';
+import {isArray, isSet, isString} from '@taufik-nurrohman/is';
 import {toCount} from '@taufik-nurrohman/to';
 
 let tagComment = '<!--([\\s\\S](?!-->)*)-->',
@@ -295,22 +297,24 @@ export function canKeyDown(key, {a, c, s}, that) {
     return true;
 }
 
-export function canMouseDown(that) {
-    setTimeout(() => {
-        let {after, before, value} = that.$();
-        if (!value) {
-            let caret = '\ufeff',
-                tagTokensLocal = tagTokens.split('(' + tagName + ')').join('((?:[\\w:.-]|' + caret + ')+)'),
-                tagTokensLocalPattern = toPattern(tagTokensLocal),
-                content = before + value + caret + after, m, v;
-            while (m = tagTokensLocalPattern.exec(content)) {
-                if (-1 !== m[0].indexOf(caret)) {
-                    that.select(v = m.index, v + toCount(m[0]) - 1);
-                    break;
+export function canMouseDown(key, {a, c, s}, that) {
+    if (!c) {
+        W.setTimeout(() => {
+            let {after, before, value} = that.$();
+            if (!value) {
+                let caret = '\ufeff',
+                    tagTokensLocal = tagTokens.split('(' + tagName + ')').join('((?:[\\w:.-]|' + caret + ')+)'),
+                    tagTokensLocalPattern = toPattern(tagTokensLocal),
+                    content = before + value + caret + after, m, v;
+                while (m = tagTokensLocalPattern.exec(content)) {
+                    if (hasValue(caret, m[0])) {
+                        that.select(v = m.index, v + toCount(m[0]) - 1);
+                        break;
+                    }
                 }
             }
-        }
-    }, 1);
+        }, 1);
+    }
     return true;
 }
 

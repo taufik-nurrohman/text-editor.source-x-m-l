@@ -38,7 +38,9 @@ block script
     | }
     |
     | function onMouseDown(e) {
-    |     canMouseDownSourceXML(editor) || e.preventDefault();
+    |     let key = e.key,
+    |         keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
+    |     canMouseDownSourceXML(key, keys, editor) || e.preventDefault();
     | }
     |
     | function toggleTimeXML() {
@@ -245,7 +247,9 @@ block content
       |   });
       |
       |   editor.self.addEventListener('mousedown', e =&gt; {
-      |       canMouseDownSourceXML(editor) || e.preventDefault();
+      |       let key = e.key,
+      |           keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
+      |       canMouseDownSourceXML(key, keys, editor) || e.preventDefault();
       |   });
       |
       |   editor.record(); // Record the first history data
@@ -309,7 +313,9 @@ block content
       | });
       |
       | editor.self.addEventListener('mousedown', e =&gt; {
-      |     canMouseDownSourceXML(editor) || e.preventDefault();
+      |     let key = e.key,
+      |         keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
+      |     canMouseDownSourceXML(key, keys, editor) || e.preventDefault();
       | });
       |
       | editor.record();
@@ -371,7 +377,9 @@ block content
       | });
       |
       | editor.self.addEventListener('mousedown', e =&gt; {
-      |     canMouseDownSourceXML(editor) || e.preventDefault();
+      |     let key = e.key,
+      |         keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
+      |     canMouseDownSourceXML(key, keys, editor) || e.preventDefault();
       | });
       |
       | editor.record();
@@ -389,7 +397,7 @@ block content
     p Strokes can either return #[code false] or #[code true]. If it returns #[code false], it means that this extension has manipulated the existing value. If it returns #[code true], it means that current stroke works normally.
     h4 TE.SourceXML.canKeyDown(key, {a, c, s}, that)
     p This will handle tasks such as automatic #[abbr(title='Extensible Markup Language') XML] tag closing and automatic indentation by pressing the #[kbd= '↵'] key.
-    h4 TE.SourceXML.canMouseDown(that)
+    h4 TE.SourceXML.canMouseDown(key, {a, c, s}, that)
     p This will handle tasks such as automatic tag pattern selection on click.
   footer
     hr
