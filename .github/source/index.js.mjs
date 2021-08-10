@@ -1,5 +1,5 @@
 import {fromHTML, fromValue} from '@taufik-nurrohman/from';
-import {isSet, isString} from '@taufik-nurrohman/is';
+import {isArray, isSet, isString} from '@taufik-nurrohman/is';
 import {esc, toPattern} from '@taufik-nurrohman/pattern';
 import {toCount} from '@taufik-nurrohman/to';
 
@@ -12,7 +12,7 @@ let tagComment = '<!--([\\s\\S](?!-->)*)-->',
     tagPreamble = '<\\?((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)\\?>',
     tagTokens = '(?:' + tagComment + '|' + tagData + '|' + tagEnd(tagName) + '|' + tagPreamble + '|' + tagStart(tagName) + '|' + tagVoid(tagName) + ')';
 
-let defaults = {
+const defaults = {
     source: {
         type: 'XML'
     },
@@ -36,7 +36,7 @@ function toTidy(tidy) {
     if (false !== tidy) {
         if (isString(tidy)) {
             tidy = [tidy, tidy];
-        } else {
+        } else if (!isArray(tidy)) {
             tidy = ["", ""];
         }
         if (!isSet(tidy[1])) {
@@ -45,6 +45,14 @@ function toTidy(tidy) {
     }
     return tidy; // Return `[…]` or `false`
 }
+
+that.insert = function(name, content = "", attributes = {}, tidy = false) {
+    let t = this;
+    if (false !== (tidy = toTidy(tidy))) {
+        t.trim(tidy[0], "");
+    }
+    return t.insert('<' + name + toAttributes(attributes) + (false !== content ? '>' + content + '</' + name + '>' : ' />') + (false !== tidy ? tidy[1] : ""), -1, true);
+};
 
 that.toggle = function(name, content = "", attributes = {}, tidy = false) {
     let t = this,
@@ -65,6 +73,18 @@ that.toggle = function(name, content = "", attributes = {}, tidy = false) {
     if (tagEndLocalMatch && tagStartLocalMatch) {
         t.insert(value = value.replace(tagEndLocalPattern, "").replace(tagStartLocalPattern, ""));
     }
+    if (!value && content) {
+        t.insert(content);
+    }
+    if (false !== (tidy = toTidy(tidy))) {
+        t.trim(tidy[0], tidy[1]);
+    }
+    return t.wrap('<' + name + toAttributes(attributes) + '>', '</' + name + '>');
+};
+
+that.wrap = function(name, content = "", attributes = {}, tidy = false) {
+    let t = this,
+        {after, before, value} = t.$();
     if (!value && content) {
         t.insert(content);
     }
@@ -106,10 +126,10 @@ export function canKeyDown(key, {a, c, s}, that) {
                     return false;
                 }
                 // `<div|></div>`
-                if ('></' + tagStartMatch[1] + '>' === after.slice(0, toCount(tagStartMatch[1]) + 4)) {
+                if (after.startsWith('></' + tagStartMatch[1] + '>')) {
                     that.select(start + 1).record();
                 // `<div|</div>`
-                } else if ('</' + tagStartMatch[1] + '>' === after.slice(0, toCount(tagStartMatch[1]) + 3)) {
+                } else if (after.startsWith('</' + tagStartMatch[1] + '>')) {
                     that.insert('>', -1).record();
                 // `<div|`
                 } else {
@@ -235,7 +255,7 @@ export function canKeyDown(key, {a, c, s}, that) {
                 that.replace(tagPattern, "", -1);
                 let name = tagMatch[0].slice(1).split(/\s+|>/)[0];
                 if (tagMatch[0] && '/' !== tagMatch[0][1]) {
-                    if ('</' + name + '>' === after.slice(0, toCount(name) + 3)) {
+                    if (after.startsWith('</' + name + '>')) {
                         that.replace(toPattern('^</' + name + '>', ""), "", 1);
                     }
                 }
@@ -294,4 +314,4 @@ export function canMouseDown(that) {
     return true;
 }
 
-export let state = defaults;
+export const state = defaults;

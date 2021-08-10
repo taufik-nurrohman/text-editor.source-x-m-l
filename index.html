@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta content="width=device-width" name="viewport">
     <meta content="Provides a set of key strokes to generate responses like in a typical XML source code editor." name="description">
-    <title>Text Editor Source XML 1.1.14</title>
+    <title>Text Editor Source XML 1.1.15</title>
     <style>
       * {
         box-sizing: border-box;
@@ -81,7 +81,7 @@
   </head>
   <body>
     <header>
-      <h1>Text Editor Source XML 1.1.14</h1>
+      <h1>Text Editor Source XML 1.1.15</h1>
       <p><abbr title="Extensible Markup Language">XML</abbr> source code editor extension for <a href="../text-editor/index.html">text editor</a>.</p>
       <hr>
       <p>Provides a set of key strokes to generate responses like in a typical <abbr title="Extensible Markup Language">XML</abbr> source code editor.</p>
@@ -89,7 +89,7 @@
     <main>
       <p tabindex="0">Previous tabbable element.</p>
       <p><textarea placeholder="Code goes here&hellip;" spellcheck="false"></textarea></p>
-      <p><button onclick="toggleTime();">Toggle Test</button></p>
+      <p><button onclick="editor.insertXML('br', false, {foo: 'bar'}, [&quot;&quot;, '\n']).record();">Insert Test</button> <button onclick="toggleTimeXML().record();">Toggle Test</button> <button onclick="editor.wrapXML('foo', &quot;&quot;, {bar: 'baz'}, ' ').record();">Wrap Test</button></p>
       <p><label><input checked onchange="this.checked ? setSourceEditor() : letSourceEditor();" type="checkbox"> <span>Enable XML Source Editor</span></label></p>
       <h2>Features</h2>
       <ul>
@@ -129,7 +129,9 @@
 
   Object.assign(TE.prototype, TE.History.that, TE.Source.that);
 
+  TE.prototype.insertXML = TE.SourceXML.that.insert;
   TE.prototype.toggleXML = TE.SourceXML.that.toggle;
+  TE.prototype.wrapXML = TE.SourceXML.that.wrap;
 
   const editor = new TE(document.querySelector('textarea')),
 
@@ -206,7 +208,9 @@ const {
 
 Object.assign(TE.prototype, thatHistory, thatSource);
 
+TE.prototype.insertXML = thatSourceXML.insert;
 TE.prototype.toggleXML = thatSourceXML.toggle;
+TE.prototype.wrapXML = thatSourceXML.wrap;
 
 const editor = new TE(document.querySelector('textarea'));
 
@@ -265,7 +269,9 @@ import {
 
 Object.assign(TE.prototype, thatHistory, thatSource);
 
+TE.prototype.insertXML = thatSourceXML.insert;
 TE.prototype.toggleXML = thatSourceXML.toggle;
+TE.prototype.wrapXML = thatSourceXML.wrap;
 
 const editor = new TE(document.querySelector('textarea'));
 
@@ -300,8 +306,12 @@ editor.self.addEventListener('mousedown', e =&gt; {
 
 editor.record();</code></pre>
       <h3>Methods</h3>
+      <h4>editor.insertXML(name, content, attributes = {}, tidy = false)</h4>
+      <p>Remove selection and insert an <abbr title="Extensible Markup Language">XML</abbr> tag before caret.</p>
       <h4>editor.toggleXML(name, content, attributes = {}, tidy = false)</h4>
-      <p>Toggle wrap and peel of an <abbr title="Extensible Markup Language">XML</abbr> tag.</p>
+      <p>Toggle wrap and peel selection with an <abbr title="Extensible Markup Language">XML</abbr> tag.</p>
+      <h4>editor.wrapXML(name, content, attributes = {}, tidy = false)</h4>
+      <p>Wrap selection with an <abbr title="Extensible Markup Language">XML</abbr> tag.</p>
       <h3>Properties</h3>
       <h4>TE.SourceXML.state</h4>
       <p>Return the default state to be merged with <code>editor.state</code>.</p>
@@ -323,7 +333,9 @@ editor.record();</code></pre>
     <script>
       Object.assign(TE.prototype, TE.History.that, TE.Source.that);
 
+      TE.prototype.insertXML = TE.SourceXML.that.insert;
       TE.prototype.toggleXML = TE.SourceXML.that.toggle;
+      TE.prototype.wrapXML = TE.SourceXML.that.wrap;
 
       let editor = new TE(document.querySelector('textarea'), '  '),
           {
@@ -372,15 +384,16 @@ editor.record();</code></pre>
           canMouseDownSourceXML(editor) || e.preventDefault();
       }
 
-      function toggleTime() {
+      function toggleTimeXML() {
           let date = new Date;
-          return editor.toggleXML('time', 'text goes here...', {
+          return editor.toggleXML('time', 'text goes here…', {
               datetime: date.toISOString()
-          }).record();
+          }, ' ');
       }
 
       function letSourceEditor() {
           editor.self.classList.remove('source');
+          editor.self.parentNode.nextElementSibling.style.display = 'none';
           editor.self.removeEventListener('keydown', onKeyDown);
           editor.self.removeEventListener('keyup', onKeyUp);
           editor.self.removeEventListener('mousedown', onMouseDown);
@@ -390,6 +403,7 @@ editor.record();</code></pre>
 
       function setSourceEditor() {
           editor.self.classList.add('source');
+          editor.self.parentNode.nextElementSibling.style.display = "";
           editor.self.addEventListener('keydown', onKeyDown, false);
           editor.self.addEventListener('keyup', onKeyUp, false);
           editor.self.addEventListener('mousedown', onMouseDown, false);

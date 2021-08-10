@@ -8,7 +8,7 @@
     "@taufik-nurrohman/pattern": "^0.1.7",
     "@taufik-nurrohman/text-editor": "^3.3.7",
     "@taufik-nurrohman/text-editor.history": "^2.1.9",
-    "@taufik-nurrohman/text-editor.source": "^2.1.16",
+    "@taufik-nurrohman/text-editor.source": "^2.1.18",
     "@taufik-nurrohman/to": "^0.0.18"
   },
   "description": "Provides a set of key strokes to generate responses like in a typical XML source code editor.",
@@ -52,5 +52,5 @@
     "pack": "pack --clean=false --from=.github/source --js-format=umd --js-name=TE.SourceXML --js-top='%(js.license)' --mjs=true --to=."
   },
   "type": "module",
-  "version": "1.1.14"
+  "version": "1.1.15"
 }
