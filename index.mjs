@@ -149,12 +149,12 @@ export function canKeyDown(key, {a, c, s}, that) {
         }
         if (' ' === key) {
             if (!value) {
-                // `<!--|-->`
-                if ('<!--' === before.slice(-4) && '-->' === after.slice(0, 3)) {
-                    that.wrap(' ', ' ').record();
-                    return false;
-                }
-                if (/<\?\S*$/.test(before) && '?>' === after.slice(0, 2)) {
+                if (
+                    // `<!--|-->`
+                    '-->' === after.slice(0, 3) && '<!--' === before.slice(-4) ||
+                    // `<?foo|?>`
+                    '?>' === after.slice(0, 2) && '<?' === before.slice(0, 2) && /<\?\S*$/.test(before)
+                ) {
                     that.wrap(' ', ' ').record();
                     return false;
                 }
@@ -190,18 +190,17 @@ export function canKeyDown(key, {a, c, s}, that) {
             lineMatchIndent = lineMatch && lineMatch[1] || "",
             tagStartMatch = before.match(toPattern(tagStart(tagName) + '$', ""));
         if (!value) {
-            // `<!--|-->`
-            if (/^[ \t]*-->/.test(after) && /<!--[ \t]*$/.test(before)) {
-                that.trim().wrap('\n\n' + lineMatchIndent, '\n\n' + lineMatchIndent).record();
-                return false;
-            }
-            // `<?xml|?>`
-            if (/^[ \t]*\?>/.test(after) && /<\?\S*[ \t]*$/.test(before)) {
-                that.trim().wrap('\n\n' + lineMatchIndent, '\n\n' + lineMatchIndent).record();
+            if (
+                // `<!--|-->`
+                /^[ \t]*-->/.test(after) && /<!--[ \t]*$/.test(before) ||
+                // `<?foo|?>`
+                /^[ \t]*\?>/.test(after) && /<\?\S*[ \t]*$/.test(before)
+            ) {
+                that.trim().wrap('\n' + lineMatchIndent, '\n' + lineMatchIndent).record();
                 return false;
             }
             if (tagStartMatch) {
-                if (toPattern('^</' + tagStartMatch[1] + '>', "").test(after)) {
+                if (after.startsWith('</' + tagStartMatch[1] + '>')) {
                     that.record().trim().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent).record();
                 } else {
                     that.record().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent + '</' + tagStartMatch[1] + '>').record();
