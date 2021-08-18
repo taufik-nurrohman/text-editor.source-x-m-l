@@ -3,7 +3,7 @@ import {esc, toPattern} from '@taufik-nurrohman/pattern';
 import {fromHTML, fromValue} from '@taufik-nurrohman/from';
 import {hasValue} from '@taufik-nurrohman/has';
 import {isArray, isSet, isString} from '@taufik-nurrohman/is';
-import {toCount} from '@taufik-nurrohman/to';
+import {toCount, toObjectKeys} from '@taufik-nurrohman/to';
 
 let tagComment = '<!--([\\s\\S](?!-->)*)-->',
     tagData = '<!((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)>',
@@ -23,13 +23,22 @@ const defaults = {
 
 export const that = {};
 
-function toAttributes(attributes) {
+export function toAttributes(attributes) {
     if (!attributes) {
         return "";
     }
-    let attribute, out = "";
+    // Sort object by key(s)
+    attributes = toObjectKeys(attributes).sort().reduce((r, k) => (r[k] = attributes[k], r), {});
+    let attribute, v, out = "";
     for (attribute in attributes) {
-        out += ' ' + attribute + '="' + fromHTML(fromValue(attributes[attribute])) + '"';
+        v = attributes[attribute];
+        if (false === v || null === v) {
+            continue;
+        }
+        out += ' ' + attribute;
+        if (true !== v) {
+            out += '="' + fromHTML(fromValue(v)) + '"';
+        }
     }
     return out;
 }

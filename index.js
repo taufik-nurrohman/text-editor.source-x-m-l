@@ -60,6 +60,9 @@
     var toCount = function toCount(x) {
         return x.length;
     };
+    var toObjectKeys = function toObjectKeys(x) {
+        return Object.keys(x);
+    };
     var fromHTML = function fromHTML(x) {
         return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;');
     };
@@ -123,11 +126,20 @@
     function toAttributes(attributes) {
         if (!attributes) {
             return "";
-        }
+        } // Sort object by key(s)
+        attributes = toObjectKeys(attributes).sort().reduce((r, k) => (r[k] = attributes[k], r), {});
         let attribute,
+            v,
             out = "";
         for (attribute in attributes) {
-            out += ' ' + attribute + '="' + fromHTML(fromValue(attributes[attribute])) + '"';
+            v = attributes[attribute];
+            if (false === v || null === v) {
+                continue;
+            }
+            out += ' ' + attribute;
+            if (true !== v) {
+                out += '="' + fromHTML(fromValue(v)) + '"';
+            }
         }
         return out;
     }
@@ -440,4 +452,5 @@
     exports.canMouseDown = canMouseDown;
     exports.state = state;
     exports.that = that;
+    exports.toAttributes = toAttributes;
 });
