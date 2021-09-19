@@ -4,15 +4,15 @@
     <meta charset="utf-8">
     <meta content="width=device-width" name="viewport">
     <meta content="Provides a set of key strokes to generate responses like in a typical XML source code editor." name="description">
-    <title>Text Editor Source XML 1.1.20</title>
+    <title>Text Editor Source XML 1.2.0</title>
     <style>
       * {
         box-sizing: border-box;
       }
       :root {
         background: #fff;
-        color: #000;
         border-top: 4px solid;
+        color: #000;
         font: normal normal 16px/1.25 serif;
         position: relative;
       }
@@ -32,30 +32,30 @@
       header,
       main,
       nav {
-        max-width: 700px;
         margin: 0 auto;
+        max-width: 700px;
       }
       hr {
         border: 0;
-        color: inherit;
         border-top: 1px dashed;
+        color: inherit;
         height: 0;
       }
       mark {
-        display: inline-block;
-        vertical-align: middle;
-        height: 1.25em;
         background: #ff0;
         border: 1px solid #f00;
+        display: inline-block;
+        height: 1.25em;
         min-width: 3px;
+        vertical-align: middle;
       }
       pre {
         white-space: pre-wrap;
         word-wrap: break-word;
       }
       pre code {
-        display: block;
         background: #eee;
+        display: block;
         padding: 1em;
       }
       table {
@@ -68,20 +68,20 @@
       }
       textarea {
         display: block;
-        width: 100%;
         height: 20em;
+        width: 100%;
       }
       .source {
         background: #ccc;
-        color: #000;
         border: 1px solid #000;
+        color: #000;
         padding: 2px;
       }
     </style>
   </head>
   <body>
     <header>
-      <h1>Text Editor Source XML 1.1.20</h1>
+      <h1>Text Editor Source XML 1.2.0</h1>
       <p><abbr title="Extensible Markup Language">XML</abbr> source code editor extension for <a href="../text-editor/index.html">text editor</a>.</p>
       <hr>
       <p>Provides a set of key strokes to generate responses like in a typical <abbr title="Extensible Markup Language">XML</abbr> source code editor.</p>
@@ -89,8 +89,8 @@
     <main>
       <p tabindex="0">Previous tabbable element.</p>
       <p><textarea placeholder="Code goes here&hellip;" spellcheck="false"></textarea></p>
-      <p><button onclick="editor.insertXML('br', false, {foo: 'bar'}, [&quot;&quot;, '\n']).record();">Insert Test</button> <button onclick="toggleTimeXML().record();">Toggle Test</button> <button onclick="editor.wrapXML('foo', &quot;&quot;, {bar: 'baz'}, ' ').record();">Wrap Test</button></p>
-      <p><label><input checked onchange="this.checked ? setSourceEditor() : letSourceEditor();" type="checkbox"> <span>Enable XML Source Editor</span></label></p>
+      <p><button onclick="editor.insertXML('br', false, {foo: 'bar'}, [&quot;&quot;, '\n']).record();">Insert Test</button> <button onclick="toggleTimeXML().record();">Toggle Test</button> <button onclick="editor.wrapXML('foo', &quot;&quot;, {bar: 'baz'}, ' ').record();">Wrap Test</button> <code id="log"></code></p>
+      <p><label><input checked onchange="this.checked ? setEditor() : letEditor();" type="checkbox"> <span>Enable XML Source Editor</span></label></p>
       <h2>Features</h2>
       <ul>
         <li><code>&lt;!-- <mark></mark> --&gt;</code> then press <kbd>↵</kbd>.</li>
@@ -133,7 +133,8 @@
   TE.prototype.toggleXML = TE.SourceXML.that.toggle;
   TE.prototype.wrapXML = TE.SourceXML.that.wrap;
 
-  const editor = new TE(document.querySelector('textarea')),
+  const editor = new TE(document.querySelector('textarea'));
+  const map = new K(editor);
 
   const {
       canKeyDown: canKeyDownSource,
@@ -151,42 +152,57 @@
 
   function fromStates(...lot) { <a href="https://github.com/taufik-nurrohman/from" target="_blank">&hellip;</a> }
 
-  editor.state = fromStates({}, editor.state, TE.Source.state, TE.SourceXML.state);
+  editor.state = fromStates({}, editor.state, TE.Source.state, TE.SourceXML.state, {
+      commands: map.commands,
+      keys: map.keys
+  });
+
+  editor.self.addEventListener('blur', () => map.pull());
+  editor.self.addEventListener('input', () => map.pull());
 
   editor.self.addEventListener('keydown', e =&gt; {
-      let key = e.key,
-          keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
-      if (
-          canKeyDownSourceXML(key, keys, editor) &amp;&amp;
-          canKeyDownSource(key, keys, editor) &amp;&amp;
-          canKeyDownEnterSource(key, keys, editor) &amp;&amp;
-          canKeyDownHistorySource(key, keys, editor) &amp;&amp;
-          canKeyDownMoveSource(key, keys, editor) &amp;&amp;
-          canKeyDownTabSource(key, keys, editor)
-      ) {
-          // Normal key strokes. Add more key strokes extension here!
+      map.push(e.key);
+      let command = map.test();
+      // Check for custom command…
+      if (command) {
+          let value = map.fire(command);
+          if (false === value) {
+              e.preventDefault();
+          } else if (null === value) {
+              console.error('Unknown command:', command);
+          }
+      // Else, run the defaults!
       } else {
-          e.preventDefault();
+          if (
+              canKeyDownSourceXML(map, editor) &amp;&amp;
+              canKeyDownSource(map, editor) &amp;&amp;
+              canKeyDownEnterSource(map, editor) &amp;&amp;
+              canKeyDownHistorySource(map, editor) &amp;&amp;
+              canKeyDownMoveSource(map, editor) &amp;&amp;
+              canKeyDownTabSource(map, editor)
+          ) {
+              // Normal key strokes. Add more key strokes extension here!
+          } else {
+              e.preventDefault();
+          }
       }
   });
 
   editor.self.addEventListener('keyup', e =&gt; {
-      let key = e.key,
-          keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
-      canKeyUpSource(key, keys, editor) || e.preventDefault();
+      map.pull(e.key);
+      canKeyUpSource(map, editor) || e.preventDefault();
   });
 
   editor.self.addEventListener('mousedown', e =&gt; {
-      let key = e.key,
-          keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
-      canMouseDownSourceXML(key, keys, editor) || e.preventDefault();
+      canMouseDownSourceXML(map, editor) || e.preventDefault();
   });
 
-  editor.record(); // Record the first history data
+  editor.record(); // Record the first history data!
 
 &lt;/script&gt;</code></pre>
       <h4>CommonJS</h4>
       <pre><code>const {fromStates} = require('@taufik-nurrohman/from');
+const K = require('@taufik-nurrohman/key');
 const TE = require('@taufik-nurrohman/text-editor');
 const {that: thatHistory} = require('@taufik-nurrohman/text-editor.history');
 
@@ -215,41 +231,57 @@ TE.prototype.toggleXML = thatSourceXML.toggle;
 TE.prototype.wrapXML = thatSourceXML.wrap;
 
 const editor = new TE(document.querySelector('textarea'));
+const map = new K(editor);
 
-editor.state = fromStates({}, editor.state, stateSource, stateSourceXML);
+editor.state = fromStates({}, editor.state, stateSource, stateSourceXML, {
+    commands: map.commands,
+    keys: map.keys
+});
+
+editor.self.addEventListener('blur', () => map.pull());
+editor.self.addEventListener('input', () => map.pull());
 
 editor.self.addEventListener('keydown', e =&gt; {
-    let key = e.key,
-        keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
-    if (
-        canKeyDownSourceXML(key, keys, editor) &amp;&amp;
-        canKeyDownSource(key, keys, editor) &amp;&amp;
-        canKeyDownEnterSource(key, keys, editor) &amp;&amp;
-        canKeyDownHistorySource(key, keys, editor) &amp;&amp;
-        canKeyDownMoveSource(key, keys, editor) &amp;&amp;
-        canKeyDownTabSource(key, keys, editor)
-    ) {
-        // Normal key strokes. Add more key strokes extension here!
+    map.push(e.key);
+    let command = map.test();
+    // Check for custom command…
+    if (command) {
+        let value = map.fire(command);
+        if (false === value) {
+            e.preventDefault();
+        } else if (null === value) {
+            console.error('Unknown command:', command);
+        }
+    // Else, run the defaults!
     } else {
-        e.preventDefault();
+        if (
+            canKeyDownSourceXML(map, editor) &amp;&amp;
+            canKeyDownSource(map, editor) &amp;&amp;
+            canKeyDownEnterSource(map, editor) &amp;&amp;
+            canKeyDownHistorySource(map, editor) &amp;&amp;
+            canKeyDownMoveSource(map, editor) &amp;&amp;
+            canKeyDownTabSource(map, editor)
+        ) {
+            // Normal key strokes. Add more key strokes extension here!
+        } else {
+            e.preventDefault();
+        }
     }
 });
 
 editor.self.addEventListener('keyup', e =&gt; {
-    let key = e.key,
-        keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
-    canKeyUpSource(key, keys, editor) || e.preventDefault();
+    map.pull(e.key);
+    canKeyUpSource(map, editor) || e.preventDefault();
 });
 
 editor.self.addEventListener('mousedown', e =&gt; {
-    let key = e.key,
-        keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
-    canMouseDownSourceXML(key, keys, editor) || e.preventDefault();
+    canMouseDownSourceXML(map, editor) || e.preventDefault();
 });
 
-editor.record();</code></pre>
+editor.record(); // Record the first history data!</code></pre>
       <h4>ECMAScript</h4>
       <pre><code>import {fromStates} from '@taufik-nurrohman/from';
+import K from '@taufik-nurrohman/key';
 import TE from '@taufik-nurrohman/text-editor';
 import {that as thatHistory} from '@taufik-nurrohman/text-editor.history';
 
@@ -278,39 +310,54 @@ TE.prototype.toggleXML = thatSourceXML.toggle;
 TE.prototype.wrapXML = thatSourceXML.wrap;
 
 const editor = new TE(document.querySelector('textarea'));
+const map = new K(editor);
 
-editor.state = fromStates({}, editor.state, stateSource, stateSourceXML);
+editor.state = fromStates({}, editor.state, stateSource, stateSourceXML, {
+    commands: map.commands,
+    keys: map.keys
+});
+
+editor.self.addEventListener('blur', () => map.pull());
+editor.self.addEventListener('input', () => map.pull());
 
 editor.self.addEventListener('keydown', e =&gt; {
-    let key = e.key,
-        keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
-    if (
-        canKeyDownSourceXML(key, keys, editor) &amp;&amp;
-        canKeyDownSource(key, keys, editor) &amp;&amp;
-        canKeyDownEnterSource(key, keys, editor) &amp;&amp;
-        canKeyDownHistorySource(key, keys, editor) &amp;&amp;
-        canKeyDownMoveSource(key, keys, editor) &amp;&amp;
-        canKeyDownTabSource(key, keys, editor)
-    ) {
-        // Normal key strokes. Add more key strokes extension here!
+    map.push(e.key);
+    let command = map.test();
+    // Check for custom command…
+    if (command) {
+        let value = map.fire(command);
+        if (false === value) {
+            e.preventDefault();
+        } else if (null === value) {
+            console.error('Unknown command:', command);
+        }
+    // Else, run the defaults!
     } else {
-        e.preventDefault();
+        if (
+            canKeyDownSourceXML(map, editor) &amp;&amp;
+            canKeyDownSource(map, editor) &amp;&amp;
+            canKeyDownEnterSource(map, editor) &amp;&amp;
+            canKeyDownHistorySource(map, editor) &amp;&amp;
+            canKeyDownMoveSource(map, editor) &amp;&amp;
+            canKeyDownTabSource(map, editor)
+        ) {
+            // Normal key strokes. Add more key strokes extension here!
+        } else {
+            e.preventDefault();
+        }
     }
 });
 
 editor.self.addEventListener('keyup', e =&gt; {
-    let key = e.key,
-        keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
-    canKeyUpSource(key, keys, editor) || e.preventDefault();
+    map.pull(e.key);
+    canKeyUpSource(map, editor) || e.preventDefault();
 });
 
 editor.self.addEventListener('mousedown', e =&gt; {
-    let key = e.key,
-        keys = {a: e.altKey, c: e.ctrlKey, s: e.shiftKey};
-    canMouseDownSourceXML(key, keys, editor) || e.preventDefault();
+    canMouseDownSourceXML(map, editor) || e.preventDefault();
 });
 
-editor.record();</code></pre>
+editor.record(); // Record the first history data!</code></pre>
       <h3>Methods</h3>
       <h4>editor.insertXML(name, content, attributes = {}, tidy = false)</h4>
       <p>Remove selection and insert an <abbr title="Extensible Markup Language">XML</abbr> tag before caret.</p>
@@ -323,15 +370,16 @@ editor.record();</code></pre>
       <p>Return the default state to be merged with <code>editor.state</code>.</p>
       <h3>Strokes</h3>
       <p>Strokes can either return <code>false</code> or <code>true</code>. If it returns <code>false</code>, it means that this extension has manipulated the existing value. If it returns <code>true</code>, it means that current stroke works normally.</p>
-      <h4>TE.SourceXML.canKeyDown(key, {a, c, s}, that)</h4>
+      <h4>TE.SourceXML.canKeyDown(map, that)</h4>
       <p>This will handle tasks such as automatic <abbr title="Extensible Markup Language">XML</abbr> tag closing and automatic indentation by pressing the <kbd>↵</kbd> key.</p>
-      <h4>TE.SourceXML.canMouseDown(key, {a, c, s}, that)</h4>
+      <h4>TE.SourceXML.canMouseDown(map, that)</h4>
       <p>This will handle tasks such as automatic tag pattern selection on click.</p>
     </main>
     <footer>
       <hr>
       <p>&copy; 2021 <a href="/">Taufik Nurrohman</a></p>
     </footer>
+    <script src="../key/index.min.js"></script>
     <script src="../text-editor/index.min.js"></script>
     <script src="../text-editor.history/index.min.js"></script>
     <script src="../text-editor.source/index.min.js"></script>
@@ -344,6 +392,8 @@ editor.record();</code></pre>
       TE.prototype.wrapXML = TE.SourceXML.that.wrap;
 
       let editor = new TE(document.querySelector('textarea'), '  '),
+          log = document.querySelector('#log'),
+          map = new K(editor),
           {
               canKeyDown: canKeyDownSource,
               canKeyDownDent: canKeyDownDentSource,
@@ -358,43 +408,80 @@ editor.record();</code></pre>
           } = TE.SourceXML;
 
       editor.state = Object.assign({}, editor.state, TE.Source.state, TE.SourceXML.state);
-      editor.state.source = Object.assign({}, editor.state.source, TE.Source.state.source, TE.SourceXML.state.source);
+      editor.state.source = Object.assign({}, editor.state.source, TE.Source.state.source, TE.SourceXML.state.source, {
+          commands: map.commands,
+          keys: map.keys
+      });
+
+      function onBlur() {
+          map.pull(); // Reset all!
+      }
+
+      function onInput() {
+          map.pull(); // Reset all!
+      }
 
       function onKeyDown(e) {
-          let key = e.key,
-              keys = {
-                  a: e.altKey,
-                  c: e.ctrlKey,
-                  s: e.shiftKey
-              };
-          canKeyDownSourceXML(key, keys, editor) &&
-              canKeyDownSource(key, keys, editor) &&
-              canKeyDownEnterSource(key, keys, editor) &&
-              canKeyDownDentSource(key, keys, editor) &&
-              canKeyDownHistorySource(key, keys, editor) &&
-              canKeyDownMoveSource(key, keys, editor) ||
-              e.preventDefault();
+          map.push(e.key);
+          let command = map.test();
+          // Check for custom command…
+          if (command) {
+              let value = map.fire(command);
+              if (false === value) {
+                  e.preventDefault();
+              } else if (null === value) {
+                  console.error('Unknown command:', command);
+              }
+              // Else, run the defaults!
+          } else {
+              canKeyDownSourceXML(map, editor) &&
+                  canKeyDownSource(map, editor) &&
+                  canKeyDownEnterSource(map, editor) &&
+                  canKeyDownDentSource(map, editor) &&
+                  canKeyDownHistorySource(map, editor) &&
+                  canKeyDownMoveSource(map, editor) ||
+                  e.preventDefault();
+          }
+          log.textContent = map + "";
       }
 
       function onKeyUp(e) {
-          let key = e.key,
-              keys = {
-                  a: e.altKey,
-                  c: e.ctrlKey,
-                  s: e.shiftKey
-              };
-          canKeyUpSource(key, keys, editor) || e.preventDefault();
+          canKeyUpSource(map, editor) || e.preventDefault();
+          map.pull(e.key);
+          log.textContent = map + "";
       }
 
       function onMouseDown(e) {
-          let key = e.key,
-              keys = {
-                  a: e.altKey,
-                  c: e.ctrlKey,
-                  s: e.shiftKey
-              };
-          canMouseDownSourceXML(key, keys, editor) || e.preventDefault();
+          canMouseDownSourceXML(map, editor) || e.preventDefault();
       }
+
+      function letEditor() {
+          editor.self.classList.remove('source');
+          editor.self.parentNode.nextElementSibling.style.display = 'none';
+          editor.self.removeEventListener('blur', onBlur);
+          editor.self.removeEventListener('input', onInput);
+          editor.self.removeEventListener('keydown', onKeyDown);
+          editor.self.removeEventListener('keyup', onKeyUp);
+          editor.self.removeEventListener('mousedown', onMouseDown);
+          editor.self.removeEventListener('touchstart', onMouseDown);
+          editor.loss(true); // Remove all history data!
+          return editor;
+      }
+
+      function setEditor() {
+          editor.self.classList.add('source');
+          editor.self.parentNode.nextElementSibling.style.display = "";
+          editor.self.addEventListener('blur', onBlur, false);
+          editor.self.addEventListener('input', onInput, false);
+          editor.self.addEventListener('keydown', onKeyDown, false);
+          editor.self.addEventListener('keyup', onKeyUp, false);
+          editor.self.addEventListener('mousedown', onMouseDown, false);
+          editor.self.addEventListener('touchstart', onMouseDown, false);
+          editor.record(); // Record the first history data!
+          return editor;
+      }
+
+      setEditor();
 
       function toggleTimeXML() {
           let date = new Date;
@@ -402,28 +489,6 @@ editor.record();</code></pre>
               datetime: date.toISOString()
           }, ' ');
       }
-
-      function letSourceEditor() {
-          editor.self.classList.remove('source');
-          editor.self.parentNode.nextElementSibling.style.display = 'none';
-          editor.self.removeEventListener('keydown', onKeyDown);
-          editor.self.removeEventListener('keyup', onKeyUp);
-          editor.self.removeEventListener('mousedown', onMouseDown);
-          editor.self.removeEventListener('touchstart', onMouseDown);
-          editor.loss(true); // Remove all history data
-      }
-
-      function setSourceEditor() {
-          editor.self.classList.add('source');
-          editor.self.parentNode.nextElementSibling.style.display = "";
-          editor.self.addEventListener('keydown', onKeyDown, false);
-          editor.self.addEventListener('keyup', onKeyUp, false);
-          editor.self.addEventListener('mousedown', onMouseDown, false);
-          editor.self.addEventListener('touchstart', onMouseDown, false);
-          editor.record(); // Record the first history data
-      }
-
-      setSourceEditor();
     </script>
   </body>
 </html>

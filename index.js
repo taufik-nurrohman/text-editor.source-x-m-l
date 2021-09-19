@@ -1,19 +1,19 @@
 /*!
  *
  * The MIT License (MIT)
-
+ *
  * Copyright © 2021 Taufik Nurrohman <https://github.com/taufik-nurrohman>
-
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the “Software”), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
-
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
-
+ *
  * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -211,14 +211,15 @@
         return t.wrap('<' + name + toAttributes(attributes) + '>', '</' + name + '>');
     };
 
-    function canKeyDown(key, {
-        a,
-        c,
-        s
-    }, that) {
+    function canKeyDown(map, that) {
         let state = that.state,
-            charIndent = state.sourceXML.tab || state.tab || '\t'; // Do nothing
-        if (a || c) {
+            charIndent = state.sourceXML.tab || state.tab || '\t',
+            {
+                key,
+                queue
+            } = map,
+            keyValue = map + ""; // Do nothing
+        if (queue.Alt || queue.Control) {
             return true;
         }
         if (['-', '>', '/', '?', ' '].includes(key)) {
@@ -265,7 +266,7 @@
                     return false;
                 }
             }
-            if (' ' === key) {
+            if (' ' === keyValue) {
                 if (!value) {
                     if ( // `<!--|-->`
                         '-->' === after.slice(0, 3) && '<!--' === before.slice(-4) || // `<?foo|?>`
@@ -276,7 +277,7 @@
                 }
             }
         }
-        if ('ArrowLeft' === key && !s) {
+        if ('ArrowLeft' === keyValue) {
             let {
                 before,
                 start,
@@ -290,7 +291,7 @@
                 }
             }
         }
-        if ('ArrowRight' === key && !s) {
+        if ('ArrowRight' === keyValue) {
             let {
                 after,
                 start,
@@ -304,7 +305,7 @@
                 }
             }
         }
-        if ('Enter' === key && !s) {
+        if ('Enter' === keyValue) {
             let {
                 after,
                 before,
@@ -331,7 +332,7 @@
                 }
             }
         }
-        if ('Backspace' === key && !s) {
+        if ('Backspace' === keyValue) {
             let {
                 after,
                 before,
@@ -391,7 +392,7 @@
                 }
             }
         }
-        if ('Delete' === key && !s) {
+        if ('Delete' === keyValue) {
             let {
                 after,
                 value
@@ -417,12 +418,12 @@
         return true;
     }
 
-    function canMouseDown(key, {
-        a,
-        c,
-        s
-    }, that) {
-        if (!c) {
+    function canMouseDown(map, that) {
+        let {
+            key,
+            queue
+        } = map;
+        if (!queue.Control) {
             W.setTimeout(() => {
                 let {
                     after,

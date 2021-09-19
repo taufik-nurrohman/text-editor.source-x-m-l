@@ -105,13 +105,15 @@ that.wrap = function(name, content = "", attributes = {}, tidy = false) {
     return t.wrap('<' + name + toAttributes(attributes) + '>', '</' + name + '>');
 };
 
-export function canKeyDown(key, {a, c, s}, that) {
+export function canKeyDown(map, that) {
     let state = that.state,
         charAfter,
         charBefore,
-        charIndent = state.sourceXML.tab || state.tab || '\t';
+        charIndent = state.sourceXML.tab || state.tab || '\t',
+        {key, queue} = map,
+        keyValue = map + "";
     // Do nothing
-    if (a || c) {
+    if (queue.Alt || queue.Control) {
         return true;
     }
     if (['-', '>', '/', '?', ' '].includes(key)) {
@@ -156,7 +158,7 @@ export function canKeyDown(key, {a, c, s}, that) {
                 return false;
             }
         }
-        if (' ' === key) {
+        if (' ' === keyValue) {
             if (!value) {
                 if (
                     // `<!--|-->`
@@ -170,7 +172,7 @@ export function canKeyDown(key, {a, c, s}, that) {
             }
         }
     }
-    if ('ArrowLeft' === key && !s) {
+    if ('ArrowLeft' === keyValue) {
         let {before, start, value} = that.$();
         if (!value) {
             let tagMatch = toPattern(tagTokens + '$', "").exec(before);
@@ -181,7 +183,7 @@ export function canKeyDown(key, {a, c, s}, that) {
             }
         }
     }
-    if ('ArrowRight' === key && !s) {
+    if ('ArrowRight' === keyValue) {
         let {after, start, value} = that.$();
         if (!value) {
             let tagMatch = toPattern('^' + tagTokens, "").exec(after);
@@ -192,7 +194,7 @@ export function canKeyDown(key, {a, c, s}, that) {
             }
         }
     }
-    if ('Enter' === key && !s) {
+    if ('Enter' === keyValue) {
         let {after, before, value} = that.$(),
             lineBefore = before.split('\n').pop(),
             lineMatch = lineBefore.match(/^(\s+)/),
@@ -218,7 +220,7 @@ export function canKeyDown(key, {a, c, s}, that) {
             }
         }
     }
-    if ('Backspace' === key && !s) {
+    if ('Backspace' === keyValue) {
         let {after, before, value} = that.$();
         if (!value) {
             // `<!--|`
@@ -281,7 +283,7 @@ export function canKeyDown(key, {a, c, s}, that) {
             }
         }
     }
-    if ('Delete' === key && !s) {
+    if ('Delete' === keyValue) {
         let {after, value} = that.$();
         if (!value) {
             // `|-->`
@@ -305,8 +307,9 @@ export function canKeyDown(key, {a, c, s}, that) {
     return true;
 }
 
-export function canMouseDown(key, {a, c, s}, that) {
-    if (!c) {
+export function canMouseDown(map, that) {
+    let {key, queue} = map;
+    if (!queue.Control) {
         W.setTimeout(() => {
             let {after, before, value} = that.$();
             if (!value) {
