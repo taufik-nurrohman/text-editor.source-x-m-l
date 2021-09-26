@@ -189,8 +189,8 @@
   });
 
   editor.self.addEventListener('keyup', e =&gt; {
-      map.pull(e.key);
       canKeyUpSource(map, editor) || e.preventDefault();
+      map.pull(e.key);
   });
 
   editor.self.addEventListener('mousedown', e =&gt; {
@@ -270,8 +270,8 @@ editor.self.addEventListener('keydown', e =&gt; {
 });
 
 editor.self.addEventListener('keyup', e =&gt; {
-    map.pull(e.key);
     canKeyUpSource(map, editor) || e.preventDefault();
+    map.pull(e.key);
 });
 
 editor.self.addEventListener('mousedown', e =&gt; {
@@ -349,8 +349,8 @@ editor.self.addEventListener('keydown', e =&gt; {
 });
 
 editor.self.addEventListener('keyup', e =&gt; {
-    map.pull(e.key);
     canKeyUpSource(map, editor) || e.preventDefault();
+    map.pull(e.key);
 });
 
 editor.self.addEventListener('mousedown', e =&gt; {

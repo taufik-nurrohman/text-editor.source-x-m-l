@@ -6,9 +6,10 @@
     "@taufik-nurrohman/from": "^0.0.9",
     "@taufik-nurrohman/has": "^0.0.3",
     "@taufik-nurrohman/is": "^0.1.2",
+    "@taufik-nurrohman/key": "^2.0.4",
     "@taufik-nurrohman/pattern": "^0.1.7",
     "@taufik-nurrohman/text-editor": "^3.3.9",
-    "@taufik-nurrohman/text-editor.history": "^2.1.10",
+    "@taufik-nurrohman/text-editor.history": "^2.1.11",
     "@taufik-nurrohman/text-editor.source": "^2.1.20",
     "@taufik-nurrohman/to": "^0.0.18"
   },
