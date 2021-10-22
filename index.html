@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta content="width=device-width" name="viewport">
     <meta content="Provides a set of key strokes to generate responses like in a typical XML source code editor." name="description">
-    <title>Text Editor Source XML 1.2.1</title>
+    <title>Text Editor Source XML 1.2.2</title>
     <style>
       * {
         box-sizing: border-box;
@@ -81,7 +81,7 @@
   </head>
   <body>
     <header>
-      <h1>Text Editor Source XML 1.2.1</h1>
+      <h1>Text Editor Source XML 1.2.2</h1>
       <p><abbr title="Extensible Markup Language">XML</abbr> source code editor extension for <a href="../text-editor/index.html">text editor</a>.</p>
       <hr>
       <p>Provides a set of key strokes to generate responses like in a typical <abbr title="Extensible Markup Language">XML</abbr> source code editor.</p>
@@ -386,11 +386,9 @@ editor.record(); // Record the first history data!</code></pre>
     <script src="index.min.js"></script>
     <script>
       Object.assign(TE.prototype, TE.History.that, TE.Source.that);
-
       TE.prototype.insertXML = TE.SourceXML.that.insert;
       TE.prototype.toggleXML = TE.SourceXML.that.toggle;
       TE.prototype.wrapXML = TE.SourceXML.that.wrap;
-
       let editor = new TE(document.querySelector('textarea'), '  '),
           log = document.querySelector('#log'),
           map = new K(editor),
@@ -406,7 +404,6 @@ editor.record(); // Record the first history data!</code></pre>
               canKeyDown: canKeyDownSourceXML,
               canMouseDown: canMouseDownSourceXML
           } = TE.SourceXML;
-
       editor.state = Object.assign({}, editor.state, TE.Source.state, TE.SourceXML.state);
       editor.state.source = Object.assign({}, editor.state.source, TE.Source.state.source, TE.SourceXML.state.source, {
           commands: map.commands,
@@ -434,13 +431,7 @@ editor.record(); // Record the first history data!</code></pre>
               }
               // Else, run the defaults!
           } else {
-              canKeyDownSourceXML(map, editor) &&
-                  canKeyDownSource(map, editor) &&
-                  canKeyDownEnterSource(map, editor) &&
-                  canKeyDownDentSource(map, editor) &&
-                  canKeyDownHistorySource(map, editor) &&
-                  canKeyDownMoveSource(map, editor) ||
-                  e.preventDefault();
+              canKeyDownSourceXML(map, editor) && canKeyDownSource(map, editor) && canKeyDownEnterSource(map, editor) && canKeyDownDentSource(map, editor) && canKeyDownHistorySource(map, editor) && canKeyDownMoveSource(map, editor) || e.preventDefault();
           }
           log.textContent = map + "";
       }
@@ -480,7 +471,6 @@ editor.record(); // Record the first history data!</code></pre>
           editor.record(); // Record the first history data!
           return editor;
       }
-
       setEditor();
 
       function toggleTimeXML() {
