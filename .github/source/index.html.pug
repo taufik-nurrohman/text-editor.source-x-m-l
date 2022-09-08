@@ -34,7 +34,7 @@ block script
     |
     | function onKeyDown(e) {
     |     map.push(e.key);
-    |     let command = map.test();
+    |     let command = map.command();
     |     // Check for custom command…
     |     if (command) {
     |         let value = map.fire(command);
@@ -261,9 +261,11 @@ block content
       |   editor.self.addEventListener('blur', () => map.pull());
       |   editor.self.addEventListener('input', () => map.pull());
       |
+      |   let debounce;
+      |
       |   editor.self.addEventListener('keydown', e =&gt; {
       |       map.push(e.key);
-      |       let command = map.test();
+      |       let command = map.command();
       |       // Check for custom command…
       |       if (command) {
       |           let value = map.fire(command);
@@ -287,6 +289,8 @@ block content
       |               e.preventDefault();
       |           }
       |       }
+      |       debounce && clearTimeout(debounce);
+      |       debounce = setTimeout(() => map.pull(), 1000);
       |   });
       |
       |   editor.self.addEventListener('keyup', e =&gt; {
@@ -304,9 +308,10 @@ block content
     h4 CommonJS
     pre: code
       | const {fromStates} = require('@taufik-nurrohman/from');
-      | const K = require('@taufik-nurrohman/key');
-      | const TE = require('@taufik-nurrohman/text-editor');
-      | const {that: thatHistory} = require('@taufik-nurrohman/text-editor.history');
+      | const {debounce} = require('@taufik-nurrohman/tick');
+      | const K = require('@taufik-nurrohman/key').default;
+      | const TE = require('@taufik-nurrohman/text-editor').default;
+      | const {that: thatHistory} = require('@taufik-nurrohman/text-editor.history').default;
       |
       | const {
       |     canKeyDown: canKeyDownSource,
@@ -335,6 +340,8 @@ block content
       | const editor = new TE(document.querySelector('textarea'));
       | const map = new K(editor);
       |
+      | const bounce = debounce(() => map.pull(), 1000);
+      |
       | editor.state = fromStates({}, editor.state, stateSource, stateSourceXML, {
       |     commands: map.commands,
       |     keys: map.keys
@@ -345,7 +352,7 @@ block content
       |
       | editor.self.addEventListener('keydown', e =&gt; {
       |     map.push(e.key);
-      |     let command = map.test();
+      |     let command = map.command();
       |     // Check for custom command…
       |     if (command) {
       |         let value = map.fire(command);
@@ -369,6 +376,7 @@ block content
       |             e.preventDefault();
       |         }
       |     }
+      |     bounce();
       | });
       |
       | editor.self.addEventListener('keyup', e =&gt; {
@@ -384,6 +392,7 @@ block content
     h4 ECMAScript
     pre: code
       | import {fromStates} from '@taufik-nurrohman/from';
+      | import {debounce} from '@taufik-nurrohman/tick';
       | import K from '@taufik-nurrohman/key';
       | import TE from '@taufik-nurrohman/text-editor';
       | import {that as thatHistory} from '@taufik-nurrohman/text-editor.history';
@@ -415,6 +424,8 @@ block content
       | const editor = new TE(document.querySelector('textarea'));
       | const map = new K(editor);
       |
+      | const bounce = debounce(() => map.pull(), 1000);
+      |
       | editor.state = fromStates({}, editor.state, stateSource, stateSourceXML, {
       |     commands: map.commands,
       |     keys: map.keys
@@ -425,7 +436,7 @@ block content
       |
       | editor.self.addEventListener('keydown', e =&gt; {
       |     map.push(e.key);
-      |     let command = map.test();
+      |     let command = map.command();
       |     // Check for custom command…
       |     if (command) {
       |         let value = map.fire(command);
@@ -449,6 +460,7 @@ block content
       |             e.preventDefault();
       |         }
       |     }
+      |     bounce();
       | });
       |
       | editor.self.addEventListener('keyup', e =&gt; {

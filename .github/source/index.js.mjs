@@ -57,7 +57,7 @@ function toTidy(tidy) {
     return tidy; // Return `[…]` or `false`
 }
 
-that.insert = function(name, content = "", attributes = {}, tidy = false) {
+that.insert = function (name, content = "", attributes = {}, tidy = false) {
     let t = this;
     if (false !== (tidy = toTidy(tidy))) {
         t.trim(tidy[0], "");
@@ -65,7 +65,7 @@ that.insert = function(name, content = "", attributes = {}, tidy = false) {
     return t.insert('<' + name + toAttributes(attributes) + (false !== content ? '>' + content + '</' + name + '>' : ' />') + (false !== tidy ? tidy[1] : ""), -1, true);
 };
 
-that.toggle = function(name, content = "", attributes = {}, tidy = false) {
+that.toggle = function (name, content = "", attributes = {}, tidy = false) {
     let t = this,
         {after, before, value} = t.$(),
         tagStartLocal = tagStart(name),
@@ -93,7 +93,7 @@ that.toggle = function(name, content = "", attributes = {}, tidy = false) {
     return t.wrap('<' + name + toAttributes(attributes) + '>', '</' + name + '>');
 };
 
-that.wrap = function(name, content = "", attributes = {}, tidy = false) {
+that.wrap = function (name, content = "", attributes = {}, tidy = false) {
     let t = this,
         {after, before, value} = t.$();
     if (!value && content) {

@@ -2,7 +2,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright © 2021 Taufik Nurrohman <https://github.com/taufik-nurrohman>
+ * Copyright © 2022 Taufik Nurrohman <https://github.com/taufik-nurrohman>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the “Software”), to deal
@@ -23,9 +23,9 @@
  * SOFTWARE.
  *
  */
-(function(global, factory) {
+(function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) : typeof define === 'function' && define.amd ? define(['exports'], factory) : (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory((global.TE = global.TE || {}, global.TE.SourceXML = {})));
-})(this, function(exports) {
+})(this, function (exports) {
     'use strict';
     var hasValue = function hasValue(x, data) {
         return -1 !== data.indexOf(x);
@@ -68,7 +68,7 @@
     };
     var fromValue = function fromValue(x) {
         if (isArray(x)) {
-            return x.map(function(v) {
+            return x.map(function (v) {
                 return fromValue(x);
             });
         }
@@ -157,14 +157,14 @@
         }
         return tidy; // Return `[…]` or `false`
     }
-    that.insert = function(name, content = "", attributes = {}, tidy = false) {
+    that.insert = function (name, content = "", attributes = {}, tidy = false) {
         let t = this;
         if (false !== (tidy = toTidy(tidy))) {
             t.trim(tidy[0], "");
         }
         return t.insert('<' + name + toAttributes(attributes) + (false !== content ? '>' + content + '</' + name + '>' : ' />') + (false !== tidy ? tidy[1] : ""), -1, true);
     };
-    that.toggle = function(name, content = "", attributes = {}, tidy = false) {
+    that.toggle = function (name, content = "", attributes = {}, tidy = false) {
         let t = this,
             {
                 after,
@@ -195,7 +195,7 @@
         }
         return t.wrap('<' + name + toAttributes(attributes) + '>', '</' + name + '>');
     };
-    that.wrap = function(name, content = "", attributes = {}, tidy = false) {
+    that.wrap = function (name, content = "", attributes = {}, tidy = false) {
         let t = this,
             {
                 after,
