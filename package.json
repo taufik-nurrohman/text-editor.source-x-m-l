@@ -51,8 +51,8 @@
     "url": "git+https://github.com/taufik-nurrohman/text-editor.source-x-m-l.git"
   },
   "scripts": {
-    "pack": "pack --clean=false --from=.github/source --js-format=umd --js-name=TE.SourceXML --js-top='%(js.license)' --mjs=true --to=."
+    "pack": "pack --clean=false --from=.github/factory --js-format=umd --js-name=TE.SourceXML --js-top='%(js.license)' --mjs=true --to=."
   },
   "type": "module",
-  "version": "1.2.3"
+  "version": "1.2.4"
 }
