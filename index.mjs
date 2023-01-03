@@ -37,7 +37,7 @@ export function toAttributes(attributes) {
         }
         out += ' ' + attribute;
         if (true !== v) {
-            out += '="' + fromHTML(fromValue(v)) + '"';
+            out += '="' + fromHTML(fromValue(v), true) + '"';
         }
     }
     return out;

@@ -2,7 +2,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright © 2022 Taufik Nurrohman <https://github.com/taufik-nurrohman>
+ * Copyright © 2023 Taufik Nurrohman <https://github.com/taufik-nurrohman>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the “Software”), to deal
@@ -23,9 +23,9 @@
  * SOFTWARE.
  *
  */
-(function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) : typeof define === 'function' && define.amd ? define(['exports'], factory) : (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory((global.TE = global.TE || {}, global.TE.SourceXML = {})));
-})(this, function (exports) {
+(function (g, f) {
+    typeof exports === 'object' && typeof module !== 'undefined' ? f(exports) : typeof define === 'function' && define.amd ? define(['exports'], f) : (g = typeof globalThis !== 'undefined' ? globalThis : g || self, f((g.TE = g.TE || {}, g.TE.SourceXML = {})));
+})(this, (function (exports) {
     'use strict';
     var hasValue = function hasValue(x, data) {
         return -1 !== data.indexOf(x);
@@ -36,8 +36,8 @@
     var isDefined = function isDefined(x) {
         return 'undefined' !== typeof x;
     };
-    var isInstance = function isInstance(x, of ) {
-        return x && isSet( of ) && x instanceof of ;
+    var isInstance = function isInstance(x, of) {
+        return x && isSet(of) && x instanceof of ;
     };
     var isNull = function isNull(x) {
         return null === x;
@@ -57,14 +57,37 @@
     var isString = function isString(x) {
         return 'string' === typeof x;
     };
+    var W = window;
+    var esc = function esc(pattern, extra) {
+        if (extra === void 0) {
+            extra = "";
+        }
+        return pattern.replace(toPattern('[' + extra + x.replace(/./g, '\\$&') + ']'), '\\$&');
+    };
+    var isPattern = function isPattern(pattern) {
+        return isInstance(pattern, RegExp);
+    };
+    var toPattern = function toPattern(pattern, opt) {
+        if (isPattern(pattern)) {
+            return pattern;
+        }
+        // No need to escape `/` in the pattern string
+        pattern = pattern.replace(/\//g, '\\/');
+        return new RegExp(pattern, isSet(opt) ? opt : 'g');
+    };
+    var x = "!$^*()+=[]{}|:<>,.?/-";
     var toCount = function toCount(x) {
         return x.length;
     };
     var toObjectKeys = function toObjectKeys(x) {
         return Object.keys(x);
     };
-    var fromHTML = function fromHTML(x) {
-        return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;');
+    var fromHTML = function fromHTML(x, quote) {
+        x = x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;');
+        if (quote) {
+            x = x.replace(/'/g, '&apos;').replace(/"/g, '&quot;');
+        }
+        return x;
     };
     var fromValue = function fromValue(x) {
         if (isArray(x)) {
@@ -89,46 +112,37 @@
         }
         return "" + x;
     };
-    var W = window;
-    var esc = function esc(pattern, extra) {
-        if (extra === void 0) {
-            extra = "";
-        }
-        return pattern.replace(toPattern('[' + extra + x.replace(/./g, '\\$&') + ']'), '\\$&');
-    };
-    var isPattern = function isPattern(pattern) {
-        return isInstance(pattern, RegExp);
-    };
-    var toPattern = function toPattern(pattern, opt) {
-        if (isPattern(pattern)) {
-            return pattern;
-        } // No need to escape `/` in the pattern string
-        pattern = pattern.replace(/\//g, '\\/');
-        return new RegExp(pattern, isSet(opt) ? opt : 'g');
-    };
-    var x = "!$^*()+=[]{}|:<>,.?/-";
-    let tagComment = '<!--([\\s\\S](?!-->)*)-->',
+    var tagComment = '<!--([\\s\\S](?!-->)*)-->',
         tagData = '<!((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)>',
         tagName = '[\\w:.-]+',
-        tagStart = name => '<(' + name + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?>',
-        tagEnd = name => '</(' + name + ')>',
-        tagVoid = name => '<(' + name + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?/?>',
+        tagStart = function tagStart(name) {
+            return '<(' + name + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?>';
+        },
+        tagEnd = function tagEnd(name) {
+            return '</(' + name + ')>';
+        },
+        tagVoid = function tagVoid(name) {
+            return '<(' + name + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?/?>';
+        },
         tagPreamble = '<\\?((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)\\?>',
         tagTokens = '(?:' + tagComment + '|' + tagData + '|' + tagEnd(tagName) + '|' + tagPreamble + '|' + tagStart(tagName) + '|' + tagVoid(tagName) + ')';
-    const defaults = {
+    var defaults = {
         source: {
             type: 'XML'
         },
         sourceXML: {}
     };
-    const that = {};
+    var that = {};
 
     function toAttributes(attributes) {
         if (!attributes) {
             return "";
-        } // Sort object by key(s)
-        attributes = toObjectKeys(attributes).sort().reduce((r, k) => (r[k] = attributes[k], r), {});
-        let attribute,
+        }
+        // Sort object by key(s)
+        attributes = toObjectKeys(attributes).sort().reduce(function (r, k) {
+            return r[k] = attributes[k], r;
+        }, {});
+        var attribute,
             v,
             out = "";
         for (attribute in attributes) {
@@ -138,7 +152,7 @@
             }
             out += ' ' + attribute;
             if (true !== v) {
-                out += '="' + fromHTML(fromValue(v)) + '"';
+                out += '="' + fromHTML(fromValue(v), true) + '"';
             }
         }
         return out;
@@ -157,20 +171,37 @@
         }
         return tidy; // Return `[…]` or `false`
     }
-    that.insert = function (name, content = "", attributes = {}, tidy = false) {
-        let t = this;
+    that.insert = function (name, content, attributes, tidy) {
+        if (content === void 0) {
+            content = "";
+        }
+        if (attributes === void 0) {
+            attributes = {};
+        }
+        if (tidy === void 0) {
+            tidy = false;
+        }
+        var t = this;
         if (false !== (tidy = toTidy(tidy))) {
             t.trim(tidy[0], "");
         }
         return t.insert('<' + name + toAttributes(attributes) + (false !== content ? '>' + content + '</' + name + '>' : ' />') + (false !== tidy ? tidy[1] : ""), -1, true);
     };
-    that.toggle = function (name, content = "", attributes = {}, tidy = false) {
-        let t = this,
-            {
-                after,
-                before,
-                value
-            } = t.$(),
+    that.toggle = function (name, content, attributes, tidy) {
+        if (content === void 0) {
+            content = "";
+        }
+        if (attributes === void 0) {
+            attributes = {};
+        }
+        if (tidy === void 0) {
+            tidy = false;
+        }
+        var t = this,
+            _t$$ = t.$(),
+            after = _t$$.after,
+            before = _t$$.before,
+            value = _t$$.value,
             tagStartLocal = tagStart(name),
             tagEndLocal = tagEnd(name),
             tagStartLocalPattern = toPattern(tagStartLocal + '$', ""),
@@ -195,13 +226,21 @@
         }
         return t.wrap('<' + name + toAttributes(attributes) + '>', '</' + name + '>');
     };
-    that.wrap = function (name, content = "", attributes = {}, tidy = false) {
-        let t = this,
-            {
-                after,
-                before,
-                value
-            } = t.$();
+    that.wrap = function (name, content, attributes, tidy) {
+        if (content === void 0) {
+            content = "";
+        }
+        if (attributes === void 0) {
+            attributes = {};
+        }
+        if (tidy === void 0) {
+            tidy = false;
+        }
+        var t = this,
+            _t$$2 = t.$();
+        _t$$2.after;
+        _t$$2.before;
+        var value = _t$$2.value;
         if (!value && content) {
             t.insert(content);
         }
@@ -212,23 +251,21 @@
     };
 
     function canKeyDown(map, that) {
-        let state = that.state,
+        var state = that.state,
             charIndent = state.sourceXML.tab || state.tab || '\t',
-            {
-                key,
-                queue
-            } = map,
-            keyValue = map + ""; // Do nothing
+            key = map.key,
+            queue = map.queue,
+            keyValue = map + "";
+        // Do nothing
         if (queue.Alt || queue.Control) {
             return true;
         }
         if (['-', '>', '/', '?', ' '].includes(key)) {
-            let {
-                after,
-                before,
-                value,
-                start
-            } = that.$();
+            var _that$$ = that.$(),
+                after = _that$$.after,
+                before = _that$$.before,
+                value = _that$$.value,
+                start = _that$$.start;
             if ('-' === key) {
                 // `<!-|`
                 if (!value && '<!-' === before.slice(-3)) {
@@ -237,7 +274,7 @@
                 }
             }
             if ('>' === key || '/' === key) {
-                let tagStartMatch = toPattern(tagStart(tagName) + '$', "").exec(before + '>');
+                var tagStartMatch = toPattern(tagStart(tagName) + '$', "").exec(before + '>');
                 if (!value && tagStartMatch) {
                     // `<div|`
                     if ('/' === key) {
@@ -248,11 +285,14 @@
                         }
                         that.trim("", false).insert(' />', -1).record();
                         return false;
-                    } // `<div|></div>`
+                    }
+                    // `<div|></div>`
                     if (after.startsWith('></' + tagStartMatch[1] + '>')) {
-                        that.select(start + 1).record(); // `<div|</div>`
+                        that.select(start + 1).record();
+                        // `<div|</div>`
                     } else if (after.startsWith('</' + tagStartMatch[1] + '>')) {
-                        that.insert('>', -1).record(); // `<div|`
+                        that.insert('>', -1).record();
+                        // `<div|`
                     } else {
                         that.wrap('>', '</' + tagStartMatch[1] + ('>' === after[0] ? "" : '>')).record();
                     }
@@ -268,8 +308,10 @@
             }
             if (' ' === keyValue) {
                 if (!value) {
-                    if ( // `<!--|-->`
-                        '-->' === after.slice(0, 3) && '<!--' === before.slice(-4) || // `<?foo|?>`
+                    if (
+                        // `<!--|-->`
+                        '-->' === after.slice(0, 3) && '<!--' === before.slice(-4) ||
+                        // `<?foo|?>`
                         '?>' === after.slice(0, 2) && '<?' === before.slice(0, 2) && /<\?\S*$/.test(before)) {
                         that.wrap(' ', ' ').record();
                         return false;
@@ -278,139 +320,143 @@
             }
         }
         if ('ArrowLeft' === keyValue) {
-            let {
-                before,
-                start,
-                value
-            } = that.$();
-            if (!value) {
-                let tagMatch = toPattern(tagTokens + '$', "").exec(before); // `<foo>|bar`
+            var _that$$2 = that.$(),
+                _before = _that$$2.before,
+                _start = _that$$2.start,
+                _value = _that$$2.value;
+            if (!_value) {
+                var tagMatch = toPattern(tagTokens + '$', "").exec(_before);
+                // `<foo>|bar`
                 if (tagMatch) {
-                    that.select(start - toCount(tagMatch[0]), start);
+                    that.select(_start - toCount(tagMatch[0]), _start);
                     return false;
                 }
             }
         }
         if ('ArrowRight' === keyValue) {
-            let {
-                after,
-                start,
-                value
-            } = that.$();
-            if (!value) {
-                let tagMatch = toPattern('^' + tagTokens, "").exec(after); // `foo|<bar>`
-                if (tagMatch) {
-                    that.select(start, start + toCount(tagMatch[0]));
+            var _that$$3 = that.$(),
+                _after = _that$$3.after,
+                _start2 = _that$$3.start,
+                _value2 = _that$$3.value;
+            if (!_value2) {
+                var _tagMatch = toPattern('^' + tagTokens, "").exec(_after);
+                // `foo|<bar>`
+                if (_tagMatch) {
+                    that.select(_start2, _start2 + toCount(_tagMatch[0]));
                     return false;
                 }
             }
         }
         if ('Enter' === keyValue) {
-            let {
-                after,
-                before,
-                value
-            } = that.$(),
-                lineBefore = before.split('\n').pop(),
+            var _that$$4 = that.$(),
+                _after2 = _that$$4.after,
+                _before2 = _that$$4.before,
+                _value3 = _that$$4.value,
+                lineBefore = _before2.split('\n').pop(),
                 lineMatch = lineBefore.match(/^(\s+)/),
                 lineMatchIndent = lineMatch && lineMatch[1] || "",
-                tagStartMatch = before.match(toPattern(tagStart(tagName) + '$', ""));
-            if (!value) {
-                if ( // `<!--|-->`
-                    /^[ \t]*-->/.test(after) && /<!--[ \t]*$/.test(before) || // `<?foo|?>`
-                    /^[ \t]*\?>/.test(after) && /<\?\S*[ \t]*$/.test(before)) {
+                _tagStartMatch = _before2.match(toPattern(tagStart(tagName) + '$', ""));
+            if (!_value3) {
+                if (
+                    // `<!--|-->`
+                    /^[ \t]*-->/.test(_after2) && /<!--[ \t]*$/.test(_before2) ||
+                    // `<?foo|?>`
+                    /^[ \t]*\?>/.test(_after2) && /<\?\S*[ \t]*$/.test(_before2)) {
                     that.trim().wrap('\n' + lineMatchIndent, '\n' + lineMatchIndent).record();
                     return false;
                 }
-                if (tagStartMatch) {
-                    if (after.startsWith('</' + tagStartMatch[1] + '>')) {
+                if (_tagStartMatch) {
+                    if (_after2.startsWith('</' + _tagStartMatch[1] + '>')) {
                         that.record().trim().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent).record();
                     } else {
-                        that.record().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent + '</' + tagStartMatch[1] + '>').record();
+                        that.record().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent + '</' + _tagStartMatch[1] + '>').record();
                     }
                     return false;
                 }
             }
         }
         if ('Backspace' === keyValue) {
-            let {
-                after,
-                before,
-                value
-            } = that.$();
-            if (!value) {
+            var _that$$5 = that.$(),
+                _after3 = _that$$5.after,
+                _before3 = _that$$5.before,
+                _value4 = _that$$5.value;
+            if (!_value4) {
                 // `<!--|`
-                if ('<!--' === before.slice(-4)) {
-                    that.replace(/<!--$/, "", -1); // `<!--|-->`
-                    if ('-->' === after.slice(0, 3)) {
+                if ('<!--' === _before3.slice(-4)) {
+                    that.replace(/<!--$/, "", -1);
+                    // `<!--|-->`
+                    if ('-->' === _after3.slice(0, 3)) {
                         that.replace(/^-->/, "", 1);
                     }
                     that.record();
                     return false;
                 }
-                if (/^\s+-->/.test(after) && /<!--\s+$/.test(before)) {
-                    that.trim(' ' === before.slice(-1) ? "" : ' ', ' ' === after[0] ? "" : ' ').record();
+                if (/^\s+-->/.test(_after3) && /<!--\s+$/.test(_before3)) {
+                    that.trim(' ' === _before3.slice(-1) ? "" : ' ', ' ' === _after3[0] ? "" : ' ').record();
                     return false;
-                } // `<?|`
-                if (/<\?\S*$/.test(before)) {
-                    that.replace(/<\?\S*$/, "", -1); // `<?|?>`
-                    if ('?>' === after.slice(0, 2)) {
+                }
+                // `<?|`
+                if (/<\?\S*$/.test(_before3)) {
+                    that.replace(/<\?\S*$/, "", -1);
+                    // `<?|?>`
+                    if ('?>' === _after3.slice(0, 2)) {
                         that.replace(/^\?>/, "", 1);
                     }
                     that.record();
                     return false;
                 }
-                if (/^\s+\?>/.test(after) && /<\?\S*\s+$/.test(before)) {
-                    that.trim(' ' === before.slice(-1) ? "" : ' ', ' ' === after[0] ? "" : ' ').record();
+                if (/^\s+\?>/.test(_after3) && /<\?\S*\s+$/.test(_before3)) {
+                    that.trim(' ' === _before3.slice(-1) ? "" : ' ', ' ' === _after3[0] ? "" : ' ').record();
                     return false;
                 }
-                let tagPattern = toPattern(tagTokens + '$', ""),
-                    tagMatch = tagPattern.exec(before);
-                if (tagMatch) {
+                var tagPattern = toPattern(tagTokens + '$', ""),
+                    _tagMatch2 = tagPattern.exec(_before3);
+                if (_tagMatch2) {
                     // `<div />|`
-                    if (' />' === before.slice(-3)) {
+                    if (' />' === _before3.slice(-3)) {
                         that.replace(/ \/>$/, '/>', -1).record();
                         return false;
-                    } // `<div/>|`
-                    if ('/>' === before.slice(-2)) {
+                    }
+                    // `<div/>|`
+                    if ('/>' === _before3.slice(-2)) {
                         that.replace(/\/>$/, '>', -1).record();
                         return false;
                     }
                     that.replace(tagPattern, "", -1);
-                    let name = tagMatch[0].slice(1).split(/\s+|>/)[0];
-                    if (tagMatch[0] && '/' !== tagMatch[0][1]) {
-                        if (after.startsWith('</' + name + '>')) {
+                    var name = _tagMatch2[0].slice(1).split(/\s+|>/)[0];
+                    if (_tagMatch2[0] && '/' !== _tagMatch2[0][1]) {
+                        if (_after3.startsWith('</' + name + '>')) {
                             that.replace(toPattern('^</' + name + '>', ""), "", 1);
                         }
                     }
                     that.record();
                     return false;
                 }
-                if (toPattern(tagStart(tagName) + '\\n(?:' + esc(charIndent) + ')?$', "").test(before) && toPattern('^\\s*' + tagEnd(tagName), "").test(after)) {
+                if (toPattern(tagStart(tagName) + '\\n(?:' + esc(charIndent) + ')?$', "").test(_before3) && toPattern('^\\s*' + tagEnd(tagName), "").test(_after3)) {
                     that.trim().record(); // Collapse!
                     return false;
                 }
             }
         }
         if ('Delete' === keyValue) {
-            let {
-                after,
-                value
-            } = that.$();
-            if (!value) {
+            var _that$$6 = that.$(),
+                _after4 = _that$$6.after,
+                _value5 = _that$$6.value;
+            if (!_value5) {
                 // `|-->`
-                if ('-->' === after.slice(0, 3)) {
+                if ('-->' === _after4.slice(0, 3)) {
                     that.replace(/^-->/, "", 1).record();
                     return false;
-                } // `|?>`
-                if ('?>' === after.slice(0, 2)) {
+                }
+                // `|?>`
+                if ('?>' === _after4.slice(0, 2)) {
                     that.replace(/^\?>/, "", 1).record();
                     return false;
                 }
-                let tagPattern = toPattern('^' + tagTokens, ""),
-                    tagMatch = tagPattern.exec(after);
-                if (tagMatch) {
-                    that.replace(tagPattern, "", 1).record();
+                var _tagPattern = toPattern('^' + tagTokens, ""),
+                    _tagMatch3 = _tagPattern.exec(_after4);
+                if (_tagMatch3) {
+                    that.replace(_tagPattern, "", 1).record();
                     return false;
                 }
             }
@@ -419,19 +465,16 @@
     }
 
     function canMouseDown(map, that) {
-        let {
-            key,
-            queue
-        } = map;
+        map.key;
+        var queue = map.queue;
         if (!queue.Control) {
-            W.setTimeout(() => {
-                let {
-                    after,
-                    before,
-                    value
-                } = that.$();
+            W.setTimeout(function () {
+                var _that$$7 = that.$(),
+                    after = _that$$7.after,
+                    before = _that$$7.before,
+                    value = _that$$7.value;
                 if (!value) {
-                    let caret = '\ufeff',
+                    var caret = "\uFEFF",
                         tagTokensLocal = tagTokens.split('(' + tagName + ')').join('((?:[\\w:.-]|' + caret + ')+)'),
                         tagTokensLocalPattern = toPattern(tagTokensLocal),
                         content = before + value + caret + after,
@@ -448,10 +491,13 @@
         }
         return true;
     }
-    const state = defaults;
+    var state = defaults;
     exports.canKeyDown = canKeyDown;
     exports.canMouseDown = canMouseDown;
     exports.state = state;
     exports.that = that;
     exports.toAttributes = toAttributes;
-});
+    Object.defineProperty(exports, '__esModule', {
+        value: true
+    });
+}));
