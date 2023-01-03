@@ -489,7 +489,8 @@ editor.record(); // Record the first history data!</code></pre>
       function toggleTimeXML() {
           let date = new Date;
           return editor.toggleXML('time', 'text goes here…', {
-              datetime: date.toISOString()
+              datetime: date.toISOString(),
+              test: 'asdf"asdf\'asdf<asdf>&asdf'
           }, ' ');
       }
     </script>
