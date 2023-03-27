@@ -108,7 +108,7 @@ export function canKeyDown(map, that) {
     let state = that.state,
         charAfter,
         charBefore,
-        charIndent = state.sourceXML.tab || state.tab || '\t',
+        charIndent = state.source.tab || state.tab || '\t',
         {key, queue} = map,
         keyValue = map + "";
     // Do nothing

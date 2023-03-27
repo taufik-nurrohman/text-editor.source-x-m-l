@@ -251,7 +251,7 @@
 
     function canKeyDown(map, that) {
         var state = that.state,
-            charIndent = state.sourceXML.tab || state.tab || '\t',
+            charIndent = state.source.tab || state.tab || '\t',
             key = map.key,
             queue = map.queue,
             keyValue = map + "";
