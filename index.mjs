@@ -17,8 +17,7 @@ let tagComment = '<!--([\\s\\S](?!-->)*)-->',
 const defaults = {
     source: {
         type: 'XML'
-    },
-    sourceXML: {}
+    }
 };
 
 export const that = {};

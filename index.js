@@ -57,25 +57,6 @@
     var isString = function isString(x) {
         return 'string' === typeof x;
     };
-    var W = window;
-    var esc = function esc(pattern, extra) {
-        if (extra === void 0) {
-            extra = "";
-        }
-        return pattern.replace(toPattern('[' + extra + x.replace(/./g, '\\$&') + ']'), '\\$&');
-    };
-    var isPattern = function isPattern(pattern) {
-        return isInstance(pattern, RegExp);
-    };
-    var toPattern = function toPattern(pattern, opt) {
-        if (isPattern(pattern)) {
-            return pattern;
-        }
-        // No need to escape `/` in the pattern string
-        pattern = pattern.replace(/\//g, '\\/');
-        return new RegExp(pattern, isSet(opt) ? opt : 'g');
-    };
-    var x = "!$^*()+=[]{}|:<>,.?/-";
     var toCount = function toCount(x) {
         return x.length;
     };
@@ -112,6 +93,25 @@
         }
         return "" + x;
     };
+    var W = window;
+    var esc = function esc(pattern, extra) {
+        if (extra === void 0) {
+            extra = "";
+        }
+        return pattern.replace(toPattern('[' + extra + x.replace(/./g, '\\$&') + ']'), '\\$&');
+    };
+    var isPattern = function isPattern(pattern) {
+        return isInstance(pattern, RegExp);
+    };
+    var toPattern = function toPattern(pattern, opt) {
+        if (isPattern(pattern)) {
+            return pattern;
+        }
+        // No need to escape `/` in the pattern string
+        pattern = pattern.replace(/\//g, '\\/');
+        return new RegExp(pattern, isSet(opt) ? opt : 'g');
+    };
+    var x = "!$^*()+=[]{}|:<>,.?/-";
     var tagComment = '<!--([\\s\\S](?!-->)*)-->',
         tagData = '<!((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)>',
         tagName = '[\\w:.-]+',
@@ -129,8 +129,7 @@
     var defaults = {
         source: {
             type: 'XML'
-        },
-        sourceXML: {}
+        }
     };
     var that = {};
 
