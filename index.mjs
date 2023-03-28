@@ -313,11 +313,12 @@ export function canMouseDown(map, of) {
             let {after, before, value} = of.$();
             if (!value) {
                 let caret = '\ufeff',
-                    tagTokensLocal = tagTokens.split('(' + tagName + ')').join('((?:[\\w:.-]|' + caret + ')+)'),
+                    tagTokensLocal = tagTokens.split('(' + tagName + ')').join('((?:' + tagName + '|' + caret + ')+)'),
                     tagTokensLocalPattern = toPattern(tagTokensLocal),
                     content = before + value + caret + after, m, v;
                 while (m = tagTokensLocalPattern.exec(content)) {
                     if (hasValue(caret, m[0])) {
+                        console.log([m[0], m[0].indexOf(caret)]);
                         of.select(v = m.index, v + toCount(m[0]) - 1);
                         break;
                     }
