@@ -104,8 +104,8 @@ that.wrap = function (name, content = "", attributes = {}, tidy = false) {
     return t.wrap('<' + name + toAttributes(attributes) + '>', '</' + name + '>');
 };
 
-export function canKeyDown(map, that) {
-    let state = that.state,
+export function canKeyDown(map, of) {
+    let state = of.state,
         charAfter,
         charBefore,
         charIndent = state.source.tab || state.tab || '\t',
@@ -116,11 +116,11 @@ export function canKeyDown(map, that) {
         return true;
     }
     if (['-', '>', '/', '?', ' '].includes(key)) {
-        let {after, before, value, start} = that.$();
+        let {after, before, value, start} = of.$();
         if ('-' === key) {
             // `<!-|`
             if (!value && '<!-' === before.slice(-3)) {
-                that.wrap('- ', ' --' + ('>' === after[0] ? "" : '>')).record();
+                of.wrap('- ', ' --' + ('>' === after[0] ? "" : '>')).record();
                 return false;
             }
         }
@@ -131,21 +131,21 @@ export function canKeyDown(map, that) {
                 if ('/' === key) {
                     // `<div|>`
                     if ('>' === after[0]) {
-                        that.trim("", false).insert(' /', -1).select(that.$().start + 1).record();
+                        of.trim("", false).insert(' /', -1).select(of.$().start + 1).record();
                         return false;
                     }
-                    that.trim("", false).insert(' />', -1).record();
+                    of.trim("", false).insert(' />', -1).record();
                     return false;
                 }
                 // `<div|></div>`
                 if (after.startsWith('></' + tagStartMatch[1] + '>')) {
-                    that.select(start + 1).record();
+                    of.select(start + 1).record();
                 // `<div|</div>`
                 } else if (after.startsWith('</' + tagStartMatch[1] + '>')) {
-                    that.insert('>', -1).record();
+                    of.insert('>', -1).record();
                 // `<div|`
                 } else {
-                    that.wrap('>', '</' + tagStartMatch[1] + ('>' === after[0] ? "" : '>')).record();
+                    of.wrap('>', '</' + tagStartMatch[1] + ('>' === after[0] ? "" : '>')).record();
                 }
                 return false;
             }
@@ -153,7 +153,7 @@ export function canKeyDown(map, that) {
         if ('?' === key) {
             // `<|`
             if (!value && '<' === before.slice(-1)) {
-                that.wrap('?', '?' + ('>' === after[0] ? "" : '>')).record();
+                of.wrap('?', '?' + ('>' === after[0] ? "" : '>')).record();
                 return false;
             }
         }
@@ -165,36 +165,36 @@ export function canKeyDown(map, that) {
                     // `<?foo|?>`
                     '?>' === after.slice(0, 2) && '<?' === before.slice(0, 2) && /<\?\S*$/.test(before)
                 ) {
-                    that.wrap(' ', ' ').record();
+                    of.wrap(' ', ' ').record();
                     return false;
                 }
             }
         }
     }
     if ('ArrowLeft' === keyValue) {
-        let {before, start, value} = that.$();
+        let {before, start, value} = of.$();
         if (!value) {
             let tagMatch = toPattern(tagTokens + '$', "").exec(before);
             // `<foo>|bar`
             if (tagMatch) {
-                that.select(start - toCount(tagMatch[0]), start);
+                of.select(start - toCount(tagMatch[0]), start);
                 return false;
             }
         }
     }
     if ('ArrowRight' === keyValue) {
-        let {after, start, value} = that.$();
+        let {after, start, value} = of.$();
         if (!value) {
             let tagMatch = toPattern('^' + tagTokens, "").exec(after);
             // `foo|<bar>`
             if (tagMatch) {
-                that.select(start, start + toCount(tagMatch[0]));
+                of.select(start, start + toCount(tagMatch[0]));
                 return false;
             }
         }
     }
     if ('Enter' === keyValue) {
-        let {after, before, value} = that.$(),
+        let {after, before, value} = of.$(),
             lineBefore = before.split('\n').pop(),
             lineMatch = lineBefore.match(/^(\s+)/),
             lineMatchIndent = lineMatch && lineMatch[1] || "",
@@ -206,48 +206,48 @@ export function canKeyDown(map, that) {
                 // `<?foo|?>`
                 /^[ \t]*\?>/.test(after) && /<\?\S*[ \t]*$/.test(before)
             ) {
-                that.trim().wrap('\n' + lineMatchIndent, '\n' + lineMatchIndent).record();
+                of.trim().wrap('\n' + lineMatchIndent, '\n' + lineMatchIndent).record();
                 return false;
             }
             if (tagStartMatch) {
                 if (after.startsWith('</' + tagStartMatch[1] + '>')) {
-                    that.record().trim().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent).record();
+                    of.record().trim().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent).record();
                 } else {
-                    that.record().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent + '</' + tagStartMatch[1] + '>').record();
+                    of.record().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent + '</' + tagStartMatch[1] + '>').record();
                 }
                 return false;
             }
         }
     }
     if ('Backspace' === keyValue) {
-        let {after, before, value} = that.$();
+        let {after, before, value} = of.$();
         if (!value) {
             // `<!--|`
             if ('<!--' === before.slice(-4)) {
-                that.replace(/<!--$/, "", -1);
+                of.replace(/<!--$/, "", -1);
                 // `<!--|-->`
                 if ('-->' === after.slice(0, 3)) {
-                    that.replace(/^-->/, "", 1);
+                    of.replace(/^-->/, "", 1);
                 }
-                that.record();
+                of.record();
                 return false;
             }
             if (/^\s+-->/.test(after) && /<!--\s+$/.test(before)) {
-                that.trim(' ' === before.slice(-1) ? "" : ' ', ' ' === after[0] ? "" : ' ').record();
+                of.trim(' ' === before.slice(-1) ? "" : ' ', ' ' === after[0] ? "" : ' ').record();
                 return false;
             }
             // `<?|`
             if (/<\?\S*$/.test(before)) {
-                that.replace(/<\?\S*$/, "", -1);
+                of.replace(/<\?\S*$/, "", -1);
                 // `<?|?>`
                 if ('?>' === after.slice(0, 2)) {
-                    that.replace(/^\?>/, "", 1);
+                    of.replace(/^\?>/, "", 1);
                 }
-                that.record();
+                of.record();
                 return false;
             }
             if (/^\s+\?>/.test(after) && /<\?\S*\s+$/.test(before)) {
-                that.trim(' ' === before.slice(-1) ? "" : ' ', ' ' === after[0] ? "" : ' ').record();
+                of.trim(' ' === before.slice(-1) ? "" : ' ', ' ' === after[0] ? "" : ' ').record();
                 return false;
             }
             let tagPattern = toPattern(tagTokens + '$', ""),
@@ -255,50 +255,50 @@ export function canKeyDown(map, that) {
             if (tagMatch) {
                 // `<div />|`
                 if (' />' === before.slice(-3)) {
-                    that.replace(/ \/>$/, '/>', -1).record();
+                    of.replace(/ \/>$/, '/>', -1).record();
                     return false;
                 }
                 // `<div/>|`
                 if ('/>' === before.slice(-2)) {
-                    that.replace(/\/>$/, '>', -1).record();
+                    of.replace(/\/>$/, '>', -1).record();
                     return false;
                 }
-                that.replace(tagPattern, "", -1);
+                of.replace(tagPattern, "", -1);
                 let name = tagMatch[0].slice(1).split(/\s+|>/)[0];
                 if (tagMatch[0] && '/' !== tagMatch[0][1]) {
                     if (after.startsWith('</' + name + '>')) {
-                        that.replace(toPattern('^</' + name + '>', ""), "", 1);
+                        of.replace(toPattern('^</' + name + '>', ""), "", 1);
                     }
                 }
-                that.record();
+                of.record();
                 return false;
             }
             if (
                 toPattern(tagStart(tagName) + '\\n(?:' + esc(charIndent) + ')?$', "").test(before) &&
                 toPattern('^\\s*' + tagEnd(tagName), "").test(after)
             ) {
-                that.trim().record(); // Collapse!
+                of.trim().record(); // Collapse!
                 return false;
             }
         }
     }
     if ('Delete' === keyValue) {
-        let {after, value} = that.$();
+        let {after, value} = of.$();
         if (!value) {
             // `|-->`
             if ('-->' === after.slice(0, 3)) {
-                that.replace(/^-->/, "", 1).record();
+                of.replace(/^-->/, "", 1).record();
                 return false;
             }
             // `|?>`
             if ('?>' === after.slice(0, 2)) {
-                that.replace(/^\?>/, "", 1).record();
+                of.replace(/^\?>/, "", 1).record();
                 return false;
             }
             let tagPattern = toPattern('^' + tagTokens, ""),
                 tagMatch = tagPattern.exec(after);
             if (tagMatch) {
-                that.replace(tagPattern, "", 1).record();
+                of.replace(tagPattern, "", 1).record();
                 return false;
             }
         }
@@ -306,11 +306,11 @@ export function canKeyDown(map, that) {
     return true;
 }
 
-export function canMouseDown(map, that) {
+export function canMouseDown(map, of) {
     let {key, queue} = map;
     if (!queue.Control) {
         W.setTimeout(() => {
-            let {after, before, value} = that.$();
+            let {after, before, value} = of.$();
             if (!value) {
                 let caret = '\ufeff',
                     tagTokensLocal = tagTokens.split('(' + tagName + ')').join('((?:[\\w:.-]|' + caret + ')+)'),
@@ -318,7 +318,7 @@ export function canMouseDown(map, that) {
                     content = before + value + caret + after, m, v;
                 while (m = tagTokensLocalPattern.exec(content)) {
                     if (hasValue(caret, m[0])) {
-                        that.select(v = m.index, v + toCount(m[0]) - 1);
+                        of.select(v = m.index, v + toCount(m[0]) - 1);
                         break;
                     }
                 }
