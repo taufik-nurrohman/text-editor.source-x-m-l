@@ -95,7 +95,7 @@
     <main>
       <p><label><input checked onchange="this.checked ? setEditor() : letEditor();" type="checkbox"> <span>Enable XML Source Editor</span></label></p>
       <p><textarea placeholder="Code goes here&hellip;" spellcheck="false"></textarea></p>
-      <p><button onclick="editor.insertXML('br', false, {foo: 'bar'}, [&quot;&quot;, '\n']).record();">Insert Test</button> <button onclick="toggleTimeXML().record();">Toggle Test</button> <button onclick="editor.wrapXML('foo', &quot;&quot;, {bar: 'baz'}, ' ').record();">Wrap Test</button> <code class="log"></code></p>
+      <p><button onclick="editor.insertXML('br', false, {foo: 'bar'}, ['\n', '\n']).record();">Insert Test</button> <button onclick="toggleTimeXML().record();">Toggle Test</button> <button onclick="editor.wrapXML('foo', &quot;&quot;, {bar: 'baz'}).record();">Wrap Test</button> <code class="log"></code></p>
       <h2>Features</h2>
       <ul>
         <li><code>&lt;!-<mark></mark></code> or <code>&lt;!-<mark></mark>&gt;</code> then press <kbd>-</kbd>.</li>
@@ -527,9 +527,9 @@ editor.record();</code></pre>
       function toggleTimeXML() {
           let date = new Date;
           return editor.toggleXML('time', 'text goes here…', {
-              datetime: date.toISOString(),
-              test: 'asdf"asdf\'asdf<asdf>&asdf'
-          }, ' ');
+              'data-test': 'asdf"asdf\'asdf<asdf>&asdf',
+              'datetime': date.toISOString()
+          });
       }
     </script>
   </body>
