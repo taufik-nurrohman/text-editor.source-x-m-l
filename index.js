@@ -481,8 +481,28 @@
                         v;
                     while (m = tagTokensLocalPattern.exec(content)) {
                         if (hasValue(caret, m[0])) {
-                            console.log([m[0], m[0].indexOf(caret)]);
-                            of.select(v = m.index, v + toCount(m[0]) - 1);
+                            var parts = m[0].split(caret);
+                            // `<as|df asdf="asdf">`
+                            if (!/\s/.test(parts[0])) {
+                                of.select(v = m.index, v + toCount(m[0]) - 1);
+                                break;
+                            }
+                            var mm = void 0;
+                            // `<asdf asdf="as|df">` or `<asdf asdf='as|df'>`
+                            if (mm = toPattern('=("[^"]*' + caret + '[^"]*"|\'[^\']*' + caret + '[^\']*\')').exec(m[0])) {
+                                of.select(v = m.index + mm.index + 2, v + toCount(mm[1]) - 3);
+                                break;
+                            }
+                            // `<asdf asdf=as|df>`
+                            if (mm = toPattern('=([^"\'\\s\\/>]*' + caret + '[^"\'\\s\\/>]*)').exec(m[0])) {
+                                of.select(v = m.index + mm.index + 1, v + toCount(mm[1]) - 1);
+                                break;
+                            }
+                            // `<asdf as|df="asdf">`
+                            if (mm = toPattern('([^="\'\\s]*' + caret + '[^="\'\\s]*)[=\\s\\/>]').exec(m[0])) {
+                                of.select(v = m.index + mm.index, v + toCount(mm[1]) - 1);
+                                break;
+                            }
                             break;
                         }
                     }
