@@ -125,7 +125,7 @@
             return '<(' + name + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?/?>';
         },
         tagPreamble = '<\\?((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)\\?>',
-        tagTokens = '(?:' + tagComment + '|' + tagData + '|' + tagEnd(tagName) + '|' + tagPreamble + '|' + tagStart(tagName) + '|' + tagVoid(tagName) + ')';
+        tagTokens = '(?:' + tagComment + '|' + tagData + '|' + tagEnd(tagName) + '|' + tagPreamble + '|' + tagVoid(tagName) + '|' + tagStart(tagName) + ')';
     var defaults = {
         source: {
             type: 'XML'
@@ -470,6 +470,7 @@
             W.setTimeout(function () {
                 var _of$$7 = of.$(),
                     after = _of$$7.after,
+                    end = _of$$7.end,
                     before = _of$$7.before,
                     value = _of$$7.value;
                 if (!value) {
@@ -482,9 +483,14 @@
                     while (m = tagTokensLocalPattern.exec(content)) {
                         if (hasValue(caret, m[0])) {
                             var parts = m[0].split(caret);
-                            // `<as|df asdf="asdf">`
-                            if (!/\s/.test(parts[0])) {
+                            // `<asdf asdf="asdf"/|>` or `<asdf asdf="asdf" |/>`
+                            if ('>' === parts[1] || '/>' === (parts[1] || "").trim()) {
                                 of.select(v = m.index, v + toCount(m[0]) - 1);
+                                break;
+                            }
+                            // `<as|df asdf="asdf">`
+                            if ('<' !== parts[0] && '</' !== parts[0] && !/\s/.test(parts[0])) {
+                                of.select(v = m.index + ('/' === parts[0][1] ? 2 : 1), end + toCount(parts[1].split(/[\s\/>]/).shift()));
                                 break;
                             }
                             var mm = void 0;
@@ -499,10 +505,14 @@
                                 break;
                             }
                             // `<asdf as|df="asdf">`
-                            if (mm = toPattern('([^="\'\\s]*' + caret + '[^="\'\\s]*)[=\\s\\/>]').exec(m[0])) {
-                                of.select(v = m.index + mm.index, v + toCount(mm[1]) - 1);
-                                break;
+                            if ('<' !== parts[0] && '</' !== parts[0]) {
+                                if (mm = toPattern('([^="\'\\s]*' + caret + '[^="\'\\s]*)[=\\s\\/>]').exec(m[0])) {
+                                    of.select(v = m.index + mm.index, v + toCount(mm[1]) - 1);
+                                    break;
+                                }
                             }
+                            // Other caret position(s) will select the element
+                            of.select(v = m.index, v + toCount(m[0]) - 1);
                             break;
                         }
                     }

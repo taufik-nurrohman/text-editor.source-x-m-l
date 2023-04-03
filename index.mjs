@@ -12,7 +12,7 @@ let tagComment = '<!--([\\s\\S](?!-->)*)-->',
     tagEnd = name => '</(' + name + ')>',
     tagVoid = name => '<(' + name + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?/?>',
     tagPreamble = '<\\?((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)\\?>',
-    tagTokens = '(?:' + tagComment + '|' + tagData + '|' + tagEnd(tagName) + '|' + tagPreamble + '|' + tagStart(tagName) + '|' + tagVoid(tagName) + ')';
+    tagTokens = '(?:' + tagComment + '|' + tagData + '|' + tagEnd(tagName) + '|' + tagPreamble + '|' + tagVoid(tagName) + '|' + tagStart(tagName) + ')';
 
 const defaults = {
     source: {
@@ -310,7 +310,7 @@ export function canMouseDown(map, of) {
     let {key, queue} = map;
     if (!queue.Control) {
         W.setTimeout(() => {
-            let {after, before, value} = of.$();
+            let {after, end, before, value} = of.$();
             if (!value) {
                 let caret = '\ufeff',
                     tagTokensLocal = tagTokens.split('(' + tagName + ')').join('((?:' + tagName + '|' + caret + ')+)'),
@@ -319,9 +319,14 @@ export function canMouseDown(map, of) {
                 while (m = tagTokensLocalPattern.exec(content)) {
                     if (hasValue(caret, m[0])) {
                         let parts = m[0].split(caret);
-                        // `<as|df asdf="asdf">`
-                        if (!/\s/.test(parts[0])) {
+                        // `<asdf asdf="asdf"/|>` or `<asdf asdf="asdf" |/>`
+                        if ('>' === parts[1] || '/>' === (parts[1] || "").trim()) {
                             of.select(v = m.index, v + toCount(m[0]) - 1);
+                            break;
+                        }
+                        // `<as|df asdf="asdf">`
+                        if ('<' !== parts[0] && '</' !== parts[0] && !/\s/.test(parts[0])) {
+                            of.select(v = m.index + ('/' === parts[0][1] ? 2 : 1), end + toCount(parts[1].split(/[\s\/>]/).shift()));
                             break;
                         }
                         let mm;
@@ -336,10 +341,14 @@ export function canMouseDown(map, of) {
                             break;
                         }
                         // `<asdf as|df="asdf">`
-                        if (mm = toPattern('([^="\'\\s]*' + caret + '[^="\'\\s]*)[=\\s\\/>]').exec(m[0])) {
-                            of.select(v = m.index + mm.index, v + toCount(mm[1]) - 1);
-                            break;
+                        if ('<' !== parts[0] && '</' !== parts[0]) {
+                            if (mm = toPattern('([^="\'\\s]*' + caret + '[^="\'\\s]*)[=\\s\\/>]').exec(m[0])) {
+                                of.select(v = m.index + mm.index, v + toCount(mm[1]) - 1);
+                                break;
+                            }
                         }
+                        // Other caret position(s) will select the element
+                        of.select(v = m.index, v + toCount(m[0]) - 1);
                         break;
                     }
                 }
