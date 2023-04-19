@@ -319,7 +319,7 @@ export function canMouseDown(map, of) {
                 while (m = tagTokensLocalPattern.exec(content)) {
                     if (hasValue(caret, m[0])) {
                         let parts = m[0].split(caret);
-                        // `<asdf asdf="asdf"/|>` or `<asdf asdf="asdf" |/>`
+                        // `<asdf asdf="asdf"|/>` or `<asdf asdf="asdf" |/>`
                         if ('>' === parts[1] || '/>' === (parts[1] || "").trim()) {
                             of.select(v = m.index, v + toCount(m[0]) - 1);
                             break;
