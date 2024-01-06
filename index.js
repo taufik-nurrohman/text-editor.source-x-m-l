@@ -338,7 +338,7 @@
             }
             return;
         }
-        if ('Delete' === keyValue) {
+        if ('Delete' === keys) {
             if (!value) {
                 // `|-->`
                 if ('-->' === after.slice(0, 3)) {
