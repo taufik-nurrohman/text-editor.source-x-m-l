@@ -1,0 +1,233 @@
+extends _index.pug
+
+block state
+  - const scripts = ['../key/index.min.js', '../text-editor/index.min.js', '../text-editor.history/index.min.js', '../text-editor.key/index.min.js', '../text-editor.source/index.min.js', 'index.min.js']
+  - const styles = ['../layout/index.min.css']
+  - const theme = '#000'
+  - const title = 'Text Editor Source XML ' + version
+
+block script
+  script
+    | const editor = new TextEditor(document.querySelector('textarea'), {
+    |     source: {
+    |         type: 'XML'
+    |     },
+    |     tab: ' '.repeat(2),
+    |     with: [TextEditor.History, TextEditor.Key, TextEditor.SourceXML, TextEditor.Source]
+    | });
+    |
+    | editor.key('Control-[', function () {
+    |     return this.pull().record(), false;
+    | });
+    |
+    | editor.key('Control-]', function () {
+    |     return this.push().record(), false;
+    | });
+    |
+    | editor.key('Control-y', function () {
+    |     return this.redo(), false;
+    | });
+    |
+    | editor.key('Control-z', function () {
+    |     return this.undo(), false;
+    | });
+
+block style
+  style
+    | mark {
+    |   border-left: 1px solid #f00;
+    |   border-right: 1px solid #f00;
+    | }
+    |
+    | mark:empty {
+    |   border-right-width: 0;
+    | }
+
+block content
+  header
+    h1
+      a(href='../text-editor/index.html') &laquo;
+      = ' ' + title
+    p #[abbr(title='Extensible Markup Language') XML] source extension for #[a(href='../text-editor/index.html') Text Editor]. This extension provides a set of key strokes to generate responses like in a typical #[abbr(title='Extensible Markup Language') XML] source code editor.
+    hr
+  main
+    p
+      textarea(placeholder!='Code goes here&hellip;' spellcheck='false' style={
+        'display': 'block',
+        'width': '100%'
+      })
+    p(role='group')
+      button(onclick='return editor.toggleXML(\'time\', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}, true).record(), false;') Test Toggle XML
+      button(onclick='return editor.wrapXML(\'time\', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}, true).record(), false;') Test Wrap XML
+      button(onclick='return editor.peelXML(\'time\', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}, true).record(), false;') Test Peel XML
+      button(onclick='return editor.insertXML(\'time\', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}, true).record(), false;') Test Insert XML
+    h2 Features
+    ul
+      li <code>&lt;!--<mark></mark>--&gt;</code> or <code>&lt;!-- <mark></mark> --&gt;</code> then press <kbd>Enter</kbd>.
+      li <code>&lt;!--<mark></mark>--&gt;</code> then press <kbd>&nbsp;</kbd> (Space).
+      li <code>&lt;!--<mark></mark></code> or <code>&lt;!--<mark></mark>--&gt;</code> then press <kbd>Backspace</kbd>.
+      li <code>&lt;!--asdf--&gt;<mark></mark></code> then press <kbd>ArrowLeft</kbd>.
+      li <code>&lt;!--asdf--&gt;<mark></mark></code> then press <kbd>Backspace</kbd>.
+      li <code>&lt;!-<mark></mark></code> or <code>&lt;!-<mark></mark>&gt;</code> then press <kbd>-</kbd>.
+      li <code>&lt;/div&gt;<mark></mark></code> then press <kbd>ArrowLeft</kbd>.
+      li <code>&lt;/div&gt;<mark></mark></code> then press <kbd>Backspace</kbd>.
+      li <code>&lt;<mark></mark></code> or <code>&lt;<mark></mark>&gt;</code> then press <kbd>?</kbd>.
+      li <code>&lt;?<mark></mark></code> or <code>&lt;?<mark></mark>?&gt;</code> then press <kbd>Backspace</kbd>.
+      li <code>&lt;?asdf?&gt;<mark></mark></code> then press <kbd>ArrowLeft</kbd>.
+      li <code>&lt;?asdf?&gt;<mark></mark></code> then press <kbd>Backspace</kbd>.
+      li <code>&lt;?xml<mark></mark>?&gt;</code> then press <kbd>Enter</kbd>.
+      li <code>&lt;div /&gt;<mark></mark></code> then press <kbd>ArrowLeft</kbd>.
+      li <code>&lt;div /&gt;<mark></mark></code> then press <kbd>Backspace</kbd>.
+      li <code>&lt;div&gt;<mark></mark>&lt;/div&gt;</code> then press <kbd>Backspace</kbd>.
+      li <code>&lt;div&gt;<mark></mark>&lt;/div&gt;</code> then press <kbd>Enter</kbd>.
+      li <code>&lt;div&gt;<mark></mark></code> then press <kbd>ArrowLeft</kbd>.
+      li <code>&lt;div&gt;<mark></mark></code> then press <kbd>Backspace</kbd>.
+      li <code>&lt;div&gt;<mark></mark></code> then press <kbd>Enter</kbd>.
+      li <code>&lt;div/&gt;<mark></mark></code> then press <kbd>ArrowLeft</kbd>.
+      li <code>&lt;div/&gt;<mark></mark></code> then press <kbd>Backspace</kbd>.
+      li <code>&lt;div<mark></mark></code> or <code>&lt;div<mark></mark>&gt;</code> then press <kbd>&gt;</kbd>.
+      li <code>&lt;div<mark></mark></code> or <code>&lt;div<mark></mark>&gt;</code> then press <kbd>/</kbd>.
+      li <code><mark></mark>&lt;!--asdf--&gt;</code> then press <kbd>ArrowRight</kbd>.
+      li <code><mark></mark>&lt;!--asdf--&gt;</code> then press <kbd>Delete</kbd>.
+      li <code><mark></mark>&lt;/div&gt;</code> then press <kbd>ArrowRight</kbd>.
+      li <code><mark></mark>&lt;/div&gt;</code> then press <kbd>Delete</kbd>.
+      li <code><mark></mark>&lt;?asdf?&gt;</code> then press <kbd>ArrowRight</kbd>.
+      li <code><mark></mark>&lt;?asdf?&gt;</code> then press <kbd>Delete</kbd>.
+      li <code><mark></mark>&lt;div&gt;</code> then press <kbd>ArrowRight</kbd>.
+      li <code><mark></mark>&lt;div&gt;</code> then press <kbd>Delete</kbd>.
+      li <code><mark></mark>&lt;div/&gt;</code> then press <kbd>ArrowRight</kbd>.
+      li <code><mark></mark>&lt;div/&gt;</code> then press <kbd>Delete</kbd>.
+      li <code><mark></mark>--&gt;</code> then press <kbd>Delete</kbd>.
+      li <code><mark></mark>?&gt;</code> then press <kbd>Delete</kbd>.
+    h2 Usage
+    h3 Browser
+    pre: code
+      | &lt;script src="#[a(href='../text-editor/index.min.js' target='_blank') ./text-editor/index.min.js]"&gt;&lt;/script&gt;
+      | &lt;script src="#[a(href='../text-editor.history/index.min.js' target='_blank') ./text-editor.history/index.min.js]"&gt;&lt;/script&gt;
+      | &lt;script src="#[a(href='../text-editor.key/index.min.js' target='_blank') ./text-editor.key/index.min.js]"&gt;&lt;/script&gt;
+      | &lt;script src="#[a(href='../text-editor.source/index.min.js' target='_blank') ./text-editor.source/index.min.js]"&gt;&lt;/script&gt;
+      | &lt;script src="#[a(href='index.min.js' target='_blank') ./text-editor.source-x-m-l/index.min.js]"&gt;&lt;/script&gt;
+      | &lt;script&gt;
+      |
+      |   const editor = new TextEditor(document.querySelector('textarea'), {
+      |       source: {
+      |           type: 'XML' // Set the current editor type as `XML`
+      |       },
+      |       tab: ' '.repeat(2),
+      |       // Make sure to load `TextEditor.SourceXML` before `TextEditor.Source`
+      |       with: [TextEditor.History, TextEditor.Key, TextEditor.SourceXML, TextEditor.Source]
+      |   });
+      |
+      |   editor.key('Control-[', function () {
+      |       return this.pull().record(), false;
+      |   });
+      |
+      |   editor.key('Control-]', function () {
+      |       return this.push().record(), false;
+      |   });
+      |
+      |   editor.key('Control-y', function () {
+      |       return this.redo(), false;
+      |   });
+      |
+      |   editor.key('Control-z', function () {
+      |       return this.undo(), false;
+      |   });
+      |
+      | &lt;/script&gt;
+    h3 CommonJS
+    pre: code
+      | const TextEditor = require('@taufik-nurrohman/text-editor').default;
+      | const TextEditorHistory = require('@taufik-nurrohman/text-editor.history').default;
+      | const TextEditorKey = require('@taufik-nurrohman/text-editor.key').default;
+      | const TextEditorSource = require('@taufik-nurrohman/text-editor.source').default;
+      | const TextEditorSourceXML = require('@taufik-nurrohman/text-editor.source-x-m-l').default;
+      |
+      | const editor = new TextEditor(document.querySelector('textarea'), {
+      |     source: {
+      |         type: 'XML' // Set the current editor type as `XML`
+      |     },
+      |     tab: ' '.repeat(2),
+      |     // Make sure to load `TextEditorSourceXML` before `TextEditorSource`
+      |     with: [TextEditorHistory, TextEditorKey, TextEditorSourceXML, TextEditorSource]
+      | });
+      |
+      | editor.key('Control-[', function () {
+      |     return this.pull().record(), false;
+      | });
+      |
+      | editor.key('Control-]', function () {
+      |     return this.push().record(), false;
+      | });
+      |
+      | editor.key('Control-y', function () {
+      |     return this.redo(), false;
+      | });
+      |
+      | editor.key('Control-z', function () {
+      |     return this.undo(), false;
+      | });
+    h3 ECMAScript
+    pre: code
+      | import TextEditor from '@taufik-nurrohman/text-editor';
+      | import TextEditorHistory from '@taufik-nurrohman/text-editor.history';
+      | import TextEditorKey from '@taufik-nurrohman/text-editor.key';
+      | import TextEditorSource from '@taufik-nurrohman/text-editor.source';
+      | import TextEditorSourceXML from '@taufik-nurrohman/text-editor.source-x-m-l';
+      |
+      | const editor = new TextEditor(document.querySelector('textarea'), {
+      |     source: {
+      |         type: 'XML' // Set the current editor type as `XML`
+      |     },
+      |     tab: ' '.repeat(2),
+      |     // Make sure to load `TextEditorSourceXML` before `TextEditorSource`
+      |     with: [TextEditorHistory, TextEditorKey, TextEditorSourceXML, TextEditorSource]
+      | });
+      |
+      | editor.key('Control-[', function () {
+      |     return this.pull().record(), false;
+      | });
+      |
+      | editor.key('Control-]', function () {
+      |     return this.push().record(), false;
+      | });
+      |
+      | editor.key('Control-y', function () {
+      |     return this.redo(), false;
+      | });
+      |
+      | editor.key('Control-z', function () {
+      |     return this.undo(), false;
+      | });
+    h2 Methods
+    h3 Instance Methods
+    h4: code editor.insertXML(name, content = "", attributes = {}, tidy = false)
+    p Insert an #[abbr(title='Extensible Markup Language') XML] element after the current selection.
+    pre: code
+      | editor.insertXML('time', '2024/01/06', {
+      |     datetime: '2024-01-06 12:49:38'
+      | });
+    h4: code editor.peelXML(name, content = "", attributes = {}, tidy = false)
+    p Peel an #[abbr(title='Extensible Markup Language') XML] element from the current selection.
+    p(role='note') #[strong Note:] The #[code attributes] and #[code content] parameter currently does not affect the result of this method, and is kept there just in case.
+    pre: code
+      | editor.peelXML('time');
+    h4: code editor.toggleXML(name, content = "", attributes = {}, tidy = false)
+    p Toggle wrap and peel of an #[abbr(title='Extensible Markup Language') XML] element from the current selection.
+    pre: code
+      | const date = new Date;
+      |
+      | editor.toggleXML('time', date.toLocaleString(), {
+      |     datetime: date.toISOString()
+      | });
+    h4: code editor.wrapXML(name, content = "", attributes = {}, tidy = false)
+    p Wrap the current selection with an #[abbr(title='Extensible Markup Language') XML] element.
+    pre: code
+      | editor.wrapXML('time', '2024/01/06', {
+      |     datetime: '2024-01-06 12:49:38'
+      | });
+  footer
+    hr
+    p
+      != '&copy; ' + year + ' '
+      a(href='/') Taufik Nurrohman

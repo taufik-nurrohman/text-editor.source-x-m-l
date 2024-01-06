@@ -56,54 +56,6 @@ function toTidy(tidy) {
     return tidy; // Return `[…]` or `false`
 }
 
-that.insert = function (name, content = "", attributes = {}, tidy = false) {
-    let t = this;
-    if (false !== (tidy = toTidy(tidy))) {
-        t.trim(tidy[0], "");
-    }
-    return t.insert('<' + name + toAttributes(attributes) + (false !== content ? '>' + content + '</' + name + '>' : ' />') + (false !== tidy ? tidy[1] : ""), -1, true);
-};
-
-that.toggle = function (name, content = "", attributes = {}, tidy = false) {
-    let t = this,
-        {after, before, value} = t.$(),
-        tagStartLocal = tagStart(name),
-        tagEndLocal = tagEnd(name),
-        tagStartLocalPattern = toPattern(tagStartLocal + '$', ""),
-        tagEndLocalPattern = toPattern('^' + tagEndLocal, ""),
-        tagStartLocalMatch = tagStartLocalPattern.test(before),
-        tagEndLocalMatch = tagEndLocalPattern.test(after);
-    if (tagEndLocalMatch && tagStartLocalMatch) {
-        return t.replace(tagEndLocalPattern, "", 1).replace(tagStartLocalPattern, "", -1);
-    }
-    tagStartLocalPattern = toPattern('^' + tagStartLocal, "");
-    tagEndLocalPattern = toPattern(tagEndLocal + '$', "");
-    tagStartLocalMatch = tagStartLocalPattern.test(value);
-    tagEndLocalMatch = tagEndLocalPattern.test(value);
-    if (tagEndLocalMatch && tagStartLocalMatch) {
-        t.insert(value = value.replace(tagEndLocalPattern, "").replace(tagStartLocalPattern, ""));
-    }
-    if (!value && content) {
-        t.insert(content);
-    }
-    if (false !== (tidy = toTidy(tidy))) {
-        t.trim(tidy[0], tidy[1]);
-    }
-    return t.wrap('<' + name + toAttributes(attributes) + '>', '</' + name + '>');
-};
-
-that.wrap = function (name, content = "", attributes = {}, tidy = false) {
-    let t = this,
-        {after, before, value} = t.$();
-    if (!value && content) {
-        t.insert(content);
-    }
-    if (false !== (tidy = toTidy(tidy))) {
-        t.trim(tidy[0], tidy[1]);
-    }
-    return t.wrap('<' + name + toAttributes(attributes) + '>', '</' + name + '>');
-};
-
 export function canKeyDown(map, of) {
     let state = of.state,
         charAfter,

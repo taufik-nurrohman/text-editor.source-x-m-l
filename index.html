@@ -2,535 +2,221 @@
 <html dir="ltr">
   <head>
     <meta charset="utf-8">
+    <meta content="#000" name="theme-color">
     <meta content="width=device-width" name="viewport">
     <meta content="Provides a set of key strokes to generate responses like in a typical XML source code editor." name="description">
-    <title>Text Editor Source XML 1.2.10</title>
+    <title>Text Editor Source XML 2.0.0</title>
+    <link href="../layout/index.min.css" rel="stylesheet">
     <style>
-      * {
-        box-sizing: border-box;
-      }
-      :root {
-        background: #fff;
-        border-top: 4px solid;
-        color: #000;
-        font: normal normal 16px/1.25 serif;
-        position: relative;
-      }
-      a {
-        color: #009;
-        text-decoration: none;
-      }
-      a,
-      code {
-        word-wrap: break-word;
-      }
-      code {
-        font-family: monospace;
-        font-size: 80%;
-      }
-      footer,
-      header,
-      main,
-      nav {
-        margin: 0 auto;
-        max-width: 700px;
-      }
-      hr {
-        border: 0;
-        border-top: 1px dashed;
-        color: inherit;
-        height: 0;
-      }
       mark {
-        background: #ff0;
-        border: 1px solid #f00;
-        display: inline-block;
-        height: 1.25em;
-        min-width: 3px;
-        vertical-align: middle;
+        border-left: 1px solid #f00;
+        border-right: 1px solid #f00;
       }
-      pre {
-        white-space: pre-wrap;
-        word-wrap: break-word;
-      }
-      pre code {
-        background: #eee;
-        display: block;
-        padding: 1em;
-      }
-      table {
-        width: 100%;
-      }
-      td,
-      th {
-        text-align: left;
-        vertical-align: top;
-      }
-      textarea {
-        display: block;
-        height: 20em;
-        width: 100%;
-      }
-      .log {
-        color: #060;
-        display: inline-block;
-        font-weight: bold;
-        margin: 0 0 0 1em;
-      }
-      .source {
-        background: #ccc;
-        border: 2px solid #000;
-        color: #000;
-        padding: 1em;
+
+      mark:empty {
+        border-right-width: 0;
       }
     </style>
   </head>
   <body>
     <header>
-      <h1>Text Editor Source XML 1.2.10</h1>
-      <p><abbr title="Extensible Markup Language">XML</abbr> source code editor extension for <a href="../text-editor/index.html">text editor</a>.</p>
+      <h1><a href="../text-editor/index.html">&laquo;</a> Text Editor Source XML 2.0.0</h1>
+      <p><abbr title="Extensible Markup Language">XML</abbr> source extension for <a href="../text-editor/index.html">Text Editor</a>. This extension provides a set of key strokes to generate responses like in a typical <abbr title="Extensible Markup Language">XML</abbr> source code editor.</p>
       <hr>
-      <p>Provides a set of key strokes to generate responses like in a typical <abbr title="Extensible Markup Language">XML</abbr> source code editor.</p>
     </header>
     <main>
-      <p><label><input checked onchange="this.checked ? setEditor() : letEditor();" type="checkbox"> <span>Enable XML Source Editor</span></label></p>
-      <p><textarea placeholder="Code goes here&hellip;" spellcheck="false"></textarea></p>
-      <p><button onclick="editor.insertXML('br', false, {foo: 'bar'}, ['\n', '\n']).record();">Insert Test</button> <button onclick="toggleTimeXML().record();">Toggle Test</button> <button onclick="editor.wrapXML('foo', &quot;&quot;, {bar: 'baz'}).record();">Wrap Test</button> <code class="log"></code></p>
+      <p><textarea placeholder="Code goes here&hellip;" spellcheck="false" style="display:block;width:100%;"></textarea></p>
+      <p role="group"><button onclick="return editor.toggleXML('time', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}, true).record(), false;">Test Toggle XML</button><button onclick="return editor.wrapXML('time', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}, true).record(), false;">Test Wrap XML</button><button onclick="return editor.peelXML('time', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}, true).record(), false;">Test Peel XML</button><button onclick="return editor.insertXML('time', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}, true).record(), false;">Test Insert XML</button></p>
       <h2>Features</h2>
       <ul>
+        <li><code>&lt;!--<mark></mark>--&gt;</code> or <code>&lt;!-- <mark></mark> --&gt;</code> then press <kbd>Enter</kbd>.</li>
+        <li><code>&lt;!--<mark></mark>--&gt;</code> then press <kbd>&nbsp;</kbd> (Space).</li>
+        <li><code>&lt;!--<mark></mark></code> or <code>&lt;!--<mark></mark>--&gt;</code> then press <kbd>Backspace</kbd>.</li>
+        <li><code>&lt;!--asdf--&gt;<mark></mark></code> then press <kbd>ArrowLeft</kbd>.</li>
+        <li><code>&lt;!--asdf--&gt;<mark></mark></code> then press <kbd>Backspace</kbd>.</li>
         <li><code>&lt;!-<mark></mark></code> or <code>&lt;!-<mark></mark>&gt;</code> then press <kbd>-</kbd>.</li>
-        <li><code>&lt;!--<mark></mark>--&gt;</code> then press <kbd>␣</kbd>.</li>
-        <li><code>&lt;!--<mark></mark>--&gt;</code> or <code>&lt;!-- <mark></mark> --&gt;</code> then press <kbd>↵</kbd>.</li>
-        <li><code>&lt;!--<mark></mark></code> or <code>&lt;!--<mark></mark>--&gt;</code> then press <kbd>⌫</kbd>.</li>
-        <li><code>&lt;/div&gt;<mark></mark></code> then press <kbd>←</kbd>.</li>
-        <li><code>&lt;/div&gt;<mark></mark></code> then press <kbd>⌫</kbd>.</li>
+        <li><code>&lt;/div&gt;<mark></mark></code> then press <kbd>ArrowLeft</kbd>.</li>
+        <li><code>&lt;/div&gt;<mark></mark></code> then press <kbd>Backspace</kbd>.</li>
         <li><code>&lt;<mark></mark></code> or <code>&lt;<mark></mark>&gt;</code> then press <kbd>?</kbd>.</li>
-        <li><code>&lt;?<mark></mark></code> or <code>&lt;?<mark></mark>?&gt;</code> then press <kbd>⌫</kbd>.</li>
-        <li><code>&lt;?xml<mark></mark>?&gt;</code> then press <kbd>↵</kbd>.</li>
-        <li><code>&lt;div /&gt;<mark></mark></code> then press <kbd>←</kbd>.</li>
-        <li><code>&lt;div /&gt;<mark></mark></code> then press <kbd>⌫</kbd>.</li>
-        <li><code>&lt;div&gt;<mark></mark>&lt;/div&gt;</code> then press <kbd>↵</kbd>.</li>
-        <li><code>&lt;div&gt;<mark></mark>&lt;/div&gt;</code> then press <kbd>⌫</kbd>.</li>
-        <li><code>&lt;div&gt;<mark></mark></code> then press <kbd>←</kbd>.</li>
-        <li><code>&lt;div&gt;<mark></mark></code> then press <kbd>↵</kbd>.</li>
-        <li><code>&lt;div&gt;<mark></mark></code> then press <kbd>⌫</kbd>.</li>
-        <li><code>&lt;div/&gt;<mark></mark></code> then press <kbd>←</kbd>.</li>
-        <li><code>&lt;div/&gt;<mark></mark></code> then press <kbd>⌫</kbd>.</li>
+        <li><code>&lt;?<mark></mark></code> or <code>&lt;?<mark></mark>?&gt;</code> then press <kbd>Backspace</kbd>.</li>
+        <li><code>&lt;?asdf?&gt;<mark></mark></code> then press <kbd>ArrowLeft</kbd>.</li>
+        <li><code>&lt;?asdf?&gt;<mark></mark></code> then press <kbd>Backspace</kbd>.</li>
+        <li><code>&lt;?xml<mark></mark>?&gt;</code> then press <kbd>Enter</kbd>.</li>
+        <li><code>&lt;div /&gt;<mark></mark></code> then press <kbd>ArrowLeft</kbd>.</li>
+        <li><code>&lt;div /&gt;<mark></mark></code> then press <kbd>Backspace</kbd>.</li>
+        <li><code>&lt;div&gt;<mark></mark>&lt;/div&gt;</code> then press <kbd>Backspace</kbd>.</li>
+        <li><code>&lt;div&gt;<mark></mark>&lt;/div&gt;</code> then press <kbd>Enter</kbd>.</li>
+        <li><code>&lt;div&gt;<mark></mark></code> then press <kbd>ArrowLeft</kbd>.</li>
+        <li><code>&lt;div&gt;<mark></mark></code> then press <kbd>Backspace</kbd>.</li>
+        <li><code>&lt;div&gt;<mark></mark></code> then press <kbd>Enter</kbd>.</li>
+        <li><code>&lt;div/&gt;<mark></mark></code> then press <kbd>ArrowLeft</kbd>.</li>
+        <li><code>&lt;div/&gt;<mark></mark></code> then press <kbd>Backspace</kbd>.</li>
         <li><code>&lt;div<mark></mark></code> or <code>&lt;div<mark></mark>&gt;</code> then press <kbd>&gt;</kbd>.</li>
         <li><code>&lt;div<mark></mark></code> or <code>&lt;div<mark></mark>&gt;</code> then press <kbd>/</kbd>.</li>
-        <li><code><mark></mark>&lt;/div&gt;</code> then press <kbd>→</kbd>.</li>
-        <li><code><mark></mark>&lt;/div&gt;</code> then press <kbd>⌦</kbd>.</li>
-        <li><code><mark></mark>&lt;div&gt;</code> then press <kbd>→</kbd>.</li>
-        <li><code><mark></mark>&lt;div&gt;</code> then press <kbd>⌦</kbd>.</li>
-        <li><code><mark></mark>&lt;div/&gt;</code> then press <kbd>→</kbd>.</li>
-        <li><code><mark></mark>&lt;div/&gt;</code> then press <kbd>⌦</kbd>.</li>
-        <li><code><mark></mark>--&gt;</code> then press <kbd>⌦</kbd>.</li>
-        <li><code><mark></mark>?&gt;</code> then press <kbd>⌦</kbd>.</li>
-        <li><code>&lt;?asdf?&gt;<mark></mark></code> then press <kbd>←</kbd>.</li>
-        <li><code>&lt;?asdf?&gt;<mark></mark></code> then press <kbd>⌫</kbd>.</li>
-        <li><code><mark></mark>&lt;?asdf?&gt;</code> then press <kbd>→</kbd>.</li>
-        <li><code><mark></mark>&lt;?asdf?&gt;</code> then press <kbd>⌦</kbd>.</li>
-        <li><code>&lt;!--asdf--&gt;<mark></mark></code> then press <kbd>←</kbd>.</li>
-        <li><code>&lt;!--asdf--&gt;<mark></mark></code> then press <kbd>⌫</kbd>.</li>
-        <li><code><mark></mark>&lt;!--asdf--&gt;</code> then press <kbd>→</kbd>.</li>
-        <li><code><mark></mark>&lt;!--asdf--&gt;</code> then press <kbd>⌦</kbd>.</li>
+        <li><code><mark></mark>&lt;!--asdf--&gt;</code> then press <kbd>ArrowRight</kbd>.</li>
+        <li><code><mark></mark>&lt;!--asdf--&gt;</code> then press <kbd>Delete</kbd>.</li>
+        <li><code><mark></mark>&lt;/div&gt;</code> then press <kbd>ArrowRight</kbd>.</li>
+        <li><code><mark></mark>&lt;/div&gt;</code> then press <kbd>Delete</kbd>.</li>
+        <li><code><mark></mark>&lt;?asdf?&gt;</code> then press <kbd>ArrowRight</kbd>.</li>
+        <li><code><mark></mark>&lt;?asdf?&gt;</code> then press <kbd>Delete</kbd>.</li>
+        <li><code><mark></mark>&lt;div&gt;</code> then press <kbd>ArrowRight</kbd>.</li>
+        <li><code><mark></mark>&lt;div&gt;</code> then press <kbd>Delete</kbd>.</li>
+        <li><code><mark></mark>&lt;div/&gt;</code> then press <kbd>ArrowRight</kbd>.</li>
+        <li><code><mark></mark>&lt;div/&gt;</code> then press <kbd>Delete</kbd>.</li>
+        <li><code><mark></mark>--&gt;</code> then press <kbd>Delete</kbd>.</li>
+        <li><code><mark></mark>?&gt;</code> then press <kbd>Delete</kbd>.</li>
       </ul>
       <h2>Usage</h2>
-      <h4>Browser</h4>
-      <pre><code>&lt;script src="<a href="../key/index.min.js" target="_blank">./key/index.min.js</a>"&gt;&lt;/script&gt;
-&lt;script src="<a href="../text-editor/index.min.js" target="_blank">./text-editor/index.min.js</a>"&gt;&lt;/script&gt;
+      <h3>Browser</h3>
+      <pre><code>&lt;script src="<a href="../text-editor/index.min.js" target="_blank">./text-editor/index.min.js</a>"&gt;&lt;/script&gt;
 &lt;script src="<a href="../text-editor.history/index.min.js" target="_blank">./text-editor.history/index.min.js</a>"&gt;&lt;/script&gt;
+&lt;script src="<a href="../text-editor.key/index.min.js" target="_blank">./text-editor.key/index.min.js</a>"&gt;&lt;/script&gt;
 &lt;script src="<a href="../text-editor.source/index.min.js" target="_blank">./text-editor.source/index.min.js</a>"&gt;&lt;/script&gt;
-&lt;script src="<a href="../text-editor.source-x-m-l/index.min.js" target="_blank">./text-editor.source-x-m-l/index.min.js</a>"&gt;&lt;/script&gt;
+&lt;script src="<a href="index.min.js" target="_blank">./text-editor.source-x-m-l/index.min.js</a>"&gt;&lt;/script&gt;
 &lt;script&gt;
 
-  // Add `history()`, `loss()`, `record()`, `redo()`, `toggle()`, `undo()` methods to `TE`
-  Object.assign(TE.prototype, TE.History.that, TE.Source.that);
-
-  // Add `insertXML()`, `toggleXML()`, `wrapXML()` methods to `TE`
-  TE.prototype.insertXML = TE.SourceXML.that.insert;
-  TE.prototype.toggleXML = TE.SourceXML.that.toggle;
-  TE.prototype.wrapXML = TE.SourceXML.that.wrap;
-
-  // Create a new editor and its key map
-  const editor = new TE(document.querySelector('textarea'));
-  const map = new K(editor);
-
-  const {
-      canKeyDown: canKeyDownSource,
-      canKeyDownEnter: canKeyDownEnterSource,
-      canKeyDownHistory: canKeyDownHistorySource,
-      canKeyDownMove: canKeyDownMoveSource,
-      canKeyDownTab: canKeyDownTabSource,
-      canKeyUp: canKeyUpSource
-  } = TE.Source;
-
-  const {
-      canKeyDown: canKeyDownSourceXML,
-      canMouseDown: canMouseDownSourceXML
-  } = TE.SourceXML;
-
-  // Function to combine multiple objects into one object
-  function fromStates(...lot) { <a href="https://github.com/taufik-nurrohman/from" target="_blank">&hellip;</a> }
-
-  editor.state = fromStates({}, editor.state, TE.Source.state, TE.SourceXML.state, {
-      commands: map.commands,
-      keys: map.keys
+  const editor = new TextEditor(document.querySelector('textarea'), {
+      source: {
+          type: 'XML' // Set the current editor type as `XML`
+      },
+      tab: ' '.repeat(2),
+      // Make sure to load `TextEditor.SourceXML` before `TextEditor.Source`
+      with: [TextEditor.History, TextEditor.Key, TextEditor.SourceXML, TextEditor.Source]
   });
 
-  // Reset editor key map
-  editor.self.addEventListener('blur', () => map.pull());
-  editor.self.addEventListener('input', () => map.pull());
-
-  let debounce;
-
-  editor.self.addEventListener('keydown', e =&gt; {
-      map.push(e.key);
-      let command = map.command();
-      // Check for custom command…
-      if (command) {
-          let value = map.fire(command);
-          if (false === value) {
-              e.preventDefault();
-          } else if (null === value) {
-              console.error('Unknown command:', command);
-          }
-      // Else, execute defaults!
-      } else {
-          if (
-              canKeyDownSourceXML(map, editor) &amp;&amp;
-              canKeyDownSource(map, editor) &amp;&amp;
-              canKeyDownEnterSource(map, editor) &amp;&amp;
-              canKeyDownHistorySource(map, editor) &amp;&amp;
-              canKeyDownMoveSource(map, editor) &amp;&amp;
-              canKeyDownTabSource(map, editor)
-          ) {
-              // Normal key strokes. Add more key strokes extension here!
-          } else {
-              e.preventDefault();
-          }
-      }
-      // Reset editor key map
-      debounce && clearTimeout(debounce);
-      debounce = setTimeout(() => map.pull(), 1000);
+  editor.key('Control-[', function () {
+      return this.pull().record(), false;
   });
 
-  editor.self.addEventListener('keyup', e =&gt; {
-      canKeyUpSource(map, editor) || e.preventDefault();
-      // Reset editor key map per `e.key`
-      map.pull(e.key);
+  editor.key('Control-]', function () {
+      return this.push().record(), false;
   });
 
-  editor.self.addEventListener('mousedown', e =&gt; {
-      canMouseDownSourceXML(map, editor) || e.preventDefault();
+  editor.key('Control-y', function () {
+      return this.redo(), false;
   });
 
-  // Record the first history data!
-  editor.record();
+  editor.key('Control-z', function () {
+      return this.undo(), false;
+  });
 
 &lt;/script&gt;</code></pre>
-      <h4>CommonJS</h4>
-      <pre><code>const {fromStates} = require('@taufik-nurrohman/from');
-const {debounce} = require('@taufik-nurrohman/tick');
-const K = require('@taufik-nurrohman/key').default;
-const TE = require('@taufik-nurrohman/text-editor').default;
-const {that: thatHistory} = require('@taufik-nurrohman/text-editor.history');
+      <h3>CommonJS</h3>
+      <pre><code>const TextEditor = require('@taufik-nurrohman/text-editor').default;
+const TextEditorHistory = require('@taufik-nurrohman/text-editor.history').default;
+const TextEditorKey = require('@taufik-nurrohman/text-editor.key').default;
+const TextEditorSource = require('@taufik-nurrohman/text-editor.source').default;
+const TextEditorSourceXML = require('@taufik-nurrohman/text-editor.source-x-m-l').default;
 
-const {
-    canKeyDown: canKeyDownSource,
-    canKeyDownEnter: canKeyDownEnterSource,
-    canKeyDownHistory: canKeyDownHistorySource,
-    canKeyDownMove: canKeyDownMoveSource,
-    canKeyDownTab: canKeyDownTabSource,
-    canKeyUp: canKeyUpSource,
-    state: stateSource,
-    that: thatSource
-} = require('@taufik-nurrohman/text-editor.source');
-
-const {
-    canKeyDown: canKeyDownSourceXML,
-    canMouseDown: canMouseDownSourceXML,
-    state: stateSourceXML,
-    that: thatSourceXML
-} = require('@taufik-nurrohman/text-editor.source-x-m-l');
-
-// Add `history()`, `loss()`, `record()`, `redo()`, `toggle()`, `undo()` methods to `TE`
-Object.assign(TE.prototype, thatHistory, thatSource);
-
-// Add `insertXML()`, `toggleXML()`, `wrapXML()` methods to `TE`
-TE.prototype.insertXML = thatSourceXML.insert;
-TE.prototype.toggleXML = thatSourceXML.toggle;
-TE.prototype.wrapXML = thatSourceXML.wrap;
-
-// Create a new editor and its key map
-const editor = new TE(document.querySelector('textarea'));
-const map = new K(editor);
-
-// Reset editor key map
-const bounce = debounce(() => map.pull(), 1000);
-
-editor.state = fromStates({}, editor.state, stateSource, stateSourceXML, {
-    commands: map.commands,
-    keys: map.keys
+const editor = new TextEditor(document.querySelector('textarea'), {
+    source: {
+        type: 'XML' // Set the current editor type as `XML`
+    },
+    tab: ' '.repeat(2),
+    // Make sure to load `TextEditorSourceXML` before `TextEditorSource`
+    with: [TextEditorHistory, TextEditorKey, TextEditorSourceXML, TextEditorSource]
 });
 
-// Reset editor key map
-editor.self.addEventListener('blur', () => map.pull());
-editor.self.addEventListener('input', () => map.pull());
-
-editor.self.addEventListener('keydown', e =&gt; {
-    map.push(e.key);
-    let command = map.command();
-    // Check for custom command…
-    if (command) {
-        let value = map.fire(command);
-        if (false === value) {
-            e.preventDefault();
-        } else if (null === value) {
-            console.error('Unknown command:', command);
-        }
-    // Else, execute defaults!
-    } else {
-        if (
-            canKeyDownSourceXML(map, editor) &amp;&amp;
-            canKeyDownSource(map, editor) &amp;&amp;
-            canKeyDownEnterSource(map, editor) &amp;&amp;
-            canKeyDownHistorySource(map, editor) &amp;&amp;
-            canKeyDownMoveSource(map, editor) &amp;&amp;
-            canKeyDownTabSource(map, editor)
-        ) {
-            // Normal key strokes. Add more key strokes extension here!
-        } else {
-            e.preventDefault();
-        }
-    }
-    bounce();
+editor.key('Control-[', function () {
+    return this.pull().record(), false;
 });
 
-editor.self.addEventListener('keyup', e =&gt; {
-    canKeyUpSource(map, editor) || e.preventDefault();
-    // Reset editor key map per `e.key`
-    map.pull(e.key);
+editor.key('Control-]', function () {
+    return this.push().record(), false;
 });
 
-editor.self.addEventListener('mousedown', e =&gt; {
-    canMouseDownSourceXML(map, editor) || e.preventDefault();
+editor.key('Control-y', function () {
+    return this.redo(), false;
 });
 
-// Record the first history data!
-editor.record();</code></pre>
-      <h4>ECMAScript</h4>
-      <pre><code>import {fromStates} from '@taufik-nurrohman/from';
-import {debounce} from '@taufik-nurrohman/tick';
-import K from '@taufik-nurrohman/key';
-import TE from '@taufik-nurrohman/text-editor';
-import {that as thatHistory} from '@taufik-nurrohman/text-editor.history';
+editor.key('Control-z', function () {
+    return this.undo(), false;
+});</code></pre>
+      <h3>ECMAScript</h3>
+      <pre><code>import TextEditor from '@taufik-nurrohman/text-editor';
+import TextEditorHistory from '@taufik-nurrohman/text-editor.history';
+import TextEditorKey from '@taufik-nurrohman/text-editor.key';
+import TextEditorSource from '@taufik-nurrohman/text-editor.source';
+import TextEditorSourceXML from '@taufik-nurrohman/text-editor.source-x-m-l';
 
-import {
-    canKeyDown as canKeyDownSource,
-    canKeyDownEnter as canKeyDownEnterSource,
-    canKeyDownHistory as canKeyDownHistorySource,
-    canKeyDownMove as canKeyDownMoveSource,
-    canKeyDownTab as canKeyDownTabSource,
-    canKeyUp as canKeyUpSource,
-    state as stateSource,
-    that as thatSource
-} from '@taufik-nurrohman/text-editor.source';
-
-import {
-    canKeyDown as canKeyDownSourceXML,
-    canMouseDown as canMouseDownSourceXML,
-    state as stateSourceXML,
-    that as thatSourceXML
-} from '@taufik-nurrohman/text-editor.source-x-m-l';
-
-// Add `history()`, `loss()`, `record()`, `redo()`, `toggle()`, `undo()` methods to `TE`
-Object.assign(TE.prototype, thatHistory, thatSource);
-
-// Add `insertXML()`, `toggleXML()`, `wrapXML()` methods to `TE`
-TE.prototype.insertXML = thatSourceXML.insert;
-TE.prototype.toggleXML = thatSourceXML.toggle;
-TE.prototype.wrapXML = thatSourceXML.wrap;
-
-// Create a new editor and its key map
-const editor = new TE(document.querySelector('textarea'));
-const map = new K(editor);
-
-// Reset editor key map
-const bounce = debounce(() => map.pull(), 1000);
-
-editor.state = fromStates({}, editor.state, stateSource, stateSourceXML, {
-    commands: map.commands,
-    keys: map.keys
+const editor = new TextEditor(document.querySelector('textarea'), {
+    source: {
+        type: 'XML' // Set the current editor type as `XML`
+    },
+    tab: ' '.repeat(2),
+    // Make sure to load `TextEditorSourceXML` before `TextEditorSource`
+    with: [TextEditorHistory, TextEditorKey, TextEditorSourceXML, TextEditorSource]
 });
 
-// Reset editor key map
-editor.self.addEventListener('blur', () => map.pull());
-editor.self.addEventListener('input', () => map.pull());
-
-editor.self.addEventListener('keydown', e =&gt; {
-    map.push(e.key);
-    let command = map.command();
-    // Check for custom command…
-    if (command) {
-        let value = map.fire(command);
-        if (false === value) {
-            e.preventDefault();
-        } else if (null === value) {
-            console.error('Unknown command:', command);
-        }
-    // Else, execute defaults!
-    } else {
-        if (
-            canKeyDownSourceXML(map, editor) &amp;&amp;
-            canKeyDownSource(map, editor) &amp;&amp;
-            canKeyDownEnterSource(map, editor) &amp;&amp;
-            canKeyDownHistorySource(map, editor) &amp;&amp;
-            canKeyDownMoveSource(map, editor) &amp;&amp;
-            canKeyDownTabSource(map, editor)
-        ) {
-            // Normal key strokes. Add more key strokes extension here!
-        } else {
-            e.preventDefault();
-        }
-    }
-    bounce();
+editor.key('Control-[', function () {
+    return this.pull().record(), false;
 });
 
-editor.self.addEventListener('keyup', e =&gt; {
-    canKeyUpSource(map, editor) || e.preventDefault();
-    // Reset editor key map per `e.key`
-    map.pull(e.key);
+editor.key('Control-]', function () {
+    return this.push().record(), false;
 });
 
-editor.self.addEventListener('mousedown', e =&gt; {
-    canMouseDownSourceXML(map, editor) || e.preventDefault();
+editor.key('Control-y', function () {
+    return this.redo(), false;
 });
 
-// Record the first history data!
-editor.record();</code></pre>
-      <h3>Methods</h3>
-      <h4>editor.insertXML(name, content, attributes = {}, tidy = false)</h4>
-      <p>Remove selection and insert an <abbr title="Extensible Markup Language">XML</abbr> tag before caret.</p>
-      <h4>editor.toggleXML(name, content, attributes = {}, tidy = false)</h4>
-      <p>Toggle wrap and peel selection with an <abbr title="Extensible Markup Language">XML</abbr> tag.</p>
-      <h4>editor.wrapXML(name, content, attributes = {}, tidy = false)</h4>
-      <p>Wrap selection with an <abbr title="Extensible Markup Language">XML</abbr> tag.</p>
-      <h3>Properties</h3>
-      <h4>TE.SourceXML.state</h4>
-      <p>Return the default state to be combined with <code>editor.state</code>.</p>
-      <h3>Strokes</h3>
-      <p>Strokes can either return <code>false</code> or <code>true</code>. If it returns <code>false</code>, it means that this extension has manipulated the existing value. If it returns <code>true</code>, it means that current stroke works normally.</p>
-      <h4>TE.SourceXML.canKeyDown(map, of)</h4>
-      <p>This will handle tasks such as automatic <abbr title="Extensible Markup Language">XML</abbr> tag closing and automatic indentation by pressing the <kbd>↵</kbd> key.</p>
-      <h4>TE.SourceXML.canMouseDown(map, of)</h4>
-      <p>This will handle tasks such as automatic tag pattern selection on click.</p>
+editor.key('Control-z', function () {
+    return this.undo(), false;
+});</code></pre>
+      <h2>Methods</h2>
+      <h3>Instance Methods</h3>
+      <h4><code>editor.insertXML(name, content = "", attributes = {}, tidy = false)</code></h4>
+      <p>Insert an <abbr title="Extensible Markup Language">XML</abbr> element after the current selection.</p>
+      <pre><code>editor.insertXML('time', '2024/01/06', {
+    datetime: '2024-01-06 12:49:38'
+});</code></pre>
+      <h4><code>editor.peelXML(name, content = "", attributes = {}, tidy = false)</code></h4>
+      <p>Peel an <abbr title="Extensible Markup Language">XML</abbr> element from the current selection.</p>
+      <p role="note"><strong>Note:</strong> The <code>attributes</code> and <code>content</code> parameter currently does not affect the result of this method, and is kept there just in case.</p>
+      <pre><code>editor.peelXML('time');</code></pre>
+      <h4><code>editor.toggleXML(name, content = "", attributes = {}, tidy = false)</code></h4>
+      <p>Toggle wrap and peel of an <abbr title="Extensible Markup Language">XML</abbr> element from the current selection.</p>
+      <pre><code>const date = new Date;
+
+editor.toggleXML('time', date.toLocaleString(), {
+    datetime: date.toISOString()
+});</code></pre>
+      <h4><code>editor.wrapXML(name, content = "", attributes = {}, tidy = false)</code></h4>
+      <p>Wrap the current selection with an <abbr title="Extensible Markup Language">XML</abbr> element.</p>
+      <pre><code>editor.wrapXML('time', '2024/01/06', {
+    datetime: '2024-01-06 12:49:38'
+});</code></pre>
     </main>
     <footer>
       <hr>
-      <p>&copy; 2023 <a href="/">Taufik Nurrohman</a></p>
+      <p>&copy; 2024 <a href="/">Taufik Nurrohman</a></p>
     </footer>
     <script src="../key/index.min.js"></script>
     <script src="../text-editor/index.min.js"></script>
     <script src="../text-editor.history/index.min.js"></script>
+    <script src="../text-editor.key/index.min.js"></script>
     <script src="../text-editor.source/index.min.js"></script>
     <script src="index.min.js"></script>
     <script>
-      Object.assign(TE.prototype, TE.History.that, TE.Source.that);
-      TE.prototype.insertXML = TE.SourceXML.that.insert;
-      TE.prototype.toggleXML = TE.SourceXML.that.toggle;
-      TE.prototype.wrapXML = TE.SourceXML.that.wrap;
-      let editor = new TE(document.querySelector('textarea'), '  '),
-          log = document.querySelector('code.log'),
-          map = new K(editor),
-          {
-              canKeyDown: canKeyDownSource,
-              canKeyDownDent: canKeyDownDentSource,
-              canKeyDownEnter: canKeyDownEnterSource,
-              canKeyDownHistory: canKeyDownHistorySource,
-              canKeyDownMove: canKeyDownMoveSource,
-              canKeyUp: canKeyUpSource
-          } = TE.Source,
-          {
-              canKeyDown: canKeyDownSourceXML,
-              canMouseDown: canMouseDownSourceXML
-          } = TE.SourceXML;
-      editor.state = Object.assign({}, editor.state, TE.Source.state, TE.SourceXML.state);
-      editor.state.source = Object.assign({}, editor.state.source, TE.Source.state.source, TE.SourceXML.state.source, {
-          commands: map.commands,
-          keys: map.keys
+      const editor = new TextEditor(document.querySelector('textarea'), {
+          source: {
+              type: 'XML'
+          },
+          tab: ' '.repeat(2),
+          with: [TextEditor.History, TextEditor.Key, TextEditor.SourceXML, TextEditor.Source]
       });
-
-      function onBlur() {
-          map.pull(); // Reset all!
-      }
-
-      function onInput() {
-          map.pull(); // Reset all!
-      }
-
-      function onKeyDown(e) {
-          map.push(e.key);
-          let command = map.command();
-          // Check for custom command…
-          if (command) {
-              let value = map.fire(command);
-              if (false === value) {
-                  e.preventDefault();
-              } else if (null === value) {
-                  console.error('Unknown command:', command);
-              }
-              // Else, run the defaults!
-          } else {
-              canKeyDownSourceXML(map, editor) && canKeyDownSource(map, editor) && canKeyDownEnterSource(map, editor) && canKeyDownDentSource(map, editor) && canKeyDownHistorySource(map, editor) && canKeyDownMoveSource(map, editor) || e.preventDefault();
-          }
-          log.textContent = map + "";
-      }
-
-      function onKeyUp(e) {
-          canKeyUpSource(map, editor) || e.preventDefault();
-          map.pull(e.key);
-          log.textContent = map + "";
-      }
-
-      function onMouseDown(e) {
-          canMouseDownSourceXML(map, editor) || e.preventDefault();
-      }
-
-      function letEditor() {
-          editor.self.classList.remove('source');
-          editor.self.parentNode.nextElementSibling.style.display = 'none';
-          editor.self.removeEventListener('blur', onBlur);
-          editor.self.removeEventListener('input', onInput);
-          editor.self.removeEventListener('keydown', onKeyDown);
-          editor.self.removeEventListener('keyup', onKeyUp);
-          editor.self.removeEventListener('mousedown', onMouseDown);
-          editor.self.removeEventListener('touchstart', onMouseDown);
-          editor.loss(true); // Remove all history data!
-          return editor;
-      }
-
-      function setEditor() {
-          editor.self.classList.add('source');
-          editor.self.parentNode.nextElementSibling.style.display = "";
-          editor.self.addEventListener('blur', onBlur, false);
-          editor.self.addEventListener('input', onInput, false);
-          editor.self.addEventListener('keydown', onKeyDown, false);
-          editor.self.addEventListener('keyup', onKeyUp, false);
-          editor.self.addEventListener('mousedown', onMouseDown, false);
-          editor.self.addEventListener('touchstart', onMouseDown, false);
-          editor.record(); // Record the first history data!
-          return editor;
-      }
-      setEditor();
-
-      function toggleTimeXML() {
-          let date = new Date;
-          return editor.toggleXML('time', 'text goes here…', {
-              'data-test': 'asdf"asdf\'asdf<asdf>&asdf',
-              'datetime': date.toISOString()
-          });
-      }
+      editor.key('Control-[', function () {
+          return this.pull().record(), false;
+      });
+      editor.key('Control-]', function () {
+          return this.push().record(), false;
+      });
+      editor.key('Control-y', function () {
+          return this.redo(), false;
+      });
+      editor.key('Control-z', function () {
+          return this.undo(), false;
+      });
     </script>
   </body>
 </html>

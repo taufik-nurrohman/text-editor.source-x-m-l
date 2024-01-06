@@ -3,13 +3,14 @@
   "browser": "index.min.js",
   "bugs": "https://github.com/taufik-nurrohman/text-editor.source-x-m-l/issues",
   "dependencies": {
+    "@taufik-nurrohman/event": "*",
     "@taufik-nurrohman/from": "*",
     "@taufik-nurrohman/has": "*",
     "@taufik-nurrohman/is": "*",
-    "@taufik-nurrohman/key": "*",
     "@taufik-nurrohman/pattern": "*",
     "@taufik-nurrohman/text-editor": "*",
     "@taufik-nurrohman/text-editor.history": "*",
+    "@taufik-nurrohman/text-editor.key": "*",
     "@taufik-nurrohman/text-editor.source": "*",
     "@taufik-nurrohman/to": "*"
   },
@@ -51,7 +52,7 @@
     "url": "git+https://github.com/taufik-nurrohman/text-editor.source-x-m-l.git"
   },
   "scripts": {
-    "pack": "pack --clean=false --from=.github/factory --js-format=umd --js-name=TE.SourceXML --js-top='%(js.license)' --mjs=true --to=."
+    "pack": "pack --clean=false --from=.factory --js-format=umd --js-name=TextEditor.SourceXML --js-top='%(js.license)' --mjs=true --to=."
   },
-  "version": "1.2.10"
+  "version": "2.0.0"
 }
