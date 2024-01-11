@@ -12,6 +12,7 @@
     "@taufik-nurrohman/text-editor.history": "*",
     "@taufik-nurrohman/text-editor.key": "*",
     "@taufik-nurrohman/text-editor.source": "*",
+    "@taufik-nurrohman/tick": "*",
     "@taufik-nurrohman/to": "*"
   },
   "description": "Provides a set of key strokes to generate responses like in a typical XML source code editor.",

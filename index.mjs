@@ -1,3 +1,4 @@
+import {debounce} from '@taufik-nurrohman/tick';
 import {esc, toPattern} from '@taufik-nurrohman/pattern';
 import {fromHTML, fromValue} from '@taufik-nurrohman/from';
 import {hasValue} from '@taufik-nurrohman/has';
@@ -14,8 +15,65 @@ let tagComment = () => '<!--([\\s\\S](?!-->)*)-->',
     tagPreamble = () => '<\\?((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)\\?>',
     tagTokens = () => '(?:' + tagComment() + '|' + tagData() + '|' + tagEnd(tagName()) + '|' + tagPreamble() + '|' + tagVoid(tagName()) + '|' + tagStart(tagName()) + ')';
 
-function onMouseDown(e) {
+const bounce = debounce((e, editor) => {
+    let {after, before, end, value} = editor.$();
+    if (value) {
+        return;
+    }
+    let caret = '\ufeff',
+        tagTokensOf = tagTokens().split('(' + tagName() + ')').join('((?:' + tagName() + '|' + caret + ')+)'),
+        tagTokensPattern = toPattern(tagTokensOf),
+        content = before + value + caret + after, m, v;
+    while (m = tagTokensPattern.exec(content)) {
+        if (hasValue(caret, m[0])) {
+            offEventDefault(e);
+            let parts = m[0].split(caret);
+            // `<asdf asdf="asdf"|/>` or `<asdf asdf="asdf" |/>`
+            if ('>' === parts[1] || '/>' === (parts[1] || "").trim()) {
+                editor.select(v = m.index, v + toCount(m[0]) - 1);
+                break;
+            }
+            // `<as|df asdf="asdf">`
+            if ('<' !== parts[0] && '</' !== parts[0] && !/\s/.test(parts[0])) {
+                editor.select(v = m.index + ('/' === parts[0][1] ? 2 : 1), end + toCount(parts[1].split(/[\s\/>]/).shift()));
+                break;
+            }
+            let mm;
+            // `<asdf asdf="as|df">` or `<asdf asdf='as|df'>`
+            if (mm = toPattern('=("[^"]*' + caret + '[^"]*"|\'[^\']*' + caret + '[^\']*\')').exec(m[0])) {
+                editor.select(v = m.index + mm.index + 2, v + toCount(mm[1]) - 3);
+                break;
+            }
+            // `<asdf asdf=as|df>`
+            if (mm = toPattern('=([^"\'\\s\\/>]*' + caret + '[^"\'\\s\\/>]*)').exec(m[0])) {
+                editor.select(v = m.index + mm.index + 1, v + toCount(mm[1]) - 1);
+                break;
+            }
+            // `<asdf as|df="asdf">`
+            if ('<' !== parts[0] && '</' !== parts[0]) {
+                if (mm = toPattern('([^="\'\\s]*' + caret + '[^="\'\\s]*)[=\\s\\/>]').exec(m[0])) {
+                    editor.select(v = m.index + mm.index, v + toCount(mm[1]) - 1);
+                    break;
+                }
+            }
+            // Other caret position(s) will select the element
+            editor.select(v = m.index, v + toCount(m[0]) - 1);
+            break;
+        }
+    }
+}, 1);
 
+function onMouseDown(e) {
+    let self = this,
+        editor = self.TextEditor,
+        keys = editor.k();
+    if (!editor || e.defaultPrevented) {
+        return;
+    }
+    if (keys.startsWith('Control-')) {
+        return;
+    }
+    bounce(e, editor);
 }
 
 function onKeyDown(e) {

@@ -27,6 +27,17 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = f() : typeof define === 'function' && define.amd ? define(f) : (g = typeof globalThis !== 'undefined' ? globalThis : g || self, (g.TextEditor = g.TextEditor || {}, g.TextEditor.SourceXML = f()));
 })(this, (function () {
     'use strict';
+    var debounce = function debounce(then, time) {
+        var timer;
+        return function () {
+            var _arguments = arguments,
+                _this = this;
+            timer && clearTimeout(timer);
+            timer = setTimeout(function () {
+                return then.apply(_this, _arguments);
+            }, time);
+        };
+    };
     var isArray = function isArray(x) {
         return Array.isArray(x);
     };
@@ -75,6 +86,9 @@
         return new RegExp(pattern, isSet(opt) ? opt : 'g');
     };
     var x = "!$^*()+=[]{}|:<>,.?/-";
+    var hasValue = function hasValue(x, data) {
+        return -1 !== data.indexOf(x);
+    };
     var fromHTML = function fromHTML(x, quote) {
         x = x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;');
         if (quote) {
@@ -141,8 +155,72 @@
         tagTokens = function tagTokens() {
             return '(?:' + tagComment() + '|' + tagData() + '|' + tagEnd(tagName()) + '|' + tagPreamble() + '|' + tagVoid(tagName()) + '|' + tagStart(tagName()) + ')';
         };
+    var bounce = debounce(function (e, editor) {
+        var _editor$$ = editor.$(),
+            after = _editor$$.after,
+            before = _editor$$.before,
+            end = _editor$$.end,
+            value = _editor$$.value;
+        if (value) {
+            return;
+        }
+        var caret = "\uFEFF",
+            tagTokensOf = tagTokens().split('(' + tagName() + ')').join('((?:' + tagName() + '|' + caret + ')+)'),
+            tagTokensPattern = toPattern(tagTokensOf),
+            content = before + value + caret + after,
+            m,
+            v;
+        while (m = tagTokensPattern.exec(content)) {
+            if (hasValue(caret, m[0])) {
+                offEventDefault(e);
+                var parts = m[0].split(caret);
+                // `<asdf asdf="asdf"|/>` or `<asdf asdf="asdf" |/>`
+                if ('>' === parts[1] || '/>' === (parts[1] || "").trim()) {
+                    editor.select(v = m.index, v + toCount(m[0]) - 1);
+                    break;
+                }
+                // `<as|df asdf="asdf">`
+                if ('<' !== parts[0] && '</' !== parts[0] && !/\s/.test(parts[0])) {
+                    editor.select(v = m.index + ('/' === parts[0][1] ? 2 : 1), end + toCount(parts[1].split(/[\s\/>]/).shift()));
+                    break;
+                }
+                var mm = void 0;
+                // `<asdf asdf="as|df">` or `<asdf asdf='as|df'>`
+                if (mm = toPattern('=("[^"]*' + caret + '[^"]*"|\'[^\']*' + caret + '[^\']*\')').exec(m[0])) {
+                    editor.select(v = m.index + mm.index + 2, v + toCount(mm[1]) - 3);
+                    break;
+                }
+                // `<asdf asdf=as|df>`
+                if (mm = toPattern('=([^"\'\\s\\/>]*' + caret + '[^"\'\\s\\/>]*)').exec(m[0])) {
+                    editor.select(v = m.index + mm.index + 1, v + toCount(mm[1]) - 1);
+                    break;
+                }
+                // `<asdf as|df="asdf">`
+                if ('<' !== parts[0] && '</' !== parts[0]) {
+                    if (mm = toPattern('([^="\'\\s]*' + caret + '[^="\'\\s]*)[=\\s\\/>]').exec(m[0])) {
+                        editor.select(v = m.index + mm.index, v + toCount(mm[1]) - 1);
+                        break;
+                    }
+                }
+                // Other caret position(s) will select the element
+                editor.select(v = m.index, v + toCount(m[0]) - 1);
+                break;
+            }
+        }
+    }, 1);
 
-    function onMouseDown(e) {}
+    function onMouseDown(e) {
+        var self = this,
+            editor = self.TextEditor,
+            keys = editor.k();
+        if (!editor || e.defaultPrevented) {
+            return;
+        }
+        if (keys.startsWith('Control-')) {
+            return;
+        }
+        bounce(e, editor);
+    }
 
     function onKeyDown(e) {
         var _editor$state$source;
@@ -160,12 +238,12 @@
             return;
         }
         var key = keys.split('-').pop(),
-            _editor$$ = editor.$(),
-            after = _editor$$.after,
-            before = _editor$$.before;
-        _editor$$.end;
-        var start = _editor$$.start,
-            value = _editor$$.value;
+            _editor$$2 = editor.$(),
+            after = _editor$$2.after,
+            before = _editor$$2.before;
+        _editor$$2.end;
+        var start = _editor$$2.start,
+            value = _editor$$2.value;
         if ("" === key) {
             key = '-';
         }
