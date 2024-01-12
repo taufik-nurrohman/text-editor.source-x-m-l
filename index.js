@@ -47,8 +47,14 @@
     var isInstance = function isInstance(x, of) {
         return x && isSet(of) && x instanceof of ;
     };
+    var isInteger = function isInteger(x) {
+        return isNumber(x) && 0 === x % 1;
+    };
     var isNull = function isNull(x) {
         return null === x;
+    };
+    var isNumber = function isNumber(x) {
+        return 'number' === typeof x;
     };
     var isObject = function isObject(x, isPlain) {
         if (isPlain === void 0) {
@@ -119,17 +125,8 @@
         }
         return "" + x;
     };
-    var offEvent = function offEvent(name, node, then) {
-        node.removeEventListener(name, then);
-    };
     var offEventDefault = function offEventDefault(e) {
         return e && e.preventDefault();
-    };
-    var onEvent = function onEvent(name, node, then, options) {
-        if (options === void 0) {
-            options = false;
-        }
-        node.addEventListener(name, then, options);
     };
     var tagComment = function tagComment() {
             return '<!--([\\s\\S](?!-->)*)-->';
@@ -155,12 +152,12 @@
         tagTokens = function tagTokens() {
             return '(?:' + tagComment() + '|' + tagData() + '|' + tagEnd(tagName()) + '|' + tagPreamble() + '|' + tagVoid(tagName()) + '|' + tagStart(tagName()) + ')';
         };
-    var bounce = debounce(function (e, editor) {
-        var _editor$$ = editor.$(),
-            after = _editor$$.after,
-            before = _editor$$.before,
-            end = _editor$$.end,
-            value = _editor$$.value;
+    var bounce = debounce(function (e, $) {
+        var _$$$ = $.$(),
+            after = _$$$.after,
+            before = _$$$.before,
+            end = _$$$.end,
+            value = _$$$.value;
         if (value) {
             return;
         }
@@ -176,83 +173,66 @@
                 var parts = m[0].split(caret);
                 // `<asdf asdf="asdf"|/>` or `<asdf asdf="asdf" |/>`
                 if ('>' === parts[1] || '/>' === (parts[1] || "").trim()) {
-                    editor.select(v = m.index, v + toCount(m[0]) - 1);
+                    $.select(v = m.index, v + toCount(m[0]) - 1);
                     break;
                 }
                 // `<as|df asdf="asdf">`
                 if ('<' !== parts[0] && '</' !== parts[0] && !/\s/.test(parts[0])) {
-                    editor.select(v = m.index + ('/' === parts[0][1] ? 2 : 1), end + toCount(parts[1].split(/[\s\/>]/).shift()));
+                    $.select(v = m.index + ('/' === parts[0][1] ? 2 : 1), end + toCount(parts[1].split(/[\s\/>]/).shift()));
                     break;
                 }
                 var mm = void 0;
                 // `<asdf asdf="as|df">` or `<asdf asdf='as|df'>`
                 if (mm = toPattern('=("[^"]*' + caret + '[^"]*"|\'[^\']*' + caret + '[^\']*\')').exec(m[0])) {
-                    editor.select(v = m.index + mm.index + 2, v + toCount(mm[1]) - 3);
+                    $.select(v = m.index + mm.index + 2, v + toCount(mm[1]) - 3);
                     break;
                 }
                 // `<asdf asdf=as|df>`
                 if (mm = toPattern('=([^"\'\\s\\/>]*' + caret + '[^"\'\\s\\/>]*)').exec(m[0])) {
-                    editor.select(v = m.index + mm.index + 1, v + toCount(mm[1]) - 1);
+                    $.select(v = m.index + mm.index + 1, v + toCount(mm[1]) - 1);
                     break;
                 }
                 // `<asdf as|df="asdf">`
                 if ('<' !== parts[0] && '</' !== parts[0]) {
                     if (mm = toPattern('([^="\'\\s]*' + caret + '[^="\'\\s]*)[=\\s\\/>]').exec(m[0])) {
-                        editor.select(v = m.index + mm.index, v + toCount(mm[1]) - 1);
+                        $.select(v = m.index + mm.index, v + toCount(mm[1]) - 1);
                         break;
                     }
                 }
                 // Other caret position(s) will select the element
-                editor.select(v = m.index, v + toCount(m[0]) - 1);
+                $.select(v = m.index, v + toCount(m[0]) - 1);
                 break;
             }
         }
     }, 1);
 
-    function onMouseDown(e) {
-        var self = this,
-            editor = self.TextEditor,
-            keys = editor.k();
-        if (!editor || e.defaultPrevented) {
-            return;
-        }
-        if (keys.startsWith('Control-')) {
-            return;
-        }
-        bounce(e, editor);
-    }
-
     function onKeyDown(e) {
-        var _editor$state$source;
-        var self = this,
-            editor = self.TextEditor,
-            keys = editor.k();
-        if (!editor || e.defaultPrevented) {
+        var _$$state$source;
+        var $ = this,
+            key = $.k(false).pop(),
+            keys = $.k();
+        if (!$ || e.defaultPrevented) {
             return;
         }
-        if (editor.keys[keys]) {
+        if ($.keys[keys]) {
             return;
         }
         // Do nothing
         if ('Alt' === keys || 'Control' === keys) {
             return;
         }
-        var key = keys.split('-').pop(),
-            _editor$$2 = editor.$(),
-            after = _editor$$2.after,
-            before = _editor$$2.before;
-        _editor$$2.end;
-        var start = _editor$$2.start,
-            value = _editor$$2.value;
-        if ("" === key) {
-            key = '-';
-        }
+        var _$$$2 = $.$(),
+            after = _$$$2.after,
+            before = _$$$2.before;
+        _$$$2.end;
+        var start = _$$$2.start,
+            value = _$$$2.value;
         if (['-', '>', '/', '?', ' '].includes(key)) {
             if ('-' === key) {
                 // `<!-|`
                 if (!value && '<!-' === before.slice(-3)) {
                     offEventDefault(e);
-                    return editor.wrap('- ', ' --' + ('>' === after[0] ? "" : '>')).record();
+                    return $.wrap('- ', ' --' + ('>' === after[0] ? "" : '>')).record();
                 }
                 return;
             }
@@ -264,19 +244,19 @@
                     if ('/' === key) {
                         // `<div|>`
                         if ('>' === after[0]) {
-                            return editor.trim("", false).insert(' /', -1).select(editor.$().start + 1).record();
+                            return $.trim("", false).insert(' /', -1).select($.$().start + 1).record();
                         }
-                        return editor.trim("", false).insert(' />', -1).record();
+                        return $.trim("", false).insert(' />', -1).record();
                     }
                     // `<div|></div>`
                     if (after.startsWith('></' + tagStartMatch[1] + '>')) {
-                        editor.select(start + 1).record();
+                        $.select(start + 1).record();
                         // `<div|</div>`
                     } else if (after.startsWith('</' + tagStartMatch[1] + '>')) {
-                        editor.insert('>', -1).record();
+                        $.insert('>', -1).record();
                         // `<div|`
                     } else {
-                        editor.wrap('>', '</' + tagStartMatch[1] + ('>' === after[0] ? "" : '>')).record();
+                        $.wrap('>', '</' + tagStartMatch[1] + ('>' === after[0] ? "" : '>')).record();
                     }
                 }
                 return;
@@ -285,7 +265,7 @@
                 // `<|`
                 if (!value && '<' === before.slice(-1)) {
                     offEventDefault(e);
-                    return editor.wrap('?', '?' + ('>' === after[0] ? "" : '>')).record();
+                    return $.wrap('?', '?' + ('>' === after[0] ? "" : '>')).record();
                 }
                 return;
             }
@@ -297,7 +277,7 @@
                         // `<?foo|?>`
                         '?>' === after.slice(0, 2) && '<?' === before.slice(0, 2) && /<\?\S*$/.test(before)) {
                         offEventDefault(e);
-                        return editor.wrap(' ', ' ').record();
+                        return $.wrap(' ', ' ').record();
                     }
                 }
                 return;
@@ -305,7 +285,7 @@
             return;
         }
         // Update current selection data
-        var s = editor.$();
+        var s = $.$();
         after = s.after;
         before = s.before;
         s.end;
@@ -317,7 +297,7 @@
                 // `<foo>|bar`
                 if (tagMatch) {
                     offEventDefault(e);
-                    return editor.select(start - toCount(tagMatch[0]), start);
+                    return $.select(start - toCount(tagMatch[0]), start);
                 }
             }
             return;
@@ -328,24 +308,27 @@
                 // `foo|<bar>`
                 if (_tagMatch) {
                     offEventDefault(e);
-                    return editor.select(start, start + toCount(_tagMatch[0]));
+                    return $.select(start, start + toCount(_tagMatch[0]));
                 }
             }
             return;
         }
-        var charIndent = ((_editor$state$source = editor.state.source) == null ? void 0 : _editor$state$source.tab) || editor.state.tab || '\t',
+        var charIndent = ((_$$state$source = $.state.source) == null ? void 0 : _$$state$source.tab) || $.state.tab || '\t',
             lineBefore = before.split('\n').pop(),
             lineMatch = lineBefore.match(/^(\s+)/),
             lineMatchIndent = lineMatch && lineMatch[1] || "";
+        if (isInteger(charIndent)) {
+            charIndent = ' '.repeat(charIndent);
+        }
         if ('Enter' === keys) {
             var _tagStartMatch = before.match(toPattern(tagStart(tagName()) + '$', ""));
             if (!value) {
                 if (_tagStartMatch) {
                     offEventDefault(e);
                     if (after.startsWith('</' + _tagStartMatch[1] + '>')) {
-                        return editor.record().trim().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent).record();
+                        return $.record().trim().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent).record();
                     }
-                    return editor.record().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent + '</' + _tagStartMatch[1] + '>').record();
+                    return $.record().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent + '</' + _tagStartMatch[1] + '>').record();
                 }
                 if (
                     // `<!--|-->`
@@ -353,7 +336,7 @@
                     // `<?foo|?>`
                     /^[ \t]*\?>/.test(after) && /<\?\S*[ \t]*$/.test(before)) {
                     offEventDefault(e);
-                    return editor.trim().wrap('\n' + lineMatchIndent, '\n' + lineMatchIndent).record();
+                    return $.trim().wrap('\n' + lineMatchIndent, '\n' + lineMatchIndent).record();
                 }
             }
             return;
@@ -363,30 +346,30 @@
                 // `<!--|`
                 if ('<!--' === before.slice(-4)) {
                     offEventDefault(e);
-                    editor.replace(/<!--$/, "", -1);
+                    $.replace(/<!--$/, "", -1);
                     // `<!--|-->`
                     if ('-->' === after.slice(0, 3)) {
-                        editor.replace(/^-->/, "", 1);
+                        $.replace(/^-->/, "", 1);
                     }
-                    return editor.record();
+                    return $.record();
                 }
                 if (/^\s+-->/.test(after) && /<!--\s+$/.test(before)) {
                     offEventDefault(e);
-                    return editor.trim(' ' === before.slice(-1) ? "" : ' ', ' ' === after[0] ? "" : ' ').record();
+                    return $.trim(' ' === before.slice(-1) ? "" : ' ', ' ' === after[0] ? "" : ' ').record();
                 }
                 // `<?|`
                 if (/<\?\S*$/.test(before)) {
                     offEventDefault(e);
-                    editor.replace(/<\?\S*$/, "", -1);
+                    $.replace(/<\?\S*$/, "", -1);
                     // `<?|?>`
                     if ('?>' === after.slice(0, 2)) {
-                        editor.replace(/^\?>/, "", 1);
+                        $.replace(/^\?>/, "", 1);
                     }
-                    return editor.record();
+                    return $.record();
                 }
                 if (/^\s+\?>/.test(after) && /<\?\S*\s+$/.test(before)) {
                     offEventDefault(e);
-                    return editor.trim(' ' === before.slice(-1) ? "" : ' ', ' ' === after[0] ? "" : ' ').record();
+                    return $.trim(' ' === before.slice(-1) ? "" : ' ', ' ' === after[0] ? "" : ' ').record();
                 }
                 var tagPattern = toPattern(tagTokens() + '$', ""),
                     _tagMatch2 = tagPattern.exec(before);
@@ -394,24 +377,24 @@
                     offEventDefault(e);
                     // `<div />|`
                     if (' />' === before.slice(-3)) {
-                        return editor.replace(/ \/>$/, '/>', -1).record();
+                        return $.replace(/ \/>$/, '/>', -1).record();
                     }
                     // `<div/>|`
                     if ('/>' === before.slice(-2)) {
-                        return editor.replace(/\/>$/, '>', -1).record();
+                        return $.replace(/\/>$/, '>', -1).record();
                     }
-                    editor.replace(tagPattern, "", -1);
+                    $.replace(tagPattern, "", -1);
                     var name = _tagMatch2[0].slice(1).split(/\s+|>/)[0];
                     if (_tagMatch2[0] && '/' !== _tagMatch2[0][1]) {
                         if (after.startsWith('</' + name + '>')) {
-                            editor.replace(toPattern('^</' + name + '>', ""), "", 1);
+                            $.replace(toPattern('^</' + name + '>', ""), "", 1);
                         }
                     }
-                    return editor.record();
+                    return $.record();
                 }
                 if (toPattern(tagStart(tagName()) + '\\n(?:' + esc(charIndent) + ')?$', "").test(before) && toPattern('^\\s*' + tagEnd(tagName()), "").test(after)) {
                     offEventDefault(e);
-                    return editor.trim().record(); // Collapse!
+                    return $.trim().record(); // Collapse!
                 }
             }
             return;
@@ -421,27 +404,34 @@
                 // `|-->`
                 if ('-->' === after.slice(0, 3)) {
                     offEventDefault(e);
-                    return editor.replace(/^-->/, "", 1).record();
+                    return $.replace(/^-->/, "", 1).record();
                 }
                 // `|?>`
                 if ('?>' === after.slice(0, 2)) {
                     offEventDefault(e);
-                    return editor.replace(/^\?>/, "", 1).record();
+                    return $.replace(/^\?>/, "", 1).record();
                 }
                 var _tagPattern = toPattern('^' + tagTokens(), ""),
                     _tagMatch3 = _tagPattern.exec(after);
                 if (_tagMatch3) {
                     offEventDefault(e);
-                    return editor.replace(_tagPattern, "", 1).record();
+                    return $.replace(_tagPattern, "", 1).record();
                 }
             }
         }
     }
 
-    function onKeyUp(e) {}
-
-    function onTouchStart(e) {
-        return onMouseDown.call(this, e);
+    function onMouseDown(e) {
+        var $ = this;
+        $.k(false).pop();
+        var keys = $.k();
+        if (!$ || e.defaultPrevented) {
+            return;
+        }
+        if (keys.startsWith('Control-')) {
+            return;
+        }
+        bounce(e, $);
     }
 
     function toAttributes(attributes) {
@@ -468,8 +458,8 @@
         return out;
     }
 
-    function attach(self) {
-        var _$$state$source3;
+    function attach() {
+        var _$$state$source4;
         var $ = this;
         $.insertXML = function (name, content, attributes, tidy) {
             if (content === void 0) {
@@ -483,11 +473,14 @@
             }
             // `<asdf>|</asdf>`
             if (tidy) {
-                var _$$state$source;
-                var _$$$ = $.$(),
-                    after = _$$$.after,
-                    before = _$$$.before,
-                    tab = ((_$$state$source = $.state.source) == null ? void 0 : _$$state$source.tab) || $.state.tab || '\t';
+                var _$$state$source2;
+                var _$$$3 = $.$(),
+                    after = _$$$3.after,
+                    before = _$$$3.before,
+                    tab = ((_$$state$source2 = $.state.source) == null ? void 0 : _$$state$source2.tab) || $.state.tab || '\t';
+                if (isInteger(tab)) {
+                    tab = ' '.repeat(tab);
+                }
                 if (toPattern('^' + tagEnd(tagName()), "").test(after) && toPattern(tagStart(tagName()) + '$', "").test(before)) {
                     var lineBefore = before.split('\n').pop(),
                         lineMatch = lineBefore.match(/^(\s+)/),
@@ -517,9 +510,9 @@
             if (tidy === void 0) {
                 tidy = false;
             }
-            var _$$$2 = $.$(),
-                after = _$$$2.after,
-                before = _$$$2.before,
+            var _$$$4 = $.$(),
+                after = _$$$4.after,
+                before = _$$$4.before,
                 tagStartOf = tagStart(name),
                 tagEndOf = tagEnd(name),
                 tagStartPattern = toPattern(tagStartOf + '$', ""),
@@ -538,17 +531,20 @@
             if (tidy === void 0) {
                 tidy = false;
             }
-            var _$$$3 = $.$(),
-                after = _$$$3.after,
-                before = _$$$3.before,
-                value = _$$$3.value;
+            var _$$$5 = $.$(),
+                after = _$$$5.after,
+                before = _$$$5.before,
+                value = _$$$5.value;
             if (!value && content) {
                 $.insert(content);
             }
             // `<asdf>|</asdf>`
             if (tidy) {
-                var _$$state$source2;
-                var tab = ((_$$state$source2 = $.state.source) == null ? void 0 : _$$state$source2.tab) || $.state.tab || '\t';
+                var _$$state$source3;
+                var tab = ((_$$state$source3 = $.state.source) == null ? void 0 : _$$state$source3.tab) || $.state.tab || '\t';
+                if (isInteger(tab)) {
+                    tab = ' '.repeat(tab);
+                }
                 if (toPattern('^' + tagEnd(tagName()), "").test(after) && toPattern(tagStart(tagName()) + '$', "").test(before)) {
                     var lineBefore = before.split('\n').pop(),
                         lineMatch = lineBefore.match(/^(\s+)/),
@@ -558,20 +554,17 @@
             }
             return $.wrap('<' + name + toAttributes(attributes) + '>', '</' + name + '>');
         };
-        if ('XML' === ((_$$state$source3 = $.state.source) == null ? void 0 : _$$state$source3.type)) {
-            onEvent('keydown', self, onKeyDown);
-            onEvent('keyup', self, onKeyUp);
-            onEvent('mousedown', self, onMouseDown);
-            onEvent('touchstart', self, onTouchStart);
+        if ('XML' === ((_$$state$source4 = $.state.source) == null ? void 0 : _$$state$source4.type)) {
+            $.on('key.down', onKeyDown);
+            $.on('mouse.down', onMouseDown);
         }
         return $;
     }
 
-    function detach(self) {
-        offEvent('keydown', self, onKeyDown);
-        offEvent('keyup', self, onKeyUp);
-        offEvent('mousedown', self, onMouseDown);
-        offEvent('touchstart', self, onTouchStart);
+    function detach() {
+        var $ = this;
+        $.off('key.down', onKeyDown);
+        $.off('mouse.down', onMouseDown);
         return $;
     }
     var index_js = {

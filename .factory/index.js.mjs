@@ -2,7 +2,7 @@ import {debounce} from '@taufik-nurrohman/tick';
 import {esc, toPattern} from '@taufik-nurrohman/pattern';
 import {fromHTML, fromValue} from '@taufik-nurrohman/from';
 import {hasValue} from '@taufik-nurrohman/has';
-import {isArray, isSet, isString} from '@taufik-nurrohman/is';
+import {isArray, isInteger, isSet, isString} from '@taufik-nurrohman/is';
 import {onEvent, offEvent, offEventDefault} from '@taufik-nurrohman/event';
 import {toCount, toObjectKeys} from '@taufik-nurrohman/to';
 
@@ -15,8 +15,8 @@ let tagComment = () => '<!--([\\s\\S](?!-->)*)-->',
     tagPreamble = () => '<\\?((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)\\?>',
     tagTokens = () => '(?:' + tagComment() + '|' + tagData() + '|' + tagEnd(tagName()) + '|' + tagPreamble() + '|' + tagVoid(tagName()) + '|' + tagStart(tagName()) + ')';
 
-const bounce = debounce((e, editor) => {
-    let {after, before, end, value} = editor.$();
+const bounce = debounce((e, $) => {
+    let {after, before, end, value} = $.$();
     if (value) {
         return;
     }
@@ -30,77 +30,60 @@ const bounce = debounce((e, editor) => {
             let parts = m[0].split(caret);
             // `<asdf asdf="asdf"|/>` or `<asdf asdf="asdf" |/>`
             if ('>' === parts[1] || '/>' === (parts[1] || "").trim()) {
-                editor.select(v = m.index, v + toCount(m[0]) - 1);
+                $.select(v = m.index, v + toCount(m[0]) - 1);
                 break;
             }
             // `<as|df asdf="asdf">`
             if ('<' !== parts[0] && '</' !== parts[0] && !/\s/.test(parts[0])) {
-                editor.select(v = m.index + ('/' === parts[0][1] ? 2 : 1), end + toCount(parts[1].split(/[\s\/>]/).shift()));
+                $.select(v = m.index + ('/' === parts[0][1] ? 2 : 1), end + toCount(parts[1].split(/[\s\/>]/).shift()));
                 break;
             }
             let mm;
             // `<asdf asdf="as|df">` or `<asdf asdf='as|df'>`
             if (mm = toPattern('=("[^"]*' + caret + '[^"]*"|\'[^\']*' + caret + '[^\']*\')').exec(m[0])) {
-                editor.select(v = m.index + mm.index + 2, v + toCount(mm[1]) - 3);
+                $.select(v = m.index + mm.index + 2, v + toCount(mm[1]) - 3);
                 break;
             }
             // `<asdf asdf=as|df>`
             if (mm = toPattern('=([^"\'\\s\\/>]*' + caret + '[^"\'\\s\\/>]*)').exec(m[0])) {
-                editor.select(v = m.index + mm.index + 1, v + toCount(mm[1]) - 1);
+                $.select(v = m.index + mm.index + 1, v + toCount(mm[1]) - 1);
                 break;
             }
             // `<asdf as|df="asdf">`
             if ('<' !== parts[0] && '</' !== parts[0]) {
                 if (mm = toPattern('([^="\'\\s]*' + caret + '[^="\'\\s]*)[=\\s\\/>]').exec(m[0])) {
-                    editor.select(v = m.index + mm.index, v + toCount(mm[1]) - 1);
+                    $.select(v = m.index + mm.index, v + toCount(mm[1]) - 1);
                     break;
                 }
             }
             // Other caret position(s) will select the element
-            editor.select(v = m.index, v + toCount(m[0]) - 1);
+            $.select(v = m.index, v + toCount(m[0]) - 1);
             break;
         }
     }
 }, 1);
 
-function onMouseDown(e) {
-    let self = this,
-        editor = self.TextEditor,
-        keys = editor.k();
-    if (!editor || e.defaultPrevented) {
-        return;
-    }
-    if (keys.startsWith('Control-')) {
-        return;
-    }
-    bounce(e, editor);
-}
-
 function onKeyDown(e) {
-    let self = this,
-        editor = self.TextEditor,
-        keys = editor.k();
-    if (!editor || e.defaultPrevented) {
+    let $ = this,
+        key = $.k(false).pop(),
+        keys = $.k();
+    if (!$ || e.defaultPrevented) {
         return;
     }
-    if (editor.keys[keys]) {
+    if ($.keys[keys]) {
         return;
     }
     // Do nothing
     if ('Alt' === keys || 'Control' === keys) {
         return;
     }
-    let key = keys.split('-').pop(),
-        {after, before, end, start, value} = editor.$();
-    if ("" === key) {
-        key = '-';
-    }
+    let {after, before, end, start, value} = $.$();
     if (['-', '>', '/', '?', ' '].includes(key)) {
         if ('-' === key) {
             // `<!-|`
             if (!value && '<!-' === before.slice(-3)) {
                 offEventDefault(e);
-                return editor.wrap('- ', ' --' + ('>' === after[0] ? "" : '>')).record();
+                return $.wrap('- ', ' --' + ('>' === after[0] ? "" : '>')).record();
             }
             return;
         }
@@ -112,19 +95,19 @@ function onKeyDown(e) {
                 if ('/' === key) {
                     // `<div|>`
                     if ('>' === after[0]) {
-                        return editor.trim("", false).insert(' /', -1).select(editor.$().start + 1).record();
+                        return $.trim("", false).insert(' /', -1).select($.$().start + 1).record();
                     }
-                    return editor.trim("", false).insert(' />', -1).record();
+                    return $.trim("", false).insert(' />', -1).record();
                 }
                 // `<div|></div>`
                 if (after.startsWith('></' + tagStartMatch[1] + '>')) {
-                    editor.select(start + 1).record();
+                    $.select(start + 1).record();
                 // `<div|</div>`
                 } else if (after.startsWith('</' + tagStartMatch[1] + '>')) {
-                    editor.insert('>', -1).record();
+                    $.insert('>', -1).record();
                 // `<div|`
                 } else {
-                    editor.wrap('>', '</' + tagStartMatch[1] + ('>' === after[0] ? "" : '>')).record();
+                    $.wrap('>', '</' + tagStartMatch[1] + ('>' === after[0] ? "" : '>')).record();
                 }
             }
             return;
@@ -133,7 +116,7 @@ function onKeyDown(e) {
             // `<|`
             if (!value && '<' === before.slice(-1)) {
                 offEventDefault(e);
-                return editor.wrap('?', '?' + ('>' === after[0] ? "" : '>')).record();
+                return $.wrap('?', '?' + ('>' === after[0] ? "" : '>')).record();
             }
             return;
         }
@@ -146,7 +129,7 @@ function onKeyDown(e) {
                     '?>' === after.slice(0, 2) && '<?' === before.slice(0, 2) && /<\?\S*$/.test(before)
                 ) {
                     offEventDefault(e);
-                    return editor.wrap(' ', ' ').record();
+                    return $.wrap(' ', ' ').record();
                 }
             }
             return;
@@ -154,7 +137,7 @@ function onKeyDown(e) {
         return;
     }
     // Update current selection data
-    let s = editor.$();
+    let s = $.$();
     after = s.after;
     before = s.before;
     end = s.end;
@@ -166,7 +149,7 @@ function onKeyDown(e) {
             // `<foo>|bar`
             if (tagMatch) {
                 offEventDefault(e);
-                return editor.select(start - toCount(tagMatch[0]), start);
+                return $.select(start - toCount(tagMatch[0]), start);
             }
         }
         return;
@@ -177,24 +160,27 @@ function onKeyDown(e) {
             // `foo|<bar>`
             if (tagMatch) {
                 offEventDefault(e);
-                return editor.select(start, start + toCount(tagMatch[0]));
+                return $.select(start, start + toCount(tagMatch[0]));
             }
         }
         return;
     }
-    let charIndent = editor.state.source?.tab || editor.state.tab || '\t',
+    let charIndent = $.state.source?.tab || $.state.tab || '\t',
         lineBefore = before.split('\n').pop(),
         lineMatch = lineBefore.match(/^(\s+)/),
         lineMatchIndent = lineMatch && lineMatch[1] || "";
+    if (isInteger(charIndent)) {
+        charIndent = ' '.repeat(charIndent);
+    }
     if ('Enter' === keys) {
         let tagStartMatch = before.match(toPattern(tagStart(tagName()) + '$', ""));
         if (!value) {
             if (tagStartMatch) {
                 offEventDefault(e);
                 if (after.startsWith('</' + tagStartMatch[1] + '>')) {
-                    return editor.record().trim().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent).record();
+                    return $.record().trim().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent).record();
                 }
-                return editor.record().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent + '</' + tagStartMatch[1] + '>').record();
+                return $.record().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent + '</' + tagStartMatch[1] + '>').record();
             }
             if (
                 // `<!--|-->`
@@ -203,7 +189,7 @@ function onKeyDown(e) {
                 /^[ \t]*\?>/.test(after) && /<\?\S*[ \t]*$/.test(before)
             ) {
                 offEventDefault(e);
-                return editor.trim().wrap('\n' + lineMatchIndent, '\n' + lineMatchIndent).record();
+                return $.trim().wrap('\n' + lineMatchIndent, '\n' + lineMatchIndent).record();
             }
         }
         return;
@@ -213,30 +199,30 @@ function onKeyDown(e) {
             // `<!--|`
             if ('<!--' === before.slice(-4)) {
                 offEventDefault(e);
-                editor.replace(/<!--$/, "", -1);
+                $.replace(/<!--$/, "", -1);
                 // `<!--|-->`
                 if ('-->' === after.slice(0, 3)) {
-                    editor.replace(/^-->/, "", 1);
+                    $.replace(/^-->/, "", 1);
                 }
-                return editor.record();
+                return $.record();
             }
             if (/^\s+-->/.test(after) && /<!--\s+$/.test(before)) {
                 offEventDefault(e);
-                return editor.trim(' ' === before.slice(-1) ? "" : ' ', ' ' === after[0] ? "" : ' ').record();
+                return $.trim(' ' === before.slice(-1) ? "" : ' ', ' ' === after[0] ? "" : ' ').record();
             }
             // `<?|`
             if (/<\?\S*$/.test(before)) {
                 offEventDefault(e);
-                editor.replace(/<\?\S*$/, "", -1);
+                $.replace(/<\?\S*$/, "", -1);
                 // `<?|?>`
                 if ('?>' === after.slice(0, 2)) {
-                    editor.replace(/^\?>/, "", 1);
+                    $.replace(/^\?>/, "", 1);
                 }
-                return editor.record();
+                return $.record();
             }
             if (/^\s+\?>/.test(after) && /<\?\S*\s+$/.test(before)) {
                 offEventDefault(e);
-                return editor.trim(' ' === before.slice(-1) ? "" : ' ', ' ' === after[0] ? "" : ' ').record();
+                return $.trim(' ' === before.slice(-1) ? "" : ' ', ' ' === after[0] ? "" : ' ').record();
             }
             let tagPattern = toPattern(tagTokens() + '$', ""),
                 tagMatch = tagPattern.exec(before);
@@ -244,27 +230,27 @@ function onKeyDown(e) {
                 offEventDefault(e);
                 // `<div />|`
                 if (' />' === before.slice(-3)) {
-                    return editor.replace(/ \/>$/, '/>', -1).record();
+                    return $.replace(/ \/>$/, '/>', -1).record();
                 }
                 // `<div/>|`
                 if ('/>' === before.slice(-2)) {
-                    return editor.replace(/\/>$/, '>', -1).record();
+                    return $.replace(/\/>$/, '>', -1).record();
                 }
-                editor.replace(tagPattern, "", -1);
+                $.replace(tagPattern, "", -1);
                 let name = tagMatch[0].slice(1).split(/\s+|>/)[0];
                 if (tagMatch[0] && '/' !== tagMatch[0][1]) {
                     if (after.startsWith('</' + name + '>')) {
-                        editor.replace(toPattern('^</' + name + '>', ""), "", 1);
+                        $.replace(toPattern('^</' + name + '>', ""), "", 1);
                     }
                 }
-                return editor.record();
+                return $.record();
             }
             if (
                 toPattern(tagStart(tagName()) + '\\n(?:' + esc(charIndent) + ')?$', "").test(before) &&
                 toPattern('^\\s*' + tagEnd(tagName()), "").test(after)
             ) {
                 offEventDefault(e);
-                return editor.trim().record(); // Collapse!
+                return $.trim().record(); // Collapse!
             }
         }
         return;
@@ -274,29 +260,34 @@ function onKeyDown(e) {
             // `|-->`
             if ('-->' === after.slice(0, 3)) {
                 offEventDefault(e);
-                return editor.replace(/^-->/, "", 1).record();
+                return $.replace(/^-->/, "", 1).record();
             }
             // `|?>`
             if ('?>' === after.slice(0, 2)) {
                 offEventDefault(e);
-                return editor.replace(/^\?>/, "", 1).record();
+                return $.replace(/^\?>/, "", 1).record();
             }
             let tagPattern = toPattern('^' + tagTokens(), ""),
                 tagMatch = tagPattern.exec(after);
             if (tagMatch) {
                 offEventDefault(e);
-                return editor.replace(tagPattern, "", 1).record();
+                return $.replace(tagPattern, "", 1).record();
             }
         }
     }
 }
 
-function onKeyUp(e) {
-
-}
-
-function onTouchStart(e) {
-    return onMouseDown.call(this, e);
+function onMouseDown(e) {
+    let $ = this,
+        key = $.k(false).pop(),
+        keys = $.k();
+    if (!$ || e.defaultPrevented) {
+        return;
+    }
+    if (keys.startsWith('Control-')) {
+        return;
+    }
+    bounce(e, $);
 }
 
 function toAttributes(attributes) {
@@ -319,13 +310,16 @@ function toAttributes(attributes) {
     return out;
 }
 
-function attach(self) {
+function attach() {
     let $ = this;
     $.insertXML = (name, content = "", attributes = {}, tidy = false) => {
         // `<asdf>|</asdf>`
         if (tidy) {
             let {after, before} = $.$(),
                 tab = $.state.source?.tab || $.state.tab || '\t';
+            if (isInteger(tab)) {
+                tab = ' '.repeat(tab);
+            }
             if (toPattern('^' + tagEnd(tagName()), "").test(after) && toPattern(tagStart(tagName()) + '$', "").test(before)) {
                 let lineBefore = before.split('\n').pop(),
                     lineMatch = lineBefore.match(/^(\s+)/),
@@ -360,6 +354,9 @@ function attach(self) {
         // `<asdf>|</asdf>`
         if (tidy) {
             let tab = $.state.source?.tab || $.state.tab || '\t';
+            if (isInteger(tab)) {
+                tab = ' '.repeat(tab);
+            }
             if (toPattern('^' + tagEnd(tagName()), "").test(after) && toPattern(tagStart(tagName()) + '$', "").test(before)) {
                 let lineBefore = before.split('\n').pop(),
                     lineMatch = lineBefore.match(/^(\s+)/),
@@ -370,19 +367,16 @@ function attach(self) {
         return $.wrap('<' + name + toAttributes(attributes) + '>', '</' + name + '>');
     };
     if ('XML' === $.state.source?.type) {
-        onEvent('keydown', self, onKeyDown);
-        onEvent('keyup', self, onKeyUp);
-        onEvent('mousedown', self, onMouseDown);
-        onEvent('touchstart', self, onTouchStart);
+        $.on('key.down', onKeyDown);
+        $.on('mouse.down', onMouseDown);
     }
     return $;
 }
 
-function detach(self) {
-    offEvent('keydown', self, onKeyDown);
-    offEvent('keyup', self, onKeyUp);
-    offEvent('mousedown', self, onMouseDown);
-    offEvent('touchstart', self, onTouchStart);
+function detach() {
+    let $ = this;
+    $.off('key.down', onKeyDown);
+    $.off('mouse.down', onMouseDown);
     return $;
 }
 

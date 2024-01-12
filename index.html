@@ -5,7 +5,7 @@
     <meta content="#000" name="theme-color">
     <meta content="width=device-width" name="viewport">
     <meta content="Provides a set of key strokes to generate responses like in a typical XML source code editor." name="description">
-    <title>Text Editor Source XML 2.0.0</title>
+    <title>Text Editor Source XML 2.0.1</title>
     <link href="../layout/index.min.css" rel="stylesheet">
     <style>
       mark {
@@ -20,11 +20,12 @@
   </head>
   <body>
     <header>
-      <h1><a href="../text-editor/index.html">&laquo;</a> Text Editor Source XML 2.0.0</h1>
+      <h1><a href="../text-editor/index.html">&laquo;</a> Text Editor Source XML 2.0.1</h1>
       <p><abbr title="Extensible Markup Language">XML</abbr> source extension for <a href="../text-editor/index.html">Text Editor</a>. This extension provides a set of key strokes to generate responses like in a typical <abbr title="Extensible Markup Language">XML</abbr> source code editor.</p>
       <hr>
     </header>
     <main>
+      <p><label><input checked onchange="return editor[this.checked ? 'attach' : 'detach'](), false;" type="checkbox"> <span>Enable <abbr title="Extensible Markup Language">XML</abbr> Source Editor</span></label></p>
       <p><textarea placeholder="Code goes here&hellip;" spellcheck="false" style="display:block;width:100%;"></textarea></p>
       <p role="group"><button onclick="return editor.toggleXML('time', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}, true).record(), false;">Test Toggle XML</button><button onclick="return editor.wrapXML('time', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}, true).record(), false;">Test Wrap XML</button><button onclick="return editor.peelXML('time', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}, true).record(), false;">Test Peel XML</button><button onclick="return editor.insertXML('time', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}, true).record(), false;">Test Insert XML</button></p>
       <h2>Features</h2>
@@ -76,28 +77,32 @@
 &lt;script&gt;
 
   const editor = new TextEditor(document.querySelector('textarea'), {
+      commands: {
+          pull: function () {
+              return this.pull().record(), false;
+          },
+          push: function () {
+              return this.push().record(), false;
+          },
+          redo: function () {
+              return this.redo(), false;
+          },
+          undo: function () {
+              return this.undo(), false;
+          }
+      },
+      keys: {
+          'Control-[': 'pull',
+          'Control-]': 'push',
+          'Control-y': 'redo',
+          'Control-z': 'undo'
+      },
       source: {
           type: 'XML' // Set the current editor type as `XML`
       },
-      tab: ' '.repeat(2),
-      // Make sure to load `TextEditor.SourceXML` before `TextEditor.Source`
+      tab: 2,
+      // Be sure to put `TextEditor.SourceXML` before `TextEditor.Source`
       with: [TextEditor.History, TextEditor.Key, TextEditor.SourceXML, TextEditor.Source]
-  });
-
-  editor.key('Control-[', function () {
-      return this.pull().record(), false;
-  });
-
-  editor.key('Control-]', function () {
-      return this.push().record(), false;
-  });
-
-  editor.key('Control-y', function () {
-      return this.redo(), false;
-  });
-
-  editor.key('Control-z', function () {
-      return this.undo(), false;
   });
 
 &lt;/script&gt;</code></pre>
@@ -109,28 +114,32 @@ const TextEditorSource = require('@taufik-nurrohman/text-editor.source').default
 const TextEditorSourceXML = require('@taufik-nurrohman/text-editor.source-x-m-l').default;
 
 const editor = new TextEditor(document.querySelector('textarea'), {
+    commands: {
+        pull: function () {
+            return this.pull().record(), false;
+        },
+        push: function () {
+            return this.push().record(), false;
+        },
+        redo: function () {
+            return this.redo(), false;
+        },
+        undo: function () {
+            return this.undo(), false;
+        }
+    },
+    keys: {
+        'Control-[': 'pull',
+        'Control-]': 'push',
+        'Control-y': 'redo',
+        'Control-z': 'undo'
+    },
     source: {
         type: 'XML' // Set the current editor type as `XML`
     },
-    tab: ' '.repeat(2),
-    // Make sure to load `TextEditorSourceXML` before `TextEditorSource`
+    tab: 2,
+    // Be sure to put `TextEditorSourceXML` before `TextEditorSource`
     with: [TextEditorHistory, TextEditorKey, TextEditorSourceXML, TextEditorSource]
-});
-
-editor.key('Control-[', function () {
-    return this.pull().record(), false;
-});
-
-editor.key('Control-]', function () {
-    return this.push().record(), false;
-});
-
-editor.key('Control-y', function () {
-    return this.redo(), false;
-});
-
-editor.key('Control-z', function () {
-    return this.undo(), false;
 });</code></pre>
       <h3>ECMAScript</h3>
       <pre><code>import TextEditor from '@taufik-nurrohman/text-editor';
@@ -140,28 +149,32 @@ import TextEditorSource from '@taufik-nurrohman/text-editor.source';
 import TextEditorSourceXML from '@taufik-nurrohman/text-editor.source-x-m-l';
 
 const editor = new TextEditor(document.querySelector('textarea'), {
+    commands: {
+        pull: function () {
+            return this.pull().record(), false;
+        },
+        push: function () {
+            return this.push().record(), false;
+        },
+        redo: function () {
+            return this.redo(), false;
+        },
+        undo: function () {
+            return this.undo(), false;
+        }
+    },
+    keys: {
+        'Control-[': 'pull',
+        'Control-]': 'push',
+        'Control-y': 'redo',
+        'Control-z': 'undo'
+    },
     source: {
         type: 'XML' // Set the current editor type as `XML`
     },
-    tab: ' '.repeat(2),
-    // Make sure to load `TextEditorSourceXML` before `TextEditorSource`
+    tab: 2,
+    // Be sure to put `TextEditorSourceXML` before `TextEditorSource`
     with: [TextEditorHistory, TextEditorKey, TextEditorSourceXML, TextEditorSource]
-});
-
-editor.key('Control-[', function () {
-    return this.pull().record(), false;
-});
-
-editor.key('Control-]', function () {
-    return this.push().record(), false;
-});
-
-editor.key('Control-y', function () {
-    return this.redo(), false;
-});
-
-editor.key('Control-z', function () {
-    return this.undo(), false;
 });</code></pre>
       <h2>Methods</h2>
       <h3>Instance Methods</h3>
@@ -199,23 +212,31 @@ editor.toggleXML('time', date.toLocaleString(), {
     <script src="index.min.js"></script>
     <script>
       const editor = new TextEditor(document.querySelector('textarea'), {
+          commands: {
+              pull: function () {
+                  return this.pull().record(), false;
+              },
+              push: function () {
+                  return this.push().record(), false;
+              },
+              redo: function () {
+                  return this.redo(), false;
+              },
+              undo: function () {
+                  return this.undo(), false;
+              }
+          },
+          keys: {
+              'Control-[': 'pull',
+              'Control-]': 'push',
+              'Control-y': 'redo',
+              'Control-z': 'undo'
+          },
           source: {
               type: 'XML'
           },
-          tab: ' '.repeat(2),
+          tab: 2,
           with: [TextEditor.History, TextEditor.Key, TextEditor.SourceXML, TextEditor.Source]
-      });
-      editor.key('Control-[', function () {
-          return this.pull().record(), false;
-      });
-      editor.key('Control-]', function () {
-          return this.push().record(), false;
-      });
-      editor.key('Control-y', function () {
-          return this.redo(), false;
-      });
-      editor.key('Control-z', function () {
-          return this.undo(), false;
       });
     </script>
   </body>
