@@ -274,7 +274,7 @@
                     if (
                         // `<!--|-->`
                         '-->' === after.slice(0, 3) && '<!--' === before.slice(-4) ||
-                        // `<?foo|?>`
+                        // `<?asdf|?>`
                         '?>' === after.slice(0, 2) && '<?' === before.slice(0, 2) && /<\?\S*$/.test(before)) {
                         offEventDefault(e);
                         return $.wrap(' ', ' ').record();
@@ -294,7 +294,7 @@
         if ('ArrowLeft' === keys) {
             if (!value) {
                 var tagMatch = toPattern(tagTokens() + '$', "").exec(before);
-                // `<foo>|bar`
+                // `<asdf>|asdf`
                 if (tagMatch) {
                     offEventDefault(e);
                     return $.select(start - toCount(tagMatch[0]), start);
@@ -305,7 +305,7 @@
         if ('ArrowRight' === keys) {
             if (!value) {
                 var _tagMatch = toPattern('^' + tagTokens(), "").exec(after);
-                // `foo|<bar>`
+                // `asdf|<asdf>`
                 if (_tagMatch) {
                     offEventDefault(e);
                     return $.select(start, start + toCount(_tagMatch[0]));
@@ -333,10 +333,18 @@
                 if (
                     // `<!--|-->`
                     /^[ \t]*-->/.test(after) && /<!--[ \t]*$/.test(before) ||
-                    // `<?foo|?>`
+                    // `<?asdf|?>`
                     /^[ \t]*\?>/.test(after) && /<\?\S*[ \t]*$/.test(before)) {
                     offEventDefault(e);
                     return $.trim().wrap('\n' + lineMatchIndent, '\n' + lineMatchIndent).record();
+                }
+                if (
+                    // `<!--\n|\n-->`
+                    /^\n-->/.test(after) && /<!--\n$/.test(before) ||
+                    // `<?asdf\n|\n?>`
+                    /^\n\?>/.test(after) && /<\?\S*\n$/.test(before)) {
+                    offEventDefault(e);
+                    return $.trim().wrap('\n\n' + lineMatchIndent, '\n\n' + lineMatchIndent).record();
                 }
             }
             return;

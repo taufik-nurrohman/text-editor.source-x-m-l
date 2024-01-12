@@ -125,7 +125,7 @@ function onKeyDown(e) {
                 if (
                     // `<!--|-->`
                     '-->' === after.slice(0, 3) && '<!--' === before.slice(-4) ||
-                    // `<?foo|?>`
+                    // `<?asdf|?>`
                     '?>' === after.slice(0, 2) && '<?' === before.slice(0, 2) && /<\?\S*$/.test(before)
                 ) {
                     offEventDefault(e);
@@ -146,7 +146,7 @@ function onKeyDown(e) {
     if ('ArrowLeft' === keys) {
         if (!value) {
             let tagMatch = toPattern(tagTokens() + '$', "").exec(before);
-            // `<foo>|bar`
+            // `<asdf>|asdf`
             if (tagMatch) {
                 offEventDefault(e);
                 return $.select(start - toCount(tagMatch[0]), start);
@@ -157,7 +157,7 @@ function onKeyDown(e) {
     if ('ArrowRight' === keys) {
         if (!value) {
             let tagMatch = toPattern('^' + tagTokens(), "").exec(after);
-            // `foo|<bar>`
+            // `asdf|<asdf>`
             if (tagMatch) {
                 offEventDefault(e);
                 return $.select(start, start + toCount(tagMatch[0]));
@@ -185,11 +185,20 @@ function onKeyDown(e) {
             if (
                 // `<!--|-->`
                 /^[ \t]*-->/.test(after) && /<!--[ \t]*$/.test(before) ||
-                // `<?foo|?>`
+                // `<?asdf|?>`
                 /^[ \t]*\?>/.test(after) && /<\?\S*[ \t]*$/.test(before)
             ) {
                 offEventDefault(e);
                 return $.trim().wrap('\n' + lineMatchIndent, '\n' + lineMatchIndent).record();
+            }
+            if (
+                // `<!--\n|\n-->`
+                /^\n-->/.test(after) && /<!--\n$/.test(before) ||
+                // `<?asdf\n|\n?>`
+                /^\n\?>/.test(after) && /<\?\S*\n$/.test(before)
+            ) {
+                offEventDefault(e);
+                return $.trim().wrap('\n\n' + lineMatchIndent, '\n\n' + lineMatchIndent).record();
             }
         }
         return;
