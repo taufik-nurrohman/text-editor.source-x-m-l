@@ -66,10 +66,64 @@ block content
         'width': '100%'
       })
     p(role='group')
-      button(onclick='return editor.toggleXML(\'time\', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}, true).record(), false;') Test Toggle XML
-      button(onclick='return editor.wrapXML(\'time\', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}, true).record(), false;') Test Wrap XML
-      button(onclick='return editor.peelXML(\'time\', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}, true).record(), false;') Test Peel XML
-      button(onclick='return editor.insertXML(\'time\', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}, true).record(), false;') Test Insert XML
+      button(onclick='return editor.insertElement(\'<time />\'), false;') Test Insert Element String
+    p(role='group')
+      button(onclick='return editor.wrapElement(\'<time>\', \'</time>\'), false;') Test Wrap Element String #1
+      = ' '
+      button(onclick='return editor.peelElement(\'<time>\', \'</time>\'), false;') Test Peel Element String #1
+      = ' '
+      button(onclick='return editor.toggleElement(\'<time>\', \'</time>\'), false;') Test Toggle Element String #1
+    p(role='group')
+      button(onclick='return editor.wrapElement(\'<time>\', \'</time>\', true), false;') Test Wrap Element String #2
+      = ' '
+      button(onclick='return editor.peelElement(\'<time>\', \'</time>\', true), false;') Test Peel Element String #2
+      = ' '
+      button(onclick='return editor.toggleElement(\'<time>\', \'</time>\', true), false;') Test Toggle Element String #2
+    hr
+    p(role='group')
+      button(onclick='return editor.insertElement([\'time\', false, {datetime: (new Date).toISOString()}]), false;') Test Insert Element Object
+    p(role='group')
+      button(onclick='return editor.wrapElement([\'time\', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}]), false;') Test Wrap Element Object #1
+      = ' '
+      button(onclick='return editor.peelElement([\'time\']), false;') Test Peel Element Object #1
+      = ' '
+      button(onclick='return editor.toggleElement([\'time\', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}]), false;') Test Toggle Element Object #1
+    p(role='group')
+      button(onclick='return editor.wrapElement([\'time\', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}], true), false;') Test Wrap Element Object #2
+      = ' '
+      button(onclick='return editor.peelElement([\'time\'], true), false;') Test Peel Element Object #2
+      = ' '
+      button(onclick='return editor.toggleElement([\'time\', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}], true), false;') Test Toggle Element Object #2
+    hr
+    p(role='group')
+      button(onclick='return editor.insertComment(\'asdf\'), false;') Test Insert Comment String
+    p(role='group')
+      button(onclick='return editor.wrapComment(), false;') Test Wrap Comment String #1
+      = ' '
+      button(onclick='return editor.peelComment(), false;') Test Peel Comment String #1
+      = ' '
+      button(onclick='return editor.toggleComment(), false;') Test Toggle Comment String #1
+    p(role='group')
+      button(onclick='return editor.wrapComment(true), false;') Test Wrap Comment String #2
+      = ' '
+      button(onclick='return editor.peelComment(true), false;') Test Peel Comment String #2
+      = ' '
+      button(onclick='return editor.toggleComment(true), false;') Test Toggle Comment String #2
+    hr
+    p(role='group')
+      button(onclick='return editor.insertData(\'asdf\'), false;') Test Insert Data String
+    p(role='group')
+      button(onclick='return editor.wrapData(), false;') Test Wrap Data String #1
+      = ' '
+      button(onclick='return editor.peelData(), false;') Test Peel Data String #1
+      = ' '
+      button(onclick='return editor.toggleData(), false;') Test Toggle Data String #1
+    p(role='group')
+      button(onclick='return editor.wrapData(true), false;') Test Wrap Data String #2
+      = ' '
+      button(onclick='return editor.peelData(true), false;') Test Peel Data String #2
+      = ' '
+      button(onclick='return editor.toggleData(true), false;') Test Toggle Data String #2
     h2 Features
     ul
       li <code>&lt;!--<mark></mark>--&gt;</code> or <code>&lt;!-- <mark></mark> --&gt;</code> then press <kbd>Enter</kbd>.
@@ -222,31 +276,41 @@ block content
       | });
     h2 Methods
     h3 Instance Methods
-    h4: code editor.insertXML(name, content = "", attributes = {}, tidy = false)
-    p Insert an #[abbr(title='Extensible Markup Language') XML] element before the current selection.
+    h4: code editor.insertComment(value, mode = -1, clear = true)
+    p Insert an #[abbr(title='Extensible Markup Language') XML] comment.
     pre: code
-      | editor.insertXML('time', '2024/01/06', {
-      |     datetime: '2024-01-06 12:49:38'
-      | });
-    h4: code editor.peelXML(name, content = "", attributes = {}, tidy = false)
-    p Peel an #[abbr(title='Extensible Markup Language') XML] element from the current selection.
-    p(role='note') #[strong Note:] The #[code attributes] and #[code content] parameter currently does not affect the result of this method, and is kept there just in case.
+      | editor.insertComment('asdf'); // Delete selection and insert comment before caret
+      | editor.insertComment('asdf', 0); // Replace selection with comment
+      | editor.insertComment('asdf', +1); // Delete selection and insert comment after caret
+    h4: code editor.insertData(value, mode = -1, clear = true)
+    p Insert an #[abbr(title='Extensible Markup Language') XML] character data section.
     pre: code
-      | editor.peelXML('time');
-    h4: code editor.toggleXML(name, content = "", attributes = {}, tidy = false)
-    p Toggle wrap and peel of an #[abbr(title='Extensible Markup Language') XML] element from the current selection.
+      | editor.insertData('asdf'); // Delete selection and insert character data section before caret
+      | editor.insertData('asdf', 0); // Replace selection with character data section
+      | editor.insertData('asdf', +1); // Delete selection and insert character data section after caret
+    h4: code editor.insertElement(value, mode = -1, clear = true)
+    h4: code editor.insertElement(of, mode = -1, clear = true)
+    p Insert an #[abbr(title='Extensible Markup Language') XML] element.
     pre: code
-      | const date = new Date;
-      |
-      | editor.toggleXML('time', date.toLocaleString(), {
-      |     datetime: date.toISOString()
-      | });
-    h4: code editor.wrapXML(name, content = "", attributes = {}, tidy = false)
-    p Wrap the current selection with an #[abbr(title='Extensible Markup Language') XML] element.
+      | editor.insertElement('&lt;input type="text" /&gt;'); // Delete selection and insert element before caret
+      | editor.insertElement('&lt;input type="text" /&gt;', 0); // Replace selection with element
+      | editor.insertElement('&lt;input type="text" /&gt;', +1); // Delete selection and insert element after caret
     pre: code
-      | editor.wrapXML('time', '2024/01/06', {
-      |     datetime: '2024-01-06 12:49:38'
-      | });
+      | editor.insertElement(['input', false, {type: 'text'}]); // Delete selection and insert element before caret
+      | editor.insertElement(['input', false, {type: 'text'}], 0); // Replace selection with element
+      | editor.insertElement(['input', false, {type: 'text'}], +1); // Delete selection and insert element after caret
+    h4: code editor.peelComment(wrap = false)
+    h4: code editor.peelData(wrap = false)
+    h4: code editor.peelElement(open, close, wrap = false)
+    h4: code editor.peelElement(of, wrap = false)
+    h4: code editor.toggleComment(wrap = false)
+    h4: code editor.toggleData(wrap = false)
+    h4: code editor.toggleElement(open, close, wrap = false)
+    h4: code editor.toggleElement(of, wrap = false)
+    h4: code editor.wrapComment(wrap = false)
+    h4: code editor.wrapData(wrap = false)
+    h4: code editor.wrapElement(open, close, wrap = false)
+    h4: code editor.wrapElement(of, wrap = false)
   footer
     hr
     p

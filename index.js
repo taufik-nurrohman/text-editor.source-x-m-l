@@ -460,102 +460,107 @@
     }
 
     function attach() {
-        var _$$state$source4;
+        var _$$state$source2;
         var $ = this;
-        $.insertXML = function (name, content, attributes, tidy) {
-            if (content === void 0) {
-                content = "";
-            }
-            if (attributes === void 0) {
-                attributes = {};
-            }
-            if (tidy === void 0) {
-                tidy = false;
-            }
-            // `<asdf>|</asdf>`
-            if (tidy) {
-                var _$$state$source2;
-                var _$$$3 = $.$(),
-                    after = _$$$3.after,
-                    before = _$$$3.before,
-                    tab = ((_$$state$source2 = $.state.source) == null ? void 0 : _$$state$source2.tab) || $.state.tab || '\t';
-                if (isInteger(tab)) {
-                    tab = ' '.repeat(tab);
-                }
-                if (toPattern('^' + tagEnd(tagName()), "").test(after) && toPattern(tagStart(tagName()) + '$', "").test(before)) {
-                    var lineBefore = before.split('\n').pop(),
-                        lineMatch = lineBefore.match(/^(\s+)/),
-                        lineMatchIndent = lineMatch && lineMatch[1] || "";
-                    $.wrap('\n' + tab + lineMatchIndent, '\n' + lineMatchIndent);
-                }
-            }
-            return $.insert('<' + name + toAttributes(attributes) + (false !== content ? '>' + content + '</' + name + '>' : ' />'), -1, true);
+        $.insertComment = function (value, mode, clear) {
+            return $.insert('<!--' + value + '-->', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
         };
-        $.peelXML = function (name, content, attributes, tidy) {
-            if (tidy === void 0) {
-                tidy = false;
-            }
-            // `<asdf> <asdf>|</asdf> </asdf>`
-            if (tidy) {
-                $.trim("", "");
-            }
-            return $.replace(toPattern(tagStart(name) + '$', ""), "", -1).replace(toPattern('^' + tagEnd(name)), "", 1);
+        $.insertData = function (value, mode, clear) {
+            return $.insert('<![CDATA[' + value + ']]>', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
         };
-        $.toggleXML = function (name, content, attributes, tidy) {
-            if (content === void 0) {
-                content = "";
+        $.insertElement = function (value, mode, clear) {
+            // `$.insertElement(['asdf'])`
+            if (isArray(value)) {
+                value = '<' + value[0] + toAttributes(value[2]) + (false === value[1] ? ' />' : '>' + (value[1] || "") + '</' + value[0] + '>');
             }
-            if (attributes === void 0) {
-                attributes = {};
+            return $.insert(value, isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
+        };
+        $.peelComment = function (wrap) {
+            if (wrap) {
+                return $.replace(/^<!--([\s\S]*?)-->$/, '$1');
             }
-            if (tidy === void 0) {
-                tidy = false;
+            return $.replace(/<!--(\s*)$/, '$1', -1).replace(/^(\s*)-->/, '$1', 1);
+        };
+        $.peelData = function (wrap) {
+            if (wrap) {
+                return $.replace(/^<!\[CDATA\[([\s\S]*?)\]\]>$/, '$1');
             }
+            return $.replace(/<!\[CDATA\[(\s*)$/, '$1', -1).replace(/^(\s*)\]\]>/, '$1', 1);
+        };
+        $.peelElement = function (open, close, wrap) {
+            // `$.peelElement(['asdf'], false)`
+            if (isArray(open)) {
+                wrap = close;
+                if (wrap) {
+                    return $.replace(toPattern('^' + tagStart(open[0]) + '([\\s\\S]*?)' + tagEnd(open[0]) + '$', ""), '$3');
+                }
+                return $.replace(toPattern(tagStart(open[0]) + '$', ""), "", -1).replace(toPattern('^' + tagEnd(open[0])), "", 1);
+            }
+            return $.peel(open, close, wrap);
+        };
+        $.toggleComment = function (wrap) {
+            var _$$$3 = $.$(),
+                after = _$$$3.after,
+                before = _$$$3.before,
+                value = _$$$3.value;
+            if (wrap) {
+                return $[(/^<!--[\s\S]*?-->$/.test(value) ? 'peel' : 'wrap') + 'Comment'](wrap);
+            }
+            return $[(/<!--\s*$/.test(before) && /^\s*-->/.test(after) ? 'peel' : 'wrap') + 'Comment'](wrap);
+        };
+        $.toggleData = function (wrap) {
             var _$$$4 = $.$(),
                 after = _$$$4.after,
                 before = _$$$4.before,
-                tagStartOf = tagStart(name),
-                tagEndOf = tagEnd(name),
-                tagStartPattern = toPattern(tagStartOf + '$', ""),
-                tagEndPattern = toPattern('^' + tagEndOf, ""),
-                tagStartMatch = tagStartPattern.test(before),
-                tagEndMatch = tagEndPattern.test(after);
-            return $[(tagStartMatch && tagEndMatch ? 'peel' : 'wrap') + 'XML'](name, content, attributes, tidy);
+                value = _$$$4.value;
+            if (wrap) {
+                return $[(/^<!\[CDATA\[[\s\S]*?\]\]>$/.test(value) ? 'peel' : 'wrap') + 'Data'](wrap);
+            }
+            return $[(/<!\[CDATA\[\s*$/.test(before) && /^\s*\]\]>/.test(after) ? 'peel' : 'wrap') + 'Data'](wrap);
         };
-        $.wrapXML = function (name, content, attributes, tidy) {
-            if (content === void 0) {
-                content = "";
-            }
-            if (attributes === void 0) {
-                attributes = {};
-            }
-            if (tidy === void 0) {
-                tidy = false;
-            }
-            var _$$$5 = $.$(),
-                after = _$$$5.after,
-                before = _$$$5.before,
-                value = _$$$5.value;
-            if (!value && content) {
-                $.insert(content);
-            }
-            // `<asdf>|</asdf>`
-            if (tidy) {
-                var _$$state$source3;
-                var tab = ((_$$state$source3 = $.state.source) == null ? void 0 : _$$state$source3.tab) || $.state.tab || '\t';
-                if (isInteger(tab)) {
-                    tab = ' '.repeat(tab);
+        $.toggleElement = function (open, close, wrap) {
+            // `$.toggleElement(['asdf'], false)`
+            if (isArray(open)) {
+                wrap = close;
+                var _$$$5 = $.$(),
+                    after = _$$$5.after,
+                    before = _$$$5.before,
+                    value = _$$$5.value,
+                    tagStartOf = tagStart(open[0]),
+                    tagEndOf = tagEnd(open[0]);
+                if (wrap) {
+                    return $[(toPattern('^' + tagStartOf + '[\\s\\S]*?' + tagEndOf + '$', "").test(value) ? 'peel' : 'wrap') + 'Element'](open, close, wrap);
                 }
-                if (toPattern('^' + tagEnd(tagName()), "").test(after) && toPattern(tagStart(tagName()) + '$', "").test(before)) {
-                    var lineBefore = before.split('\n').pop(),
-                        lineMatch = lineBefore.match(/^(\s+)/),
-                        lineMatchIndent = lineMatch && lineMatch[1] || "";
-                    $.wrap('\n' + tab + lineMatchIndent, '\n' + lineMatchIndent);
-                }
+                return $[(toPattern(tagStartOf + '$', "").test(before) && toPattern('^' + tagEndOf, "").test(after) ? 'peel' : 'wrap') + 'Element'](open, close, wrap);
             }
-            return $.wrap('<' + name + toAttributes(attributes) + '>', '</' + name + '>');
+            return $.toggle(open, close, wrap);
         };
-        if ('XML' === ((_$$state$source4 = $.state.source) == null ? void 0 : _$$state$source4.type)) {
+        $.wrapComment = function (wrap) {
+            if (wrap) {
+                return $.replace(/^([\s\S]*?)$/, '<!--$1-->');
+            }
+            return $.replace(/^/, '<!--', -1).replace(/$/, '-->', 1);
+        };
+        $.wrapData = function (wrap) {
+            if (wrap) {
+                return $.replace(/^([\s\S]*?)$/, '<![CDATA[$1]]>');
+            }
+            return $.replace(/^/, '<![CDATA[', -1).replace(/$/, ']]>', 1);
+        };
+        $.wrapElement = function (open, close, wrap) {
+            // `$.wrapElement(['asdf'], false)`
+            if (isArray(open)) {
+                wrap = close;
+                var _$$$6 = $.$(),
+                    value = _$$$6.value;
+                if (wrap) {
+                    return $.replace(/^[\s\S]*?$/, '<' + open[0] + toAttributes(open[2]) + '>' + (value || open[1] || "") + '</' + open[0] + '>');
+                }
+                return $.replace(/^/, '<' + open[0] + toAttributes(open[2]) + '>', -1).replace(/$/, '</' + open[0] + '>', 1).insert(value || open[1] || "");
+            }
+            return $.wrap(open, close, wrap);
+        };
+        if ('XML' === ((_$$state$source2 = $.state.source) == null ? void 0 : _$$state$source2.type)) {
             $.on('key.down', onKeyDown);
             $.on('mouse.down', onMouseDown);
         }

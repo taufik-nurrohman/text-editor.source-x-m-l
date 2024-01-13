@@ -27,7 +27,21 @@
     <main>
       <p><label><input checked onchange="return editor[this.checked ? 'attach' : 'detach'](), false;" type="checkbox"> <span>Enable <abbr title="Extensible Markup Language">XML</abbr> Source Editor</span></label></p>
       <p><textarea placeholder="Code goes here&hellip;" spellcheck="false" style="display:block;width:100%;"></textarea></p>
-      <p role="group"><button onclick="return editor.toggleXML('time', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}, true).record(), false;">Test Toggle XML</button><button onclick="return editor.wrapXML('time', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}, true).record(), false;">Test Wrap XML</button><button onclick="return editor.peelXML('time', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}, true).record(), false;">Test Peel XML</button><button onclick="return editor.insertXML('time', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}, true).record(), false;">Test Insert XML</button></p>
+      <p role="group"><button onclick="return editor.insertElement('&lt;time /&gt;'), false;">Test Insert Element String</button></p>
+      <p role="group"><button onclick="return editor.wrapElement('&lt;time&gt;', '&lt;/time&gt;'), false;">Test Wrap Element String #1</button> <button onclick="return editor.peelElement('&lt;time&gt;', '&lt;/time&gt;'), false;">Test Peel Element String #1</button> <button onclick="return editor.toggleElement('&lt;time&gt;', '&lt;/time&gt;'), false;">Test Toggle Element String #1</button></p>
+      <p role="group"><button onclick="return editor.wrapElement('&lt;time&gt;', '&lt;/time&gt;', true), false;">Test Wrap Element String #2</button> <button onclick="return editor.peelElement('&lt;time&gt;', '&lt;/time&gt;', true), false;">Test Peel Element String #2</button> <button onclick="return editor.toggleElement('&lt;time&gt;', '&lt;/time&gt;', true), false;">Test Toggle Element String #2</button></p>
+      <hr>
+      <p role="group"><button onclick="return editor.insertElement(['time', false, {datetime: (new Date).toISOString()}]), false;">Test Insert Element Object</button></p>
+      <p role="group"><button onclick="return editor.wrapElement(['time', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}]), false;">Test Wrap Element Object #1</button> <button onclick="return editor.peelElement(['time']), false;">Test Peel Element Object #1</button> <button onclick="return editor.toggleElement(['time', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}]), false;">Test Toggle Element Object #1</button></p>
+      <p role="group"><button onclick="return editor.wrapElement(['time', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}], true), false;">Test Wrap Element Object #2</button> <button onclick="return editor.peelElement(['time'], true), false;">Test Peel Element Object #2</button> <button onclick="return editor.toggleElement(['time', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}], true), false;">Test Toggle Element Object #2</button></p>
+      <hr>
+      <p role="group"><button onclick="return editor.insertComment('asdf'), false;">Test Insert Comment String</button></p>
+      <p role="group"><button onclick="return editor.wrapComment(), false;">Test Wrap Comment String #1</button> <button onclick="return editor.peelComment(), false;">Test Peel Comment String #1</button> <button onclick="return editor.toggleComment(), false;">Test Toggle Comment String #1</button></p>
+      <p role="group"><button onclick="return editor.wrapComment(true), false;">Test Wrap Comment String #2</button> <button onclick="return editor.peelComment(true), false;">Test Peel Comment String #2</button> <button onclick="return editor.toggleComment(true), false;">Test Toggle Comment String #2</button></p>
+      <hr>
+      <p role="group"><button onclick="return editor.insertData('asdf'), false;">Test Insert Data String</button></p>
+      <p role="group"><button onclick="return editor.wrapData(), false;">Test Wrap Data String #1</button> <button onclick="return editor.peelData(), false;">Test Peel Data String #1</button> <button onclick="return editor.toggleData(), false;">Test Toggle Data String #1</button></p>
+      <p role="group"><button onclick="return editor.wrapData(true), false;">Test Wrap Data String #2</button> <button onclick="return editor.peelData(true), false;">Test Peel Data String #2</button> <button onclick="return editor.toggleData(true), false;">Test Toggle Data String #2</button></p>
       <h2>Features</h2>
       <ul>
         <li><code>&lt;!--<mark></mark>--&gt;</code> or <code>&lt;!-- <mark></mark> --&gt;</code> then press <kbd>Enter</kbd>.</li>
@@ -178,27 +192,37 @@ const editor = new TextEditor(document.querySelector('textarea'), {
 });</code></pre>
       <h2>Methods</h2>
       <h3>Instance Methods</h3>
-      <h4><code>editor.insertXML(name, content = "", attributes = {}, tidy = false)</code></h4>
-      <p>Insert an <abbr title="Extensible Markup Language">XML</abbr> element before the current selection.</p>
-      <pre><code>editor.insertXML('time', '2024/01/06', {
-    datetime: '2024-01-06 12:49:38'
-});</code></pre>
-      <h4><code>editor.peelXML(name, content = "", attributes = {}, tidy = false)</code></h4>
-      <p>Peel an <abbr title="Extensible Markup Language">XML</abbr> element from the current selection.</p>
-      <p role="note"><strong>Note:</strong> The <code>attributes</code> and <code>content</code> parameter currently does not affect the result of this method, and is kept there just in case.</p>
-      <pre><code>editor.peelXML('time');</code></pre>
-      <h4><code>editor.toggleXML(name, content = "", attributes = {}, tidy = false)</code></h4>
-      <p>Toggle wrap and peel of an <abbr title="Extensible Markup Language">XML</abbr> element from the current selection.</p>
-      <pre><code>const date = new Date;
-
-editor.toggleXML('time', date.toLocaleString(), {
-    datetime: date.toISOString()
-});</code></pre>
-      <h4><code>editor.wrapXML(name, content = "", attributes = {}, tidy = false)</code></h4>
-      <p>Wrap the current selection with an <abbr title="Extensible Markup Language">XML</abbr> element.</p>
-      <pre><code>editor.wrapXML('time', '2024/01/06', {
-    datetime: '2024-01-06 12:49:38'
-});</code></pre>
+      <h4><code>editor.insertComment(value, mode = -1, clear = true)</code></h4>
+      <p>Insert an <abbr title="Extensible Markup Language">XML</abbr> comment.</p>
+      <pre><code>editor.insertComment('asdf'); // Delete selection and insert comment before caret
+editor.insertComment('asdf', 0); // Replace selection with comment
+editor.insertComment('asdf', +1); // Delete selection and insert comment after caret</code></pre>
+      <h4><code>editor.insertData(value, mode = -1, clear = true)</code></h4>
+      <p>Insert an <abbr title="Extensible Markup Language">XML</abbr> character data section.</p>
+      <pre><code>editor.insertData('asdf'); // Delete selection and insert character data section before caret
+editor.insertData('asdf', 0); // Replace selection with character data section
+editor.insertData('asdf', +1); // Delete selection and insert character data section after caret</code></pre>
+      <h4><code>editor.insertElement(value, mode = -1, clear = true)</code></h4>
+      <h4><code>editor.insertElement(of, mode = -1, clear = true)</code></h4>
+      <p>Insert an <abbr title="Extensible Markup Language">XML</abbr> element.</p>
+      <pre><code>editor.insertElement('&lt;input type="text" /&gt;'); // Delete selection and insert element before caret
+editor.insertElement('&lt;input type="text" /&gt;', 0); // Replace selection with element
+editor.insertElement('&lt;input type="text" /&gt;', +1); // Delete selection and insert element after caret</code></pre>
+      <pre><code>editor.insertElement(['input', false, {type: 'text'}]); // Delete selection and insert element before caret
+editor.insertElement(['input', false, {type: 'text'}], 0); // Replace selection with element
+editor.insertElement(['input', false, {type: 'text'}], +1); // Delete selection and insert element after caret</code></pre>
+      <h4><code>editor.peelComment(wrap = false)</code></h4>
+      <h4><code>editor.peelData(wrap = false)</code></h4>
+      <h4><code>editor.peelElement(open, close, wrap = false)</code></h4>
+      <h4><code>editor.peelElement(of, wrap = false)</code></h4>
+      <h4><code>editor.toggleComment(wrap = false)</code></h4>
+      <h4><code>editor.toggleData(wrap = false)</code></h4>
+      <h4><code>editor.toggleElement(open, close, wrap = false)</code></h4>
+      <h4><code>editor.toggleElement(of, wrap = false)</code></h4>
+      <h4><code>editor.wrapComment(wrap = false)</code></h4>
+      <h4><code>editor.wrapData(wrap = false)</code></h4>
+      <h4><code>editor.wrapElement(open, close, wrap = false)</code></h4>
+      <h4><code>editor.wrapElement(of, wrap = false)</code></h4>
     </main>
     <footer>
       <hr>

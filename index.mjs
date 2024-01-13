@@ -321,59 +321,93 @@ function toAttributes(attributes) {
 
 function attach() {
     let $ = this;
-    $.insertXML = (name, content = "", attributes = {}, tidy = false) => {
-        // `<asdf>|</asdf>`
-        if (tidy) {
-            let {after, before} = $.$(),
-                tab = $.state.source?.tab || $.state.tab || '\t';
-            if (isInteger(tab)) {
-                tab = ' '.repeat(tab);
-            }
-            if (toPattern('^' + tagEnd(tagName()), "").test(after) && toPattern(tagStart(tagName()) + '$', "").test(before)) {
-                let lineBefore = before.split('\n').pop(),
-                    lineMatch = lineBefore.match(/^(\s+)/),
-                    lineMatchIndent = lineMatch && lineMatch[1] || "";
-                $.wrap('\n' + tab + lineMatchIndent, '\n' + lineMatchIndent);
-            }
+    $.insertComment = (value, mode, clear) => {
+        return $.insert('<!--' + value + '-->', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
+    };
+    $.insertData = (value, mode, clear) => {
+        return $.insert('<![CDATA[' + value + ']]>', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
+    };
+    $.insertElement = (value, mode, clear) => {
+        // `$.insertElement(['asdf'])`
+        if (isArray(value)) {
+            value = '<' + value[0] + toAttributes(value[2]) + (false === value[1] ? ' />' : '>' + (value[1] || "") + '</' + value[0] + '>');
         }
-        return $.insert('<' + name + toAttributes(attributes) + (false !== content ? '>' + content + '</' + name + '>' : ' />'), -1, true);
+        return $.insert(value, isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
     };
-    $.peelXML = (name, content = "", attributes = {}, tidy = false) => {
-        // `<asdf> <asdf>|</asdf> </asdf>`
-        if (tidy) {
-            $.trim("", "");
+    $.peelComment = wrap => {
+        if (wrap) {
+            return $.replace(/^<!--([\s\S]*?)-->$/, '$1');
         }
-        return $.replace(toPattern(tagStart(name) + '$', ""), "", -1).replace(toPattern('^' + tagEnd(name)), "", 1);
+        return $.replace(/<!--(\s*)$/, '$1', -1).replace(/^(\s*)-->/, '$1', 1);
     };
-    $.toggleXML = (name, content = "", attributes = {}, tidy = false) => {
-        let {after, before} = $.$(),
-            tagStartOf = tagStart(name),
-            tagEndOf = tagEnd(name),
-            tagStartPattern = toPattern(tagStartOf + '$', ""),
-            tagEndPattern = toPattern('^' + tagEndOf, ""),
-            tagStartMatch = tagStartPattern.test(before),
-            tagEndMatch = tagEndPattern.test(after);
-        return $[(tagStartMatch && tagEndMatch ? 'peel' : 'wrap') + 'XML'](name, content, attributes, tidy);
+    $.peelData = wrap => {
+        if (wrap) {
+            return $.replace(/^<!\[CDATA\[([\s\S]*?)\]\]>$/, '$1');
+        }
+        return $.replace(/<!\[CDATA\[(\s*)$/, '$1', -1).replace(/^(\s*)\]\]>/, '$1', 1);
     };
-    $.wrapXML = function (name, content = "", attributes = {}, tidy = false) {
+    $.peelElement = (open, close, wrap) => {
+        // `$.peelElement(['asdf'], false)`
+        if (isArray(open)) {
+            wrap = close;
+            if (wrap) {
+                return $.replace(toPattern('^' + tagStart(open[0]) + '([\\s\\S]*?)' + tagEnd(open[0]) + '$', ""), '$3');
+            }
+            return $.replace(toPattern(tagStart(open[0]) + '$', ""), "", -1).replace(toPattern('^' + tagEnd(open[0])), "", 1);
+        }
+        return $.peel(open, close, wrap);
+    };
+    $.toggleComment = wrap => {
         let {after, before, value} = $.$();
-        if (!value && content) {
-            $.insert(content);
+        if (wrap) {
+            return $[(/^<!--[\s\S]*?-->$/.test(value) ? 'peel' : 'wrap') + 'Comment'](wrap);
         }
-        // `<asdf>|</asdf>`
-        if (tidy) {
-            let tab = $.state.source?.tab || $.state.tab || '\t';
-            if (isInteger(tab)) {
-                tab = ' '.repeat(tab);
-            }
-            if (toPattern('^' + tagEnd(tagName()), "").test(after) && toPattern(tagStart(tagName()) + '$', "").test(before)) {
-                let lineBefore = before.split('\n').pop(),
-                    lineMatch = lineBefore.match(/^(\s+)/),
-                    lineMatchIndent = lineMatch && lineMatch[1] || "";
-                $.wrap('\n' + tab + lineMatchIndent, '\n' + lineMatchIndent);
-            }
+        return $[(/<!--\s*$/.test(before) && /^\s*-->/.test(after) ? 'peel' : 'wrap') + 'Comment'](wrap);
+    };
+    $.toggleData = wrap => {
+        let {after, before, value} = $.$();
+        if (wrap) {
+            return $[(/^<!\[CDATA\[[\s\S]*?\]\]>$/.test(value) ? 'peel' : 'wrap') + 'Data'](wrap);
         }
-        return $.wrap('<' + name + toAttributes(attributes) + '>', '</' + name + '>');
+        return $[(/<!\[CDATA\[\s*$/.test(before) && /^\s*\]\]>/.test(after) ? 'peel' : 'wrap') + 'Data'](wrap);
+    };
+    $.toggleElement = (open, close, wrap) => {
+        // `$.toggleElement(['asdf'], false)`
+        if (isArray(open)) {
+            wrap = close;
+            let {after, before, value} = $.$(),
+                tagStartOf = tagStart(open[0]),
+                tagEndOf = tagEnd(open[0]);
+            if (wrap) {
+                return $[(toPattern('^' + tagStartOf + '[\\s\\S]*?' + tagEndOf + '$', "").test(value) ? 'peel' : 'wrap') + 'Element'](open, close, wrap);
+            }
+            return $[(toPattern(tagStartOf + '$', "").test(before) && toPattern('^' + tagEndOf, "").test(after) ? 'peel' : 'wrap') + 'Element'](open, close, wrap);
+        }
+        return $.toggle(open, close, wrap);
+    };
+    $.wrapComment = wrap => {
+        if (wrap) {
+            return $.replace(/^([\s\S]*?)$/, '<!--$1-->');
+        }
+        return $.replace(/^/, '<!--', -1).replace(/$/, '-->', 1);
+    };
+    $.wrapData = wrap => {
+        if (wrap) {
+            return $.replace(/^([\s\S]*?)$/, '<![CDATA[$1]]>');
+        }
+        return $.replace(/^/, '<![CDATA[', -1).replace(/$/, ']]>', 1);
+    };
+    $.wrapElement = (open, close, wrap) => {
+        // `$.wrapElement(['asdf'], false)`
+        if (isArray(open)) {
+            wrap = close;
+            let {value} = $.$();
+            if (wrap) {
+                return $.replace(/^[\s\S]*?$/, '<' + open[0] + toAttributes(open[2]) + '>' + (value || open[1] || "") + '</' + open[0] + '>');
+            }
+            return $.replace(/^/, '<' + open[0] + toAttributes(open[2]) + '>', -1).replace(/$/, '</' + open[0] + '>', 1).insert(value || open[1] || "");
+        }
+        return $.wrap(open, close, wrap);
     };
     if ('XML' === $.state.source?.type) {
         $.on('key.down', onKeyDown);
