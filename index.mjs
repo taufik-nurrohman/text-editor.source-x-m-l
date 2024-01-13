@@ -255,7 +255,7 @@ function onKeyDown(e) {
                 return $.record();
             }
             if (
-                toPattern(tagStart(tagName()) + '\\n(?:' + esc(charIndent) + ')?$', "").test(before) &&
+                toPattern('(^|\\n)([ \\t]*)' + tagStart(tagName()) + '\\n\\2?$', "").test(before) &&
                 toPattern('^\\s*' + tagEnd(tagName()), "").test(after)
             ) {
                 offEventDefault(e);

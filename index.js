@@ -74,12 +74,6 @@
     var toObjectKeys = function toObjectKeys(x) {
         return Object.keys(x);
     };
-    var esc = function esc(pattern, extra) {
-        if (extra === void 0) {
-            extra = "";
-        }
-        return pattern.replace(toPattern('[' + extra + x.replace(/./g, '\\$&') + ']'), '\\$&');
-    };
     var isPattern = function isPattern(pattern) {
         return isInstance(pattern, RegExp);
     };
@@ -91,7 +85,6 @@
         pattern = pattern.replace(/\//g, '\\/');
         return new RegExp(pattern, isSet(opt) ? opt : 'g');
     };
-    var x = "!$^*()+=[]{}|:<>,.?/-";
     var hasValue = function hasValue(x, data) {
         return -1 !== data.indexOf(x);
     };
@@ -400,7 +393,7 @@
                     }
                     return $.record();
                 }
-                if (toPattern(tagStart(tagName()) + '\\n(?:' + esc(charIndent) + ')?$', "").test(before) && toPattern('^\\s*' + tagEnd(tagName()), "").test(after)) {
+                if (toPattern('(^|\\n)([ \\t]*)' + tagStart(tagName()) + '\\n\\2?$', "").test(before) && toPattern('^\\s*' + tagEnd(tagName()), "").test(after)) {
                     offEventDefault(e);
                     return $.trim().record(); // Collapse!
                 }
