@@ -314,110 +314,148 @@
             charIndent = ' '.repeat(charIndent);
         }
         if ('Enter' === keys) {
-            var _tagStartMatch = before.match(toPattern(tagStart(tagName()) + '$', ""));
-            if (!value) {
-                if (_tagStartMatch) {
-                    offEventDefault(e);
-                    if (after.startsWith('</' + _tagStartMatch[1] + '>')) {
-                        return $.record().trim().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent).record();
-                    }
-                    return $.record().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent + '</' + _tagStartMatch[1] + '>').record();
-                }
-                if (
-                    // `<!--|-->`
-                    /^[ \t]*-->/.test(after) && /<!--[ \t]*$/.test(before) ||
-                    // `<?asdf|?>`
-                    /^[ \t]*\?>/.test(after) && /<\?\S*[ \t]*$/.test(before)) {
-                    offEventDefault(e);
-                    return $.trim().wrap('\n' + lineMatchIndent, '\n' + lineMatchIndent).record();
-                }
-                if (
-                    // `<!--\n|\n-->`
-                    /^\n-->/.test(after) && /<!--\n$/.test(before) ||
-                    // `<?asdf\n|\n?>`
-                    /^\n\?>/.test(after) && /<\?\S*\n$/.test(before)) {
-                    offEventDefault(e);
-                    return $.trim().wrap('\n\n' + lineMatchIndent, '\n\n' + lineMatchIndent).record();
-                }
+            if (value) {
+                return;
             }
-            return;
+            if (
+                // `<!--|-->`
+                /^[ \t]*-->/.test(after) && /<!--[ \t]*$/.test(before) ||
+                // `<?asdf|?>`
+                /^[ \t]*\?>/.test(after) && /<\?\S*[ \t]*$/.test(before) ||
+                // `<![CDATA[|]]>`
+                /^[ \t]*\]\]>/.test(after) && /<!\[CDATA\[[ \t]*$/.test(before)) {
+                offEventDefault(e);
+                return $.trim('\n' + lineMatchIndent, '\n' + lineMatchIndent).record();
+            }
+            if (
+                // `<!--\n|\n-->`
+                /^(\n[ \t]*)-->/.test(after) && /<!--(\n[ \t]*)$/.test(before) ||
+                // `<?asdf\n|\n?>`
+                /^(\n[ \t]*)\?>/.test(after) && /<\?\S*(\n[ \t]*)$/.test(before) ||
+                // `<![CDATA[\n|\n]]>`
+                /^(\n[ \t]*)\]\]>/.test(after) && /<!\[CDATA\[(\n[ \t]*)$/.test(before)) {
+                offEventDefault(e);
+                return $.trim('\n\n' + lineMatchIndent, '\n\n' + lineMatchIndent).record();
+            }
+            var _tagStartMatch = before.match(toPattern(tagStart(tagName()) + '$', ""));
+            if (_tagStartMatch) {
+                offEventDefault(e);
+                if (after.startsWith('</' + _tagStartMatch[1] + '>')) {
+                    return $.record().trim('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent).record();
+                }
+                return $.record().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent + '</' + _tagStartMatch[1] + '>').record();
+            }
         }
         if ('Backspace' === keys) {
-            if (!value) {
-                // `<!--|`
-                if ('<!--' === before.slice(-4)) {
-                    offEventDefault(e);
-                    $.replace(/<!--$/, "", -1);
-                    // `<!--|-->`
-                    if ('-->' === after.slice(0, 3)) {
-                        $.replace(/^-->/, "", 1);
-                    }
-                    return $.record();
-                }
-                if (/^\s+-->/.test(after) && /<!--\s+$/.test(before)) {
-                    offEventDefault(e);
-                    return $.trim(' ' === before.slice(-1) ? "" : ' ', ' ' === after[0] ? "" : ' ').record();
-                }
-                // `<?|`
-                if (/<\?\S*$/.test(before)) {
-                    offEventDefault(e);
-                    $.replace(/<\?\S*$/, "", -1);
-                    // `<?|?>`
-                    if ('?>' === after.slice(0, 2)) {
-                        $.replace(/^\?>/, "", 1);
-                    }
-                    return $.record();
-                }
-                if (/^\s+\?>/.test(after) && /<\?\S*\s+$/.test(before)) {
-                    offEventDefault(e);
-                    return $.trim(' ' === before.slice(-1) ? "" : ' ', ' ' === after[0] ? "" : ' ').record();
-                }
-                var tagPattern = toPattern(tagTokens() + '$', ""),
-                    _tagMatch2 = tagPattern.exec(before);
-                if (_tagMatch2) {
-                    offEventDefault(e);
-                    // `<div />|`
-                    if (' />' === before.slice(-3)) {
-                        return $.replace(/ \/>$/, '/>', -1).record();
-                    }
-                    // `<div/>|`
-                    if ('/>' === before.slice(-2)) {
-                        return $.replace(/\/>$/, '>', -1).record();
-                    }
-                    $.replace(tagPattern, "", -1);
-                    var name = _tagMatch2[0].slice(1).split(/\s+|>/)[0];
-                    if (_tagMatch2[0] && '/' !== _tagMatch2[0][1]) {
-                        if (after.startsWith('</' + name + '>')) {
-                            $.replace(toPattern('^</' + name + '>', ""), "", 1);
-                        }
-                    }
-                    return $.record();
-                }
-                if (toPattern('(^|\\n)([ \\t]*)' + tagStart(tagName()) + '\\n\\2$', "").test(before) && toPattern('^\\s*' + tagEnd(tagName()), "").test(after)) {
-                    offEventDefault(e);
-                    return $.trim().record(); // Collapse!
-                }
+            if (value) {
+                return;
             }
-            return;
+            // `<!--|`
+            if ('<!--' === before.slice(-4)) {
+                offEventDefault(e);
+                $.replace(/<!--$/, "", -1);
+                // `<!--|-->`
+                if ('-->' === after.slice(0, 3)) {
+                    $.replace(/^-->/, "", 1);
+                }
+                return $.record();
+            }
+            if (/^(\n[ \t]*){2,}-->/.test(after) && /<!--(\n[ \t]*){2,}$/.test(before)) {
+                offEventDefault(e);
+                return $.trim('\n' + lineMatchIndent, '\n' + lineMatchIndent).record();
+            }
+            if (/^\s+-->/.test(after) && /<!--\s+$/.test(before)) {
+                offEventDefault(e);
+                var a = after[0],
+                    b = before.slice(-1);
+                return $.trim(' ' === b || '\n' === b ? "" : ' ', ' ' === a || '\n' === a ? "" : ' ').record();
+            }
+            // `<?|`
+            if (/<\?\S*$/.test(before)) {
+                offEventDefault(e);
+                $.replace(/<\?\S*$/, "", -1);
+                // `<?|?>`
+                if ('?>' === after.slice(0, 2)) {
+                    $.replace(/^\?>/, "", 1);
+                }
+                return $.record();
+            }
+            if (/^(\n[ \t]*){2,}\?>/.test(after) && /<\?\S*(\n[ \t]*){2,}$/.test(before)) {
+                offEventDefault(e);
+                console.log([lineMatchIndent]);
+                return $.trim('\n' + lineMatchIndent, '\n' + lineMatchIndent).record();
+            }
+            if (/^\s+\?>/.test(after) && /<\?\S*\s+$/.test(before)) {
+                offEventDefault(e);
+                var _a = after[0],
+                    _b = before.slice(-1);
+                return $.trim(' ' === _b || '\n' === _b ? "" : ' ', ' ' === _a || '\n' === _a ? "" : ' ').record();
+            }
+            // `<![CDATA[|`
+            if ('<![CDATA[' === before.slice(-9)) {
+                offEventDefault(e);
+                $.replace(/<!\[CDATA\[$/, "", -1);
+                // `<![CDATA[|]]>`
+                if (']]>' === after.slice(0, 3)) {
+                    $.replace(/^\]\]>/, "", 1);
+                }
+                return $.record();
+            }
+            if (/^(\n[ \t]*){2,}\]\]>/.test(after) && /<!\[CDATA\[(\n[ \t]*){2,}$/.test(before)) {
+                offEventDefault(e);
+                return $.trim('\n' + lineMatchIndent, '\n' + lineMatchIndent).record();
+            }
+            if (/^\s+\]\]>/.test(after) && /<!\[CDATA\[\s+$/.test(before)) {
+                offEventDefault(e);
+                var _a2 = after[0],
+                    _b2 = before.slice(-1);
+                return $.trim(' ' === _b2 || '\n' === _b2 ? "" : ' ', ' ' === _a2 || '\n' === _a2 ? "" : ' ').record();
+            }
+            var tagPattern = toPattern(tagTokens() + '$', ""),
+                _tagMatch2 = tagPattern.exec(before);
+            if (_tagMatch2) {
+                offEventDefault(e);
+                // `<div />|`
+                if (' />' === before.slice(-3)) {
+                    return $.replace(/ \/>$/, '/>', -1).record();
+                }
+                // `<div/>|`
+                if ('/>' === before.slice(-2)) {
+                    return $.replace(/\/>$/, '>', -1).record();
+                }
+                $.replace(tagPattern, "", -1);
+                var name = _tagMatch2[0].slice(1).split(/\s+|>/)[0];
+                if (_tagMatch2[0] && '/' !== _tagMatch2[0][1]) {
+                    if (after.startsWith('</' + name + '>')) {
+                        $.replace(toPattern('^</' + name + '>', ""), "", 1);
+                    }
+                }
+                return $.record();
+            }
+            if (toPattern('(^|\\n)([ \\t]*)' + tagStart(tagName()) + '\\n\\2$', "").test(before) && toPattern('^\\s*' + tagEnd(tagName()), "").test(after)) {
+                offEventDefault(e);
+                return $.trim().record(); // Collapse!
+            }
         }
         if ('Delete' === keys) {
-            if (!value) {
-                // `|-->`
-                if ('-->' === after.slice(0, 3)) {
-                    offEventDefault(e);
-                    return $.replace(/^-->/, "", 1).record();
-                }
-                // `|?>`
-                if ('?>' === after.slice(0, 2)) {
-                    offEventDefault(e);
-                    return $.replace(/^\?>/, "", 1).record();
-                }
-                var _tagPattern = toPattern('^' + tagTokens(), ""),
-                    _tagMatch3 = _tagPattern.exec(after);
-                if (_tagMatch3) {
-                    offEventDefault(e);
-                    return $.replace(_tagPattern, "", 1).record();
-                }
+            if (value) {
+                return;
+            }
+            // `|-->`
+            if ('-->' === after.slice(0, 3)) {
+                offEventDefault(e);
+                return $.replace(/^-->/, "", 1).record();
+            }
+            // `|?>`
+            if ('?>' === after.slice(0, 2)) {
+                offEventDefault(e);
+                return $.replace(/^\?>/, "", 1).record();
+            }
+            var _tagPattern = toPattern('^' + tagTokens(), ""),
+                _tagMatch3 = _tagPattern.exec(after);
+            if (_tagMatch3) {
+                offEventDefault(e);
+                return $.replace(_tagPattern, "", 1).record();
             }
         }
     }
