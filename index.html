@@ -42,7 +42,7 @@
       <p role="group"><button onclick="return editor.insertData('asdf'), false;">Test Insert Data String</button></p>
       <p role="group"><button onclick="return editor.wrapData(), false;">Test Wrap Data String #1</button> <button onclick="return editor.peelData(), false;">Test Peel Data String #1</button> <button onclick="return editor.toggleData(), false;">Test Toggle Data String #1</button></p>
       <p role="group"><button onclick="return editor.wrapData(true), false;">Test Wrap Data String #2</button> <button onclick="return editor.peelData(true), false;">Test Peel Data String #2</button> <button onclick="return editor.toggleData(true), false;">Test Toggle Data String #2</button></p>
-      <h2>Features</h2>
+      <h2>Strokes</h2>
       <ul>
         <li><code>&lt;!--<mark></mark>--&gt;</code> or <code>&lt;!-- <mark></mark> --&gt;</code> then press <kbd>Enter</kbd>.</li>
         <li><code>&lt;!--<mark></mark>--&gt;</code> then press <kbd>&nbsp;</kbd> (Space).</li>
@@ -212,17 +212,38 @@ editor.insertElement('&lt;input type="text" /&gt;', +1); // Delete selection and
 editor.insertElement(['input', false, {type: 'text'}], 0); // Replace selection with element
 editor.insertElement(['input', false, {type: 'text'}], +1); // Delete selection and insert element after caret</code></pre>
       <h4><code>editor.peelComment(wrap = false)</code></h4>
+      <p>Unwrap current selection from an <abbr title="Extensible Markup Language">XML</abbr> comment.</p>
+      <pre><code>editor.peelCommet();</code></pre>
       <h4><code>editor.peelData(wrap = false)</code></h4>
+      <p>Unwrap current selection from an <abbr title="Extensible Markup Language">XML</abbr> character data section.</p>
+      <pre><code>editor.peelData();</code></pre>
       <h4><code>editor.peelElement(open, close, wrap = false)</code></h4>
       <h4><code>editor.peelElement(of, wrap = false)</code></h4>
+      <p>Unwrap current selection from an <abbr title="Extensible Markup Language">XML</abbr> element.</p>
+      <pre><code>editor.peelElement('&lt;b&gt;', '&lt;/b&gt;');
+editor.peelElement(['b']);</code></pre>
       <h4><code>editor.toggleComment(wrap = false)</code></h4>
+      <p>Toggle wrap and peel selection of an <abbr title="Extensible Markup Language">XML</abbr> comment.</p>
+      <pre><code>editor.toggleComment();</code></pre>
       <h4><code>editor.toggleData(wrap = false)</code></h4>
+      <p>Toggle wrap and peel selection of an <abbr title="Extensible Markup Language">XML</abbr> character data.</p>
+      <pre><code>editor.toggleData();</code></pre>
       <h4><code>editor.toggleElement(open, close, wrap = false)</code></h4>
       <h4><code>editor.toggleElement(of, wrap = false)</code></h4>
+      <p>Toggle wrap and peel selection of an <abbr title="Extensible Markup Language">XML</abbr> element.</p>
+      <pre><code>editor.toggleElement('&lt;b&gt;', '&lt;/b&gt;');
+editor.toggleElement(['b']);</code></pre>
       <h4><code>editor.wrapComment(wrap = false)</code></h4>
+      <p>Wrap current selection with an <abbr title="Extensible Markup Language">XML</abbr> comment.</p>
+      <pre><code>editor.wrapComment();</code></pre>
       <h4><code>editor.wrapData(wrap = false)</code></h4>
+      <p>Wrap current selection with an <abbr title="Extensible Markup Language">XML</abbr> character data.</p>
+      <pre><code>editor.wrapData();</code></pre>
       <h4><code>editor.wrapElement(open, close, wrap = false)</code></h4>
       <h4><code>editor.wrapElement(of, wrap = false)</code></h4>
+      <p>Wrap current selection with an <abbr title="Extensible Markup Language">XML</abbr> element.</p>
+      <pre><code>editor.wrapElement('&lt;b&gt;', '&lt;/b&gt;');
+editor.wrapElement(['b']);</code></pre>
     </main>
     <footer>
       <hr>

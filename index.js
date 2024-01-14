@@ -127,23 +127,23 @@
         tagData = function tagData() {
             return '<!((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)>';
         },
+        tagDeclaration = function tagDeclaration() {
+            return '<\\?((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)\\?>';
+        },
+        tagEnd = function tagEnd(name) {
+            return '</(' + name + ')>';
+        },
         tagName = function tagName() {
             return '[\\w:.-]+';
         },
         tagStart = function tagStart(name) {
             return '<(' + name + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?>';
         },
-        tagEnd = function tagEnd(name) {
-            return '</(' + name + ')>';
-        },
         tagVoid = function tagVoid(name) {
             return '<(' + name + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?/?>';
         },
-        tagPreamble = function tagPreamble() {
-            return '<\\?((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)\\?>';
-        },
         tagTokens = function tagTokens() {
-            return '(?:' + tagComment() + '|' + tagData() + '|' + tagEnd(tagName()) + '|' + tagPreamble() + '|' + tagVoid(tagName()) + '|' + tagStart(tagName()) + ')';
+            return '(?:' + tagComment() + '|' + tagData() + '|' + tagEnd(tagName()) + '|' + tagDeclaration() + '|' + tagVoid(tagName()) + '|' + tagStart(tagName()) + ')';
         };
     var bounce = debounce(function (e, $) {
         var _$$$ = $.$(),
@@ -393,7 +393,7 @@
                     }
                     return $.record();
                 }
-                if (toPattern('(^|\\n)([ \\t]*)' + tagStart(tagName()) + '\\n\\2?$', "").test(before) && toPattern('^\\s*' + tagEnd(tagName()), "").test(after)) {
+                if (toPattern('(^|\\n)([ \\t]*)' + tagStart(tagName()) + '\\n\\2$', "").test(before) && toPattern('^\\s*' + tagEnd(tagName()), "").test(after)) {
                     offEventDefault(e);
                     return $.trim().record(); // Collapse!
                 }
@@ -461,9 +461,12 @@
 
     function attach() {
         var _$$state$source2;
-        var $ = this;
+        var $ = this,
+            any = /^\s*([\s\S]*?)\s*$/,
+            anyComment = /^<!--\s*([\s\S]*?)\s*-->$/,
+            anyData = /^<!\[CDATA\[\s*([\s\S]*?)\s*\]\]>$/;
         $.insertComment = function (value, mode, clear) {
-            return $.insert('<!--' + value + '-->', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
+            return $.insert('<!-- ' + value + ' -->', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
         };
         $.insertData = function (value, mode, clear) {
             return $.insert('<![CDATA[' + value + ']]>', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
@@ -477,15 +480,15 @@
         };
         $.peelComment = function (wrap) {
             if (wrap) {
-                return $.replace(/^<!--([\s\S]*?)-->$/, '$1');
+                return $.replace(anyComment, '$1');
             }
-            return $.replace(/<!--(\s*)$/, '$1', -1).replace(/^(\s*)-->/, '$1', 1);
+            return $.replace(/<!--\s*$/, "", -1).replace(/^\s*-->/, "", 1);
         };
         $.peelData = function (wrap) {
             if (wrap) {
-                return $.replace(/^<!\[CDATA\[([\s\S]*?)\]\]>$/, '$1');
+                return $.replace(anyData, '$1');
             }
-            return $.replace(/<!\[CDATA\[(\s*)$/, '$1', -1).replace(/^(\s*)\]\]>/, '$1', 1);
+            return $.replace(/<!\[CDATA\[\s*$/, "", -1).replace(/^\s*\]\]>/, "", 1);
         };
         $.peelElement = function (open, close, wrap) {
             // `$.peelElement(['asdf'], false)`
@@ -504,7 +507,7 @@
                 before = _$$$3.before,
                 value = _$$$3.value;
             if (wrap) {
-                return $[(/^<!--[\s\S]*?-->$/.test(value) ? 'peel' : 'wrap') + 'Comment'](wrap);
+                return $[(anyComment.test(value) ? 'peel' : 'wrap') + 'Comment'](wrap);
             }
             return $[(/<!--\s*$/.test(before) && /^\s*-->/.test(after) ? 'peel' : 'wrap') + 'Comment'](wrap);
         };
@@ -514,7 +517,7 @@
                 before = _$$$4.before,
                 value = _$$$4.value;
             if (wrap) {
-                return $[(/^<!\[CDATA\[[\s\S]*?\]\]>$/.test(value) ? 'peel' : 'wrap') + 'Data'](wrap);
+                return $[(anyData.test(value) ? 'peel' : 'wrap') + 'Data'](wrap);
             }
             return $[(/<!\[CDATA\[\s*$/.test(before) && /^\s*\]\]>/.test(after) ? 'peel' : 'wrap') + 'Data'](wrap);
         };
@@ -537,15 +540,15 @@
         };
         $.wrapComment = function (wrap) {
             if (wrap) {
-                return $.replace(/^([\s\S]*?)$/, '<!--$1-->');
+                return $.replace(anyComment, '<!-- $1 -->');
             }
-            return $.replace(/^/, '<!--', -1).replace(/$/, '-->', 1);
+            return $.trim(false, false).replace(/$/, '<!-- ', -1).replace(/^/, ' -->', 1);
         };
         $.wrapData = function (wrap) {
             if (wrap) {
-                return $.replace(/^([\s\S]*?)$/, '<![CDATA[$1]]>');
+                return $.replace(any, '<![CDATA[$1]]>');
             }
-            return $.replace(/^/, '<![CDATA[', -1).replace(/$/, ']]>', 1);
+            return $.trim(false, false).replace(/$/, '<![CDATA[', -1).replace(/^/, ']]>', 1);
         };
         $.wrapElement = function (open, close, wrap) {
             // `$.wrapElement(['asdf'], false)`
@@ -554,9 +557,9 @@
                 var _$$$6 = $.$(),
                     value = _$$$6.value;
                 if (wrap) {
-                    return $.replace(/^[\s\S]*?$/, '<' + open[0] + toAttributes(open[2]) + '>' + (value || open[1] || "") + '</' + open[0] + '>');
+                    return $.replace(any, '<' + open[0] + toAttributes(open[2]) + '>' + (value || open[1] || "").trim() + '</' + open[0] + '>');
                 }
-                return $.replace(/^/, '<' + open[0] + toAttributes(open[2]) + '>', -1).replace(/$/, '</' + open[0] + '>', 1).insert(value || open[1] || "");
+                return $.trim(false, false).replace(/$/, '<' + open[0] + toAttributes(open[2]) + '>', -1).replace(/^/, '</' + open[0] + '>', 1).insert(value || open[1] || "");
             }
             return $.wrap(open, close, wrap);
         };

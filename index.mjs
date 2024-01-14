@@ -8,12 +8,12 @@ import {toCount, toObjectKeys} from '@taufik-nurrohman/to';
 
 let tagComment = () => '<!--([\\s\\S](?!-->)*)-->',
     tagData = () => '<!((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)>',
+    tagDeclaration = () => '<\\?((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)\\?>',
+    tagEnd = name => '</(' + name + ')>',
     tagName = () => '[\\w:.-]+',
     tagStart = name => '<(' + name + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?>',
-    tagEnd = name => '</(' + name + ')>',
     tagVoid = name => '<(' + name + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?/?>',
-    tagPreamble = () => '<\\?((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)\\?>',
-    tagTokens = () => '(?:' + tagComment() + '|' + tagData() + '|' + tagEnd(tagName()) + '|' + tagPreamble() + '|' + tagVoid(tagName()) + '|' + tagStart(tagName()) + ')';
+    tagTokens = () => '(?:' + tagComment() + '|' + tagData() + '|' + tagEnd(tagName()) + '|' + tagDeclaration() + '|' + tagVoid(tagName()) + '|' + tagStart(tagName()) + ')';
 
 const bounce = debounce((e, $) => {
     let {after, before, end, value} = $.$();
@@ -255,7 +255,7 @@ function onKeyDown(e) {
                 return $.record();
             }
             if (
-                toPattern('(^|\\n)([ \\t]*)' + tagStart(tagName()) + '\\n\\2?$', "").test(before) &&
+                toPattern('(^|\\n)([ \\t]*)' + tagStart(tagName()) + '\\n\\2$', "").test(before) &&
                 toPattern('^\\s*' + tagEnd(tagName()), "").test(after)
             ) {
                 offEventDefault(e);
@@ -320,9 +320,13 @@ function toAttributes(attributes) {
 }
 
 function attach() {
-    let $ = this;
+    let $ = this,
+        any = /^\s*([\s\S]*?)\s*$/,
+        anyComment = /^<!--\s*([\s\S]*?)\s*-->$/,
+        anyData = /^<!\[CDATA\[\s*([\s\S]*?)\s*\]\]>$/,
+        anyDeclaration = /^<\?\s*([\s\S]*?)\s*\?>$/;
     $.insertComment = (value, mode, clear) => {
-        return $.insert('<!--' + value + '-->', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
+        return $.insert('<!-- ' + value + ' -->', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
     };
     $.insertData = (value, mode, clear) => {
         return $.insert('<![CDATA[' + value + ']]>', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
@@ -336,15 +340,15 @@ function attach() {
     };
     $.peelComment = wrap => {
         if (wrap) {
-            return $.replace(/^<!--([\s\S]*?)-->$/, '$1');
+            return $.replace(anyComment, '$1');
         }
-        return $.replace(/<!--(\s*)$/, '$1', -1).replace(/^(\s*)-->/, '$1', 1);
+        return $.replace(/<!--\s*$/, "", -1).replace(/^\s*-->/, "", 1);
     };
     $.peelData = wrap => {
         if (wrap) {
-            return $.replace(/^<!\[CDATA\[([\s\S]*?)\]\]>$/, '$1');
+            return $.replace(anyData, '$1');
         }
-        return $.replace(/<!\[CDATA\[(\s*)$/, '$1', -1).replace(/^(\s*)\]\]>/, '$1', 1);
+        return $.replace(/<!\[CDATA\[\s*$/, "", -1).replace(/^\s*\]\]>/, "", 1);
     };
     $.peelElement = (open, close, wrap) => {
         // `$.peelElement(['asdf'], false)`
@@ -360,14 +364,14 @@ function attach() {
     $.toggleComment = wrap => {
         let {after, before, value} = $.$();
         if (wrap) {
-            return $[(/^<!--[\s\S]*?-->$/.test(value) ? 'peel' : 'wrap') + 'Comment'](wrap);
+            return $[(anyComment.test(value) ? 'peel' : 'wrap') + 'Comment'](wrap);
         }
         return $[(/<!--\s*$/.test(before) && /^\s*-->/.test(after) ? 'peel' : 'wrap') + 'Comment'](wrap);
     };
     $.toggleData = wrap => {
         let {after, before, value} = $.$();
         if (wrap) {
-            return $[(/^<!\[CDATA\[[\s\S]*?\]\]>$/.test(value) ? 'peel' : 'wrap') + 'Data'](wrap);
+            return $[(anyData.test(value) ? 'peel' : 'wrap') + 'Data'](wrap);
         }
         return $[(/<!\[CDATA\[\s*$/.test(before) && /^\s*\]\]>/.test(after) ? 'peel' : 'wrap') + 'Data'](wrap);
     };
@@ -387,15 +391,15 @@ function attach() {
     };
     $.wrapComment = wrap => {
         if (wrap) {
-            return $.replace(/^([\s\S]*?)$/, '<!--$1-->');
+            return $.replace(anyComment, '<!-- $1 -->');
         }
-        return $.replace(/^/, '<!--', -1).replace(/$/, '-->', 1);
+        return $.trim(false, false).replace(/$/, '<!-- ', -1).replace(/^/, ' -->', 1);
     };
     $.wrapData = wrap => {
         if (wrap) {
-            return $.replace(/^([\s\S]*?)$/, '<![CDATA[$1]]>');
+            return $.replace(any, '<![CDATA[$1]]>');
         }
-        return $.replace(/^/, '<![CDATA[', -1).replace(/$/, ']]>', 1);
+        return $.trim(false, false).replace(/$/, '<![CDATA[', -1).replace(/^/, ']]>', 1);
     };
     $.wrapElement = (open, close, wrap) => {
         // `$.wrapElement(['asdf'], false)`
@@ -403,9 +407,9 @@ function attach() {
             wrap = close;
             let {value} = $.$();
             if (wrap) {
-                return $.replace(/^[\s\S]*?$/, '<' + open[0] + toAttributes(open[2]) + '>' + (value || open[1] || "") + '</' + open[0] + '>');
+                return $.replace(any, '<' + open[0] + toAttributes(open[2]) + '>' + (value || open[1] || "").trim() + '</' + open[0] + '>');
             }
-            return $.replace(/^/, '<' + open[0] + toAttributes(open[2]) + '>', -1).replace(/$/, '</' + open[0] + '>', 1).insert(value || open[1] || "");
+            return $.trim(false, false).replace(/$/, '<' + open[0] + toAttributes(open[2]) + '>', -1).replace(/^/, '</' + open[0] + '>', 1).insert(value || open[1] || "");
         }
         return $.wrap(open, close, wrap);
     };
