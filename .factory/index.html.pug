@@ -300,17 +300,47 @@ block content
       | editor.insertElement(['input', false, {type: 'text'}], 0); // Replace selection with element
       | editor.insertElement(['input', false, {type: 'text'}], +1); // Delete selection and insert element after caret
     h4: code editor.peelComment(wrap = false)
+    p Unwrap current selection from an #[abbr(title='Extensible Markup Language') XML] comment.
+    pre: code
+      | editor.peelCommet();
     h4: code editor.peelData(wrap = false)
+    p Unwrap current selection from an #[abbr(title='Extensible Markup Language') XML] character data section.
+    pre: code
+      | editor.peelData();
     h4: code editor.peelElement(open, close, wrap = false)
     h4: code editor.peelElement(of, wrap = false)
+    p Unwrap current selection from an #[abbr(title='Extensible Markup Language') XML] element.
+    pre: code
+      | editor.peelElement('&lt;b&gt;', '&lt;/b&gt;');
+      | editor.peelElement(['b']);
     h4: code editor.toggleComment(wrap = false)
+    p Toggle wrap and peel selection of an #[abbr(title='Extensible Markup Language') XML] comment.
+    pre: code
+      | editor.toggleComment();
     h4: code editor.toggleData(wrap = false)
+    p Toggle wrap and peel selection of an #[abbr(title='Extensible Markup Language') XML] character data.
+    pre: code
+      | editor.toggleData();
     h4: code editor.toggleElement(open, close, wrap = false)
     h4: code editor.toggleElement(of, wrap = false)
+    p Toggle wrap and peel selection of an #[abbr(title='Extensible Markup Language') XML] element.
+    pre: code
+      | editor.toggleElement('&lt;b&gt;', '&lt;/b&gt;');
+      | editor.toggleElement(['b']);
     h4: code editor.wrapComment(wrap = false)
+    p Wrap current selection with an #[abbr(title='Extensible Markup Language') XML] comment.
+    pre: code
+      | editor.wrapComment();
     h4: code editor.wrapData(wrap = false)
+    p Wrap current selection with an #[abbr(title='Extensible Markup Language') XML] character data.
+    pre: code
+      | editor.wrapData();
     h4: code editor.wrapElement(open, close, wrap = false)
     h4: code editor.wrapElement(of, wrap = false)
+    p Wrap current selection with an #[abbr(title='Extensible Markup Language') XML] element.
+    pre: code
+      | editor.wrapElement('&lt;b&gt;', '&lt;/b&gt;');
+      | editor.wrapElement(['b']);
   footer
     hr
     p

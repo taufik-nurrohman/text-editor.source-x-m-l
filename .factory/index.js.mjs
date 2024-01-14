@@ -255,7 +255,7 @@ function onKeyDown(e) {
                 return $.record();
             }
             if (
-                toPattern('(^|\\n)([ \\t]*)' + tagStart(tagName()) + '\\n\\2?$', "").test(before) &&
+                toPattern('(^|\\n)([ \\t]*)' + tagStart(tagName()) + '\\n\\2$', "").test(before) &&
                 toPattern('^\\s*' + tagEnd(tagName()), "").test(after)
             ) {
                 offEventDefault(e);
@@ -322,7 +322,7 @@ function toAttributes(attributes) {
 function attach() {
     let $ = this;
     $.insertComment = (value, mode, clear) => {
-        return $.insert('<!--' + value + '-->', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
+        return $.insert('<!-- ' + value + ' -->', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
     };
     $.insertData = (value, mode, clear) => {
         return $.insert('<![CDATA[' + value + ']]>', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
@@ -336,15 +336,15 @@ function attach() {
     };
     $.peelComment = wrap => {
         if (wrap) {
-            return $.replace(/^<!--([\s\S]*?)-->$/, '$1');
+            return $.replace(/^<!--\s*([\s\S]*?)\s*-->$/, '$1');
         }
-        return $.replace(/<!--(\s*)$/, '$1', -1).replace(/^(\s*)-->/, '$1', 1);
+        return $.replace(/<!--\s*$/, "", -1).replace(/^\s*-->/, "", 1);
     };
     $.peelData = wrap => {
         if (wrap) {
-            return $.replace(/^<!\[CDATA\[([\s\S]*?)\]\]>$/, '$1');
+            return $.replace(/^<!\[CDATA\[\s*([\s\S]*?)\s*\]\]>$/, '$1');
         }
-        return $.replace(/<!\[CDATA\[(\s*)$/, '$1', -1).replace(/^(\s*)\]\]>/, '$1', 1);
+        return $.replace(/<!\[CDATA\[\s*$/, "", -1).replace(/^\s*\]\]>/, "", 1);
     };
     $.peelElement = (open, close, wrap) => {
         // `$.peelElement(['asdf'], false)`
@@ -387,15 +387,15 @@ function attach() {
     };
     $.wrapComment = wrap => {
         if (wrap) {
-            return $.replace(/^([\s\S]*?)$/, '<!--$1-->');
+            return $.replace(/^\s*([\s\S]*?)\s*$/, '<!-- $1 -->');
         }
-        return $.replace(/^/, '<!--', -1).replace(/$/, '-->', 1);
+        return $.replace(/^\s*/, '<!-- ', -1).replace(/\s*$/, ' -->', 1);
     };
     $.wrapData = wrap => {
         if (wrap) {
-            return $.replace(/^([\s\S]*?)$/, '<![CDATA[$1]]>');
+            return $.replace(/^\s*([\s\S]*?)\s*$/, '<![CDATA[$1]]>');
         }
-        return $.replace(/^/, '<![CDATA[', -1).replace(/$/, ']]>', 1);
+        return $.replace(/^\s*/, '<![CDATA[', -1).replace(/\s*$/, ']]>', 1);
     };
     $.wrapElement = (open, close, wrap) => {
         // `$.wrapElement(['asdf'], false)`
