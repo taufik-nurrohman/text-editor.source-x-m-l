@@ -27,17 +27,6 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = f() : typeof define === 'function' && define.amd ? define(f) : (g = typeof globalThis !== 'undefined' ? globalThis : g || self, (g.TextEditor = g.TextEditor || {}, g.TextEditor.SourceXML = f()));
 })(this, (function () {
     'use strict';
-    var debounce = function debounce(then, time) {
-        var timer;
-        return function () {
-            var _arguments = arguments,
-                _this = this;
-            timer && clearTimeout(timer);
-            timer = setTimeout(function () {
-                return then.apply(_this, _arguments);
-            }, time);
-        };
-    };
     var isArray = function isArray(x) {
         return Array.isArray(x);
     };
@@ -84,9 +73,6 @@
         // No need to escape `/` in the pattern string
         pattern = pattern.replace(/\//g, '\\/');
         return new RegExp(pattern, isSet(opt) ? opt : 'g');
-    };
-    var hasValue = function hasValue(x, data) {
-        return -1 !== data.indexOf(x);
     };
     var fromHTML = function fromHTML(x, quote) {
         x = x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;');
@@ -145,59 +131,6 @@
         tagTokens = function tagTokens() {
             return '(?:' + tagComment() + '|' + tagData() + '|' + tagEnd(tagName()) + '|' + tagDeclaration() + '|' + tagVoid(tagName()) + '|' + tagStart(tagName()) + ')';
         };
-    var bounce = debounce(function (e, $) {
-        var _$$$ = $.$(),
-            after = _$$$.after,
-            before = _$$$.before,
-            end = _$$$.end,
-            value = _$$$.value;
-        if (value) {
-            return;
-        }
-        var caret = "\uFEFF",
-            tagTokensOf = tagTokens().split('(' + tagName() + ')').join('((?:' + tagName() + '|' + caret + ')+)'),
-            tagTokensPattern = toPattern(tagTokensOf),
-            content = before + value + caret + after,
-            m,
-            v;
-        while (m = tagTokensPattern.exec(content)) {
-            if (hasValue(caret, m[0])) {
-                offEventDefault(e);
-                var parts = m[0].split(caret);
-                // `<asdf asdf="asdf"|/>` or `<asdf asdf="asdf" |/>`
-                if ('>' === parts[1] || '/>' === (parts[1] || "").trim()) {
-                    $.select(v = m.index, v + toCount(m[0]) - 1);
-                    break;
-                }
-                // `<as|df asdf="asdf">`
-                if ('<' !== parts[0] && '</' !== parts[0] && !/\s/.test(parts[0])) {
-                    $.select(v = m.index + ('/' === parts[0][1] ? 2 : 1), end + toCount(parts[1].split(/[\s\/>]/).shift()));
-                    break;
-                }
-                var mm = void 0;
-                // `<asdf asdf="as|df">` or `<asdf asdf='as|df'>`
-                if (mm = toPattern('=("[^"]*' + caret + '[^"]*"|\'[^\']*' + caret + '[^\']*\')').exec(m[0])) {
-                    $.select(v = m.index + mm.index + 2, v + toCount(mm[1]) - 3);
-                    break;
-                }
-                // `<asdf asdf=as|df>`
-                if (mm = toPattern('=([^"\'\\s\\/>]*' + caret + '[^"\'\\s\\/>]*)').exec(m[0])) {
-                    $.select(v = m.index + mm.index + 1, v + toCount(mm[1]) - 1);
-                    break;
-                }
-                // `<asdf as|df="asdf">`
-                if ('<' !== parts[0] && '</' !== parts[0]) {
-                    if (mm = toPattern('([^="\'\\s]*' + caret + '[^="\'\\s]*)[=\\s\\/>]').exec(m[0])) {
-                        $.select(v = m.index + mm.index, v + toCount(mm[1]) - 1);
-                        break;
-                    }
-                }
-                // Other caret position(s) will select the element
-                $.select(v = m.index, v + toCount(m[0]) - 1);
-                break;
-            }
-        }
-    }, 1);
 
     function onKeyDown(e) {
         var _$$state$source;
@@ -214,12 +147,12 @@
         if ('Alt' === keys || 'Control' === keys) {
             return;
         }
-        var _$$$2 = $.$(),
-            after = _$$$2.after,
-            before = _$$$2.before;
-        _$$$2.end;
-        var start = _$$$2.start,
-            value = _$$$2.value;
+        var _$$$ = $.$(),
+            after = _$$$.after,
+            before = _$$$.before;
+        _$$$.end;
+        var start = _$$$.start,
+            value = _$$$.value;
         if (['-', '>', '/', '?', ' '].includes(key)) {
             if ('-' === key) {
                 // `<!-|`
@@ -268,7 +201,7 @@
                         // `<!--|-->`
                         '-->' === after.slice(0, 3) && '<!--' === before.slice(-4) ||
                         // `<?asdf|?>`
-                        '?>' === after.slice(0, 2) && '<?' === before.slice(0, 2) && /<\?\S*$/.test(before)) {
+                        '?>' === after.slice(0, 2) && /<\?\S*$/.test(before)) {
                         offEventDefault(e);
                         return $.wrap(' ', ' ').record();
                     }
@@ -367,8 +300,9 @@
             if (/^\s+-->/.test(after) && /<!--\s+$/.test(before)) {
                 offEventDefault(e);
                 var a = after[0],
-                    b = before.slice(-1);
-                return $.trim(' ' === b || '\n' === b ? "" : ' ', ' ' === a || '\n' === a ? "" : ' ').record();
+                    b = before.slice(-1),
+                    c = ' ' === a && ' ' === b ? "" : ' ';
+                return $.trim(c, c).record();
             }
             // `<?|`
             if (/<\?\S*$/.test(before)) {
@@ -382,14 +316,14 @@
             }
             if (/^(\n[ \t]*){2,}\?>/.test(after) && /<\?\S*(\n[ \t]*){2,}$/.test(before)) {
                 offEventDefault(e);
-                console.log([lineMatchIndent]);
                 return $.trim('\n' + lineMatchIndent, '\n' + lineMatchIndent).record();
             }
             if (/^\s+\?>/.test(after) && /<\?\S*\s+$/.test(before)) {
                 offEventDefault(e);
                 var _a = after[0],
-                    _b = before.slice(-1);
-                return $.trim(' ' === _b || '\n' === _b ? "" : ' ', ' ' === _a || '\n' === _a ? "" : ' ').record();
+                    _b = before.slice(-1),
+                    _c = ' ' === _a && ' ' === _b ? "" : ' ';
+                return $.trim(_c, _c).record();
             }
             // `<![CDATA[|`
             if ('<![CDATA[' === before.slice(-9)) {
@@ -408,8 +342,9 @@
             if (/^\s+\]\]>/.test(after) && /<!\[CDATA\[\s+$/.test(before)) {
                 offEventDefault(e);
                 var _a2 = after[0],
-                    _b2 = before.slice(-1);
-                return $.trim(' ' === _b2 || '\n' === _b2 ? "" : ' ', ' ' === _a2 || '\n' === _a2 ? "" : ' ').record();
+                    _b2 = before.slice(-1),
+                    _c2 = ' ' === _a2 && ' ' === _b2 ? "" : ' ';
+                return $.trim(_c2, _c2).record();
             }
             var tagPattern = toPattern(tagTokens() + '$', ""),
                 _tagMatch2 = tagPattern.exec(before);
@@ -458,19 +393,6 @@
                 return $.replace(_tagPattern, "", 1).record();
             }
         }
-    }
-
-    function onMouseDown(e) {
-        var $ = this;
-        $.k(false).pop();
-        var keys = $.k();
-        if (!$ || e.defaultPrevented) {
-            return;
-        }
-        if (keys.startsWith('Control-')) {
-            return;
-        }
-        bounce(e, $);
     }
 
     function toAttributes(attributes) {
@@ -540,20 +462,20 @@
             return $.peel(open, close, wrap);
         };
         $.toggleComment = function (wrap) {
-            var _$$$3 = $.$(),
-                after = _$$$3.after,
-                before = _$$$3.before,
-                value = _$$$3.value;
+            var _$$$2 = $.$(),
+                after = _$$$2.after,
+                before = _$$$2.before,
+                value = _$$$2.value;
             if (wrap) {
                 return $[(anyComment.test(value) ? 'peel' : 'wrap') + 'Comment'](wrap);
             }
             return $[(/<!--\s*$/.test(before) && /^\s*-->/.test(after) ? 'peel' : 'wrap') + 'Comment'](wrap);
         };
         $.toggleData = function (wrap) {
-            var _$$$4 = $.$(),
-                after = _$$$4.after,
-                before = _$$$4.before,
-                value = _$$$4.value;
+            var _$$$3 = $.$(),
+                after = _$$$3.after,
+                before = _$$$3.before,
+                value = _$$$3.value;
             if (wrap) {
                 return $[(anyData.test(value) ? 'peel' : 'wrap') + 'Data'](wrap);
             }
@@ -563,10 +485,10 @@
             // `$.toggleElement(['asdf'], false)`
             if (isArray(open)) {
                 wrap = close;
-                var _$$$5 = $.$(),
-                    after = _$$$5.after,
-                    before = _$$$5.before,
-                    value = _$$$5.value,
+                var _$$$4 = $.$(),
+                    after = _$$$4.after,
+                    before = _$$$4.before,
+                    value = _$$$4.value,
                     tagStartOf = tagStart(open[0]),
                     tagEndOf = tagEnd(open[0]);
                 if (wrap) {
@@ -578,7 +500,7 @@
         };
         $.wrapComment = function (wrap) {
             if (wrap) {
-                return $.replace(anyComment, '<!-- $1 -->');
+                return $.replace(any, '<!-- $1 -->');
             }
             return $.trim(false, false).replace(/$/, '<!-- ', -1).replace(/^/, ' -->', 1);
         };
@@ -592,8 +514,8 @@
             // `$.wrapElement(['asdf'], false)`
             if (isArray(open)) {
                 wrap = close;
-                var _$$$6 = $.$(),
-                    value = _$$$6.value;
+                var _$$$5 = $.$(),
+                    value = _$$$5.value;
                 if (wrap) {
                     return $.replace(any, '<' + open[0] + toAttributes(open[2]) + '>' + (value || open[1] || "").trim() + '</' + open[0] + '>');
                 }
@@ -603,16 +525,12 @@
         };
         if ('XML' === ((_$$state$source2 = $.state.source) == null ? void 0 : _$$state$source2.type)) {
             $.on('key.down', onKeyDown);
-            $.on('mouse.down', onMouseDown);
         }
         return $;
     }
 
     function detach() {
-        var $ = this;
-        $.off('key.down', onKeyDown);
-        $.off('mouse.down', onMouseDown);
-        return $;
+        return this.off('key.down', onKeyDown);
     }
     var index_js = {
         attach: attach,

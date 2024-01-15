@@ -1,4 +1,3 @@
-import {debounce} from '@taufik-nurrohman/tick';
 import {esc, toPattern} from '@taufik-nurrohman/pattern';
 import {fromHTML, fromValue} from '@taufik-nurrohman/from';
 import {hasValue} from '@taufik-nurrohman/has';
@@ -14,54 +13,6 @@ let tagComment = () => '<!--([\\s\\S](?!-->)*)-->',
     tagStart = name => '<(' + name + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?>',
     tagVoid = name => '<(' + name + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?/?>',
     tagTokens = () => '(?:' + tagComment() + '|' + tagData() + '|' + tagEnd(tagName()) + '|' + tagDeclaration() + '|' + tagVoid(tagName()) + '|' + tagStart(tagName()) + ')';
-
-const bounce = debounce((e, $) => {
-    let {after, before, end, value} = $.$();
-    if (value) {
-        return;
-    }
-    let caret = '\ufeff',
-        tagTokensOf = tagTokens().split('(' + tagName() + ')').join('((?:' + tagName() + '|' + caret + ')+)'),
-        tagTokensPattern = toPattern(tagTokensOf),
-        content = before + value + caret + after, m, v;
-    while (m = tagTokensPattern.exec(content)) {
-        if (hasValue(caret, m[0])) {
-            offEventDefault(e);
-            let parts = m[0].split(caret);
-            // `<asdf asdf="asdf"|/>` or `<asdf asdf="asdf" |/>`
-            if ('>' === parts[1] || '/>' === (parts[1] || "").trim()) {
-                $.select(v = m.index, v + toCount(m[0]) - 1);
-                break;
-            }
-            // `<as|df asdf="asdf">`
-            if ('<' !== parts[0] && '</' !== parts[0] && !/\s/.test(parts[0])) {
-                $.select(v = m.index + ('/' === parts[0][1] ? 2 : 1), end + toCount(parts[1].split(/[\s\/>]/).shift()));
-                break;
-            }
-            let mm;
-            // `<asdf asdf="as|df">` or `<asdf asdf='as|df'>`
-            if (mm = toPattern('=("[^"]*' + caret + '[^"]*"|\'[^\']*' + caret + '[^\']*\')').exec(m[0])) {
-                $.select(v = m.index + mm.index + 2, v + toCount(mm[1]) - 3);
-                break;
-            }
-            // `<asdf asdf=as|df>`
-            if (mm = toPattern('=([^"\'\\s\\/>]*' + caret + '[^"\'\\s\\/>]*)').exec(m[0])) {
-                $.select(v = m.index + mm.index + 1, v + toCount(mm[1]) - 1);
-                break;
-            }
-            // `<asdf as|df="asdf">`
-            if ('<' !== parts[0] && '</' !== parts[0]) {
-                if (mm = toPattern('([^="\'\\s]*' + caret + '[^="\'\\s]*)[=\\s\\/>]').exec(m[0])) {
-                    $.select(v = m.index + mm.index, v + toCount(mm[1]) - 1);
-                    break;
-                }
-            }
-            // Other caret position(s) will select the element
-            $.select(v = m.index, v + toCount(m[0]) - 1);
-            break;
-        }
-    }
-}, 1);
 
 function onKeyDown(e) {
     let $ = this,
@@ -126,7 +77,7 @@ function onKeyDown(e) {
                     // `<!--|-->`
                     '-->' === after.slice(0, 3) && '<!--' === before.slice(-4) ||
                     // `<?asdf|?>`
-                    '?>' === after.slice(0, 2) && '<?' === before.slice(0, 2) && /<\?\S*$/.test(before)
+                    '?>' === after.slice(0, 2) && /<\?\S*$/.test(before)
                 ) {
                     offEventDefault(e);
                     return $.wrap(' ', ' ').record();
@@ -228,8 +179,9 @@ function onKeyDown(e) {
         if (/^\s+-->/.test(after) && /<!--\s+$/.test(before)) {
             offEventDefault(e);
             let a = after[0],
-                b = before.slice(-1);
-            return $.trim(' ' === b || '\n' === b ? "" : ' ', ' ' === a || '\n' === a ? "" : ' ').record();
+                b = before.slice(-1),
+                c = ' ' === a && ' ' === b ? "" : ' ';
+            return $.trim(c, c).record();
         }
         // `<?|`
         if (/<\?\S*$/.test(before)) {
@@ -243,14 +195,14 @@ function onKeyDown(e) {
         }
         if (/^(\n[ \t]*){2,}\?>/.test(after) && /<\?\S*(\n[ \t]*){2,}$/.test(before)) {
             offEventDefault(e);
-            console.log([lineMatchIndent]);
             return $.trim('\n' + lineMatchIndent, '\n' + lineMatchIndent).record();
         }
         if (/^\s+\?>/.test(after) && /<\?\S*\s+$/.test(before)) {
             offEventDefault(e);
             let a = after[0],
-                b = before.slice(-1);
-            return $.trim(' ' === b || '\n' === b ? "" : ' ', ' ' === a || '\n' === a ? "" : ' ').record();
+                b = before.slice(-1),
+                c = ' ' === a && ' ' === b ? "" : ' ';
+            return $.trim(c, c).record();
         }
         // `<![CDATA[|`
         if ('<![CDATA[' === before.slice(-9)) {
@@ -269,8 +221,9 @@ function onKeyDown(e) {
         if (/^\s+\]\]>/.test(after) && /<!\[CDATA\[\s+$/.test(before)) {
             offEventDefault(e);
             let a = after[0],
-                b = before.slice(-1);
-            return $.trim(' ' === b || '\n' === b ? "" : ' ', ' ' === a || '\n' === a ? "" : ' ').record();
+                b = before.slice(-1),
+                c = ' ' === a && ' ' === b ? "" : ' ';
+            return $.trim(c, c).record();
         }
         let tagPattern = toPattern(tagTokens() + '$', ""),
             tagMatch = tagPattern.exec(before);
@@ -322,19 +275,6 @@ function onKeyDown(e) {
             return $.replace(tagPattern, "", 1).record();
         }
     }
-}
-
-function onMouseDown(e) {
-    let $ = this,
-        key = $.k(false).pop(),
-        keys = $.k();
-    if (!$ || e.defaultPrevented) {
-        return;
-    }
-    if (keys.startsWith('Control-')) {
-        return;
-    }
-    bounce(e, $);
 }
 
 function toAttributes(attributes) {
@@ -429,7 +369,7 @@ function attach() {
     };
     $.wrapComment = wrap => {
         if (wrap) {
-            return $.replace(anyComment, '<!-- $1 -->');
+            return $.replace(any, '<!-- $1 -->');
         }
         return $.trim(false, false).replace(/$/, '<!-- ', -1).replace(/^/, ' -->', 1);
     };
@@ -453,16 +393,12 @@ function attach() {
     };
     if ('XML' === $.state.source?.type) {
         $.on('key.down', onKeyDown);
-        $.on('mouse.down', onMouseDown);
     }
     return $;
 }
 
 function detach() {
-    let $ = this;
-    $.off('key.down', onKeyDown);
-    $.off('mouse.down', onMouseDown);
-    return $;
+    return this.off('key.down', onKeyDown);
 }
 
 export default {attach, detach};
