@@ -1,5 +1,5 @@
 import {esc, toPattern} from '@taufik-nurrohman/pattern';
-import {fromHTML, fromValue} from '@taufik-nurrohman/from';
+import {fromHTML, fromStates, fromValue} from '@taufik-nurrohman/from';
 import {hasValue} from '@taufik-nurrohman/has';
 import {isArray, isInteger, isSet, isString} from '@taufik-nurrohman/is';
 import {onEvent, offEvent, offEventDefault} from '@taufik-nurrohman/event';
@@ -298,11 +298,14 @@ function toAttributes(attributes) {
 }
 
 function attach() {
-    let $ = this,
+    let $ = this, state,
         any = /^\s*([\s\S]*?)\s*$/,
         anyComment = /^<!--\s*([\s\S]*?)\s*-->$/,
         anyData = /^<!\[CDATA\[\s*([\s\S]*?)\s*\]\]>$/,
         anyDeclaration = /^<\?\s*([\s\S]*?)\s*\?>$/;
+    $.state = state = fromStates({
+        elements: {}
+    }, $.state);
     $.insertComment = (value, mode, clear) => {
         return $.insert('<!-- ' + value + ' -->', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
     };
@@ -312,6 +315,11 @@ function attach() {
     $.insertElement = (value, mode, clear) => {
         // `$.insertElement(['asdf'])`
         if (isArray(value)) {
+            if (isSet(state.elements[value[0]])) {
+                value[0] = value[0] ?? state.elements[value[0]][0];
+                value[1] = value[1] ?? state.elements[value[0]][1];
+                value[2] = fromStates({}, state.elements[value[0]][2] || {}, value[2] || {});
+            }
             value = '<' + value[0] + toAttributes(value[2]) + (false === value[1] ? ' />' : '>' + (value[1] || "") + '</' + value[0] + '>');
         }
         return $.insert(value, isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
@@ -331,6 +339,11 @@ function attach() {
     $.peelElement = (open, close, wrap) => {
         // `$.peelElement(['asdf'], false)`
         if (isArray(open)) {
+            if (isSet(state.elements[open[0]])) {
+                open[0] = open[0] ?? state.elements[open[0]][0];
+                open[1] = open[1] ?? state.elements[open[0]][1];
+                open[2] = fromStates({}, state.elements[open[0]][2] || {}, open[2] || {});
+            }
             wrap = close;
             if (wrap) {
                 return $.replace(toPattern('^' + tagStart(open[0]) + '([\\s\\S]*?)' + tagEnd(open[0]) + '$', ""), '$3');
@@ -356,6 +369,11 @@ function attach() {
     $.toggleElement = (open, close, wrap) => {
         // `$.toggleElement(['asdf'], false)`
         if (isArray(open)) {
+            if (isSet(state.elements[open[0]])) {
+                open[0] = open[0] ?? state.elements[open[0]][0];
+                open[1] = open[1] ?? state.elements[open[0]][1];
+                open[2] = fromStates({}, state.elements[open[0]][2] || {}, open[2] || {});
+            }
             wrap = close;
             let {after, before, value} = $.$(),
                 tagStartOf = tagStart(open[0]),
@@ -382,6 +400,11 @@ function attach() {
     $.wrapElement = (open, close, wrap) => {
         // `$.wrapElement(['asdf'], false)`
         if (isArray(open)) {
+            if (isSet(state.elements[open[0]])) {
+                open[0] = open[0] ?? state.elements[open[0]][0];
+                open[1] = open[1] ?? state.elements[open[0]][1];
+                open[2] = fromStates({}, state.elements[open[0]][2] || {}, open[2] || {});
+            }
             wrap = close;
             let {value} = $.$();
             if (wrap) {

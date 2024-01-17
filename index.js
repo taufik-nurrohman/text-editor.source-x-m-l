@@ -74,12 +74,47 @@
         pattern = pattern.replace(/\//g, '\\/');
         return new RegExp(pattern, isSet(opt) ? opt : 'g');
     };
+    var hasValue = function hasValue(x, data) {
+        return -1 !== data.indexOf(x);
+    };
     var fromHTML = function fromHTML(x, quote) {
         x = x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;');
         if (quote) {
             x = x.replace(/'/g, '&apos;').replace(/"/g, '&quot;');
         }
         return x;
+    };
+    var fromStates = function fromStates() {
+        for (var _len = arguments.length, lot = new Array(_len), _key = 0; _key < _len; _key++) {
+            lot[_key] = arguments[_key];
+        }
+        var out = lot.shift();
+        for (var i = 0, j = toCount(lot); i < j; ++i) {
+            for (var k in lot[i]) {
+                // Assign value
+                if (!isSet(out[k])) {
+                    out[k] = lot[i][k];
+                    continue;
+                }
+                // Merge array
+                if (isArray(out[k]) && isArray(lot[i][k])) {
+                    out[k] = [ /* Clone! */ ].concat(out[k]);
+                    for (var ii = 0, jj = toCount(lot[i][k]); ii < jj; ++ii) {
+                        if (!hasValue(lot[i][k][ii], out[k])) {
+                            out[k].push(lot[i][k][ii]);
+                        }
+                    }
+                    // Merge object recursive
+                } else if (isObject(out[k]) && isObject(lot[i][k])) {
+                    out[k] = fromStates({
+                        /* Clone! */ }, out[k], lot[i][k]);
+                    // Replace value
+                } else {
+                    out[k] = lot[i][k];
+                }
+            }
+        }
+        return out;
     };
     var fromValue = function fromValue(x) {
         if (isArray(x)) {
@@ -422,9 +457,13 @@
     function attach() {
         var _$$state$source2;
         var $ = this,
+            state,
             any = /^\s*([\s\S]*?)\s*$/,
             anyComment = /^<!--\s*([\s\S]*?)\s*-->$/,
             anyData = /^<!\[CDATA\[\s*([\s\S]*?)\s*\]\]>$/;
+        $.state = state = fromStates({
+            elements: {}
+        }, $.state);
         $.insertComment = function (value, mode, clear) {
             return $.insert('<!-- ' + value + ' -->', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
         };
@@ -434,6 +473,12 @@
         $.insertElement = function (value, mode, clear) {
             // `$.insertElement(['asdf'])`
             if (isArray(value)) {
+                if (isSet(state.elements[value[0]])) {
+                    var _value$, _value$2;
+                    value[0] = (_value$ = value[0]) != null ? _value$ : state.elements[value[0]][0];
+                    value[1] = (_value$2 = value[1]) != null ? _value$2 : state.elements[value[0]][1];
+                    value[2] = fromStates({}, state.elements[value[0]][2] || {}, value[2] || {});
+                }
                 value = '<' + value[0] + toAttributes(value[2]) + (false === value[1] ? ' />' : '>' + (value[1] || "") + '</' + value[0] + '>');
             }
             return $.insert(value, isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
@@ -453,6 +498,12 @@
         $.peelElement = function (open, close, wrap) {
             // `$.peelElement(['asdf'], false)`
             if (isArray(open)) {
+                if (isSet(state.elements[open[0]])) {
+                    var _open$, _open$2;
+                    open[0] = (_open$ = open[0]) != null ? _open$ : state.elements[open[0]][0];
+                    open[1] = (_open$2 = open[1]) != null ? _open$2 : state.elements[open[0]][1];
+                    open[2] = fromStates({}, state.elements[open[0]][2] || {}, open[2] || {});
+                }
                 wrap = close;
                 if (wrap) {
                     return $.replace(toPattern('^' + tagStart(open[0]) + '([\\s\\S]*?)' + tagEnd(open[0]) + '$', ""), '$3');
@@ -484,6 +535,12 @@
         $.toggleElement = function (open, close, wrap) {
             // `$.toggleElement(['asdf'], false)`
             if (isArray(open)) {
+                if (isSet(state.elements[open[0]])) {
+                    var _open$3, _open$4;
+                    open[0] = (_open$3 = open[0]) != null ? _open$3 : state.elements[open[0]][0];
+                    open[1] = (_open$4 = open[1]) != null ? _open$4 : state.elements[open[0]][1];
+                    open[2] = fromStates({}, state.elements[open[0]][2] || {}, open[2] || {});
+                }
                 wrap = close;
                 var _$$$4 = $.$(),
                     after = _$$$4.after,
@@ -513,6 +570,12 @@
         $.wrapElement = function (open, close, wrap) {
             // `$.wrapElement(['asdf'], false)`
             if (isArray(open)) {
+                if (isSet(state.elements[open[0]])) {
+                    var _open$5, _open$6;
+                    open[0] = (_open$5 = open[0]) != null ? _open$5 : state.elements[open[0]][0];
+                    open[1] = (_open$6 = open[1]) != null ? _open$6 : state.elements[open[0]][1];
+                    open[2] = fromStates({}, state.elements[open[0]][2] || {}, open[2] || {});
+                }
                 wrap = close;
                 var _$$$5 = $.$(),
                     value = _$$$5.value;
