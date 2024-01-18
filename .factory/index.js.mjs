@@ -15,7 +15,7 @@ let tagComment = () => '<!--([\\s\\S](?!-->)*)-->',
     tagTokens = () => '(?:' + tagComment() + '|' + tagData() + '|' + tagEnd(tagName()) + '|' + tagDeclaration() + '|' + tagVoid(tagName()) + '|' + tagStart(tagName()) + ')';
 
 function onKeyDown(e) {
-    let $ = this,
+    let $ = this, m,
         key = $.k(false).pop(),
         keys = $.k();
     if (e.defaultPrevented || $.keys[keys]) {
@@ -26,61 +26,70 @@ function onKeyDown(e) {
         return;
     }
     let {after, before, end, start, value} = $.$();
-    if (['-', '>', '/', '?', ' '].includes(key)) {
-        if ('-' === key) {
-            // `<!-|`
-            if (!value && '<!-' === before.slice(-3)) {
-                offEventDefault(e);
-                return $.wrap('- ', ' --' + ('>' === after[0] ? "" : '>')).record();
-            }
+    if (value) {
+        return;
+    }
+    if ('-' === key) {
+        // `<!-|`
+        if ('<!-' === before.slice(-3)) {
+            offEventDefault(e);
+            return $.wrap('- ', ' --' + ('>' === after[0] ? "" : '>')).record();
+        }
+        return;
+    }
+    if ('>' === key || '/' === key) {
+        if (!(m = toPattern(tagStart(tagName()) + '$', "").exec(before + '>'))) {
             return;
         }
-        if ('>' === key || '/' === key) {
-            let tagStartMatch = toPattern(tagStart(tagName()) + '$', "").exec(before + '>');
-            if (!value && tagStartMatch) {
-                offEventDefault(e);
-                // `<div|`
-                if ('/' === key) {
-                    // `<div|>`
-                    if ('>' === after[0]) {
-                        return $.trim("", false).insert(' /', -1).select($.$().start + 1).record();
-                    }
-                    return $.trim("", false).insert(' />', -1).record();
-                }
-                // `<div|></div>`
-                if (after.startsWith('></' + tagStartMatch[1] + '>')) {
-                    $.select(start + 1).record();
-                // `<div|</div>`
-                } else if (after.startsWith('</' + tagStartMatch[1] + '>')) {
-                    $.insert('>', -1).record();
-                // `<div|`
-                } else {
-                    $.wrap('>', '</' + tagStartMatch[1] + ('>' === after[0] ? "" : '>')).record();
-                }
+        offEventDefault(e);
+        // `<div|`
+        if ('/' === key) {
+            // `<div|>`
+            if ('>' === after[0]) {
+                return $.trim("", false).insert(' /', -1).select($.$().start + 1).record();
             }
-            return;
+            return $.trim("", false).insert(' />', -1).record();
         }
-        if ('?' === key) {
-            // `<|`
-            if (!value && '<' === before.slice(-1)) {
-                offEventDefault(e);
-                return $.wrap('?', '?' + ('>' === after[0] ? "" : '>')).record();
-            }
-            return;
-        }
-        if (' ' === key) {
-            if (!value) {
-                if (
-                    // `<!--|-->`
-                    '-->' === after.slice(0, 3) && '<!--' === before.slice(-4) ||
-                    // `<?asdf|?>`
-                    '?>' === after.slice(0, 2) && /<\?\S*$/.test(before)
-                ) {
-                    offEventDefault(e);
-                    return $.wrap(' ', ' ').record();
+        let elements = $.state.elements || {};
+        if (isSet(elements[m[1]])) {
+            value = elements[m[1]][1];
+            if (false === value) {
+                if ('>' === after[0]) {
+                    return $.trim("", false).insert(' /', -1).select($.$().start + 1).record();
                 }
+                return $.trim("", false).insert(' />', -1).record();
             }
-            return;
+            value && $.insert(value);
+            return $.wrap('>', '</' + m[1] + ('>' === after[0] ? "" : '>')).record();
+        }
+        // `<div|></div>`
+        if (after.startsWith('></' + m[1] + '>')) {
+            return $.select(start + 1).record();
+        }
+        // `<div|</div>`
+        if (after.startsWith('</' + m[1] + '>')) {
+            return $.insert('>', -1).record();
+        }
+        // `<div|`
+        return $.wrap('>', '</' + m[1] + ('>' === after[0] ? "" : '>')).record();
+    }
+    if ('?' === key) {
+        // `<|`
+        if ('<' === before.slice(-1)) {
+            offEventDefault(e);
+            return $.wrap('?', '?' + ('>' === after[0] ? "" : '>')).record();
+        }
+        return;
+    }
+    if (' ' === key) {
+        if (
+            // `<!--|-->`
+            '-->' === after.slice(0, 3) && '<!--' === before.slice(-4) ||
+            // `<?asdf|?>`
+            '?>' === after.slice(0, 2) && /<\?\S*$/.test(before)
+        ) {
+            offEventDefault(e);
+            return $.wrap(' ', ' ').record();
         }
         return;
     }
@@ -91,39 +100,27 @@ function onKeyDown(e) {
     end = s.end;
     start = s.start;
     value = s.value;
-    if ('ArrowLeft' === keys) {
-        if (!value) {
-            let tagMatch = toPattern(tagTokens() + '$', "").exec(before);
-            // `<asdf>|asdf`
-            if (tagMatch) {
-                offEventDefault(e);
-                return $.select(start - toCount(tagMatch[0]), start);
-            }
-        }
+    if (value) {
         return;
     }
-    if ('ArrowRight' === keys) {
-        if (!value) {
-            let tagMatch = toPattern('^' + tagTokens(), "").exec(after);
-            // `asdf|<asdf>`
-            if (tagMatch) {
-                offEventDefault(e);
-                return $.select(start, start + toCount(tagMatch[0]));
-            }
-        }
-        return;
+    if ('ArrowLeft' === keys && (m = toPattern(tagTokens() + '$', "").exec(before))) {
+        // `<asdf>|asdf`
+        offEventDefault(e);
+        return $.select(start - toCount(m[0]), start);
+    }
+    if ('ArrowRight' === keys && (m = toPattern('^' + tagTokens(), "").exec(after))) {
+        // `asdf|<asdf>`
+        offEventDefault(e);
+        return $.select(start, start + toCount(m[0]));
     }
     let charIndent = $.state.source?.tab || $.state.tab || '\t',
         lineBefore = before.split('\n').pop(),
-        lineMatch = lineBefore.match(/^(\s+)/),
+        lineMatch = /^(\s+)/.exec(lineBefore),
         lineMatchIndent = lineMatch && lineMatch[1] || "";
     if (isInteger(charIndent)) {
         charIndent = ' '.repeat(charIndent);
     }
     if ('Enter' === keys) {
-        if (value) {
-            return;
-        }
         if (
             // `<!--|-->`
             /^[ \t]*-->/.test(after) && /<!--[ \t]*$/.test(before) ||
@@ -146,19 +143,15 @@ function onKeyDown(e) {
             offEventDefault(e);
             return $.trim('\n\n' + lineMatchIndent, '\n\n' + lineMatchIndent).record();
         }
-        let tagStartMatch = before.match(toPattern(tagStart(tagName()) + '$', ""));
-        if (tagStartMatch) {
+        if (m = toPattern(tagStart(tagName()) + '$', "").exec(before)) {
             offEventDefault(e);
-            if (after.startsWith('</' + tagStartMatch[1] + '>')) {
+            if (after.startsWith('</' + m[1] + '>')) {
                 return $.record().trim('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent).record();
             }
-            return $.record().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent + '</' + tagStartMatch[1] + '>').record();
+            return $.record().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent + '</' + m[1] + '>').record();
         }
     }
     if ('Backspace' === keys) {
-        if (value) {
-            return;
-        }
         // `<!--|`
         if ('<!--' === before.slice(-4)) {
             offEventDefault(e);
@@ -252,9 +245,6 @@ function onKeyDown(e) {
         }
     }
     if ('Delete' === keys) {
-        if (value) {
-            return;
-        }
         // `|-->`
         if ('-->' === after.slice(0, 3)) {
             offEventDefault(e);
@@ -313,7 +303,6 @@ function attach() {
         // `$.insertElement(['asdf'])`
         if (isArray(value)) {
             if (isSet(state.elements[value[0]])) {
-                value[0] = value[0] ?? state.elements[value[0]][0];
                 value[1] = value[1] ?? state.elements[value[0]][1];
                 value[2] = fromStates({}, state.elements[value[0]][2] || {}, value[2] || {});
             }
@@ -337,7 +326,6 @@ function attach() {
         // `$.peelElement(['asdf'], false)`
         if (isArray(open)) {
             if (isSet(state.elements[open[0]])) {
-                open[0] = open[0] ?? state.elements[open[0]][0];
                 open[1] = open[1] ?? state.elements[open[0]][1];
                 open[2] = fromStates({}, state.elements[open[0]][2] || {}, open[2] || {});
             }
@@ -367,7 +355,6 @@ function attach() {
         // `$.toggleElement(['asdf'], false)`
         if (isArray(open)) {
             if (isSet(state.elements[open[0]])) {
-                open[0] = open[0] ?? state.elements[open[0]][0];
                 open[1] = open[1] ?? state.elements[open[0]][1];
                 open[2] = fromStates({}, state.elements[open[0]][2] || {}, open[2] || {});
             }
@@ -398,7 +385,6 @@ function attach() {
         // `$.wrapElement(['asdf'], false)`
         if (isArray(open)) {
             if (isSet(state.elements[open[0]])) {
-                open[0] = open[0] ?? state.elements[open[0]][0];
                 open[1] = open[1] ?? state.elements[open[0]][1];
                 open[2] = fromStates({}, state.elements[open[0]][2] || {}, open[2] || {});
             }

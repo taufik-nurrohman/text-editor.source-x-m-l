@@ -170,6 +170,7 @@
     function onKeyDown(e) {
         var _$$state$source;
         var $ = this,
+            m,
             key = $.k(false).pop(),
             keys = $.k();
         if (e.defaultPrevented || $.keys[keys]) {
@@ -185,60 +186,69 @@
         _$$$.end;
         var start = _$$$.start,
             value = _$$$.value;
-        if (['-', '>', '/', '?', ' '].includes(key)) {
-            if ('-' === key) {
-                // `<!-|`
-                if (!value && '<!-' === before.slice(-3)) {
-                    offEventDefault(e);
-                    return $.wrap('- ', ' --' + ('>' === after[0] ? "" : '>')).record();
-                }
+        if (value) {
+            return;
+        }
+        if ('-' === key) {
+            // `<!-|`
+            if ('<!-' === before.slice(-3)) {
+                offEventDefault(e);
+                return $.wrap('- ', ' --' + ('>' === after[0] ? "" : '>')).record();
+            }
+            return;
+        }
+        if ('>' === key || '/' === key) {
+            if (!(m = toPattern(tagStart(tagName()) + '$', "").exec(before + '>'))) {
                 return;
             }
-            if ('>' === key || '/' === key) {
-                var tagStartMatch = toPattern(tagStart(tagName()) + '$', "").exec(before + '>');
-                if (!value && tagStartMatch) {
-                    offEventDefault(e);
-                    // `<div|`
-                    if ('/' === key) {
-                        // `<div|>`
-                        if ('>' === after[0]) {
-                            return $.trim("", false).insert(' /', -1).select($.$().start + 1).record();
-                        }
-                        return $.trim("", false).insert(' />', -1).record();
-                    }
-                    // `<div|></div>`
-                    if (after.startsWith('></' + tagStartMatch[1] + '>')) {
-                        $.select(start + 1).record();
-                        // `<div|</div>`
-                    } else if (after.startsWith('</' + tagStartMatch[1] + '>')) {
-                        $.insert('>', -1).record();
-                        // `<div|`
-                    } else {
-                        $.wrap('>', '</' + tagStartMatch[1] + ('>' === after[0] ? "" : '>')).record();
-                    }
+            offEventDefault(e);
+            // `<div|`
+            if ('/' === key) {
+                // `<div|>`
+                if ('>' === after[0]) {
+                    return $.trim("", false).insert(' /', -1).select($.$().start + 1).record();
                 }
-                return;
+                return $.trim("", false).insert(' />', -1).record();
             }
-            if ('?' === key) {
-                // `<|`
-                if (!value && '<' === before.slice(-1)) {
-                    offEventDefault(e);
-                    return $.wrap('?', '?' + ('>' === after[0] ? "" : '>')).record();
-                }
-                return;
-            }
-            if (' ' === key) {
-                if (!value) {
-                    if (
-                        // `<!--|-->`
-                        '-->' === after.slice(0, 3) && '<!--' === before.slice(-4) ||
-                        // `<?asdf|?>`
-                        '?>' === after.slice(0, 2) && /<\?\S*$/.test(before)) {
-                        offEventDefault(e);
-                        return $.wrap(' ', ' ').record();
+            var elements = $.state.elements || {};
+            if (isSet(elements[m[1]])) {
+                value = elements[m[1]][1];
+                if (false === value) {
+                    if ('>' === after[0]) {
+                        return $.trim("", false).insert(' /', -1).select($.$().start + 1).record();
                     }
+                    return $.trim("", false).insert(' />', -1).record();
                 }
-                return;
+                value && $.insert(value);
+                return $.wrap('>', '</' + m[1] + ('>' === after[0] ? "" : '>')).record();
+            }
+            // `<div|></div>`
+            if (after.startsWith('></' + m[1] + '>')) {
+                return $.select(start + 1).record();
+            }
+            // `<div|</div>`
+            if (after.startsWith('</' + m[1] + '>')) {
+                return $.insert('>', -1).record();
+            }
+            // `<div|`
+            return $.wrap('>', '</' + m[1] + ('>' === after[0] ? "" : '>')).record();
+        }
+        if ('?' === key) {
+            // `<|`
+            if ('<' === before.slice(-1)) {
+                offEventDefault(e);
+                return $.wrap('?', '?' + ('>' === after[0] ? "" : '>')).record();
+            }
+            return;
+        }
+        if (' ' === key) {
+            if (
+                // `<!--|-->`
+                '-->' === after.slice(0, 3) && '<!--' === before.slice(-4) ||
+                // `<?asdf|?>`
+                '?>' === after.slice(0, 2) && /<\?\S*$/.test(before)) {
+                offEventDefault(e);
+                return $.wrap(' ', ' ').record();
             }
             return;
         }
@@ -249,39 +259,27 @@
         s.end;
         start = s.start;
         value = s.value;
-        if ('ArrowLeft' === keys) {
-            if (!value) {
-                var tagMatch = toPattern(tagTokens() + '$', "").exec(before);
-                // `<asdf>|asdf`
-                if (tagMatch) {
-                    offEventDefault(e);
-                    return $.select(start - toCount(tagMatch[0]), start);
-                }
-            }
+        if (value) {
             return;
         }
-        if ('ArrowRight' === keys) {
-            if (!value) {
-                var _tagMatch = toPattern('^' + tagTokens(), "").exec(after);
-                // `asdf|<asdf>`
-                if (_tagMatch) {
-                    offEventDefault(e);
-                    return $.select(start, start + toCount(_tagMatch[0]));
-                }
-            }
-            return;
+        if ('ArrowLeft' === keys && (m = toPattern(tagTokens() + '$', "").exec(before))) {
+            // `<asdf>|asdf`
+            offEventDefault(e);
+            return $.select(start - toCount(m[0]), start);
+        }
+        if ('ArrowRight' === keys && (m = toPattern('^' + tagTokens(), "").exec(after))) {
+            // `asdf|<asdf>`
+            offEventDefault(e);
+            return $.select(start, start + toCount(m[0]));
         }
         var charIndent = ((_$$state$source = $.state.source) == null ? void 0 : _$$state$source.tab) || $.state.tab || '\t',
             lineBefore = before.split('\n').pop(),
-            lineMatch = lineBefore.match(/^(\s+)/),
+            lineMatch = /^(\s+)/.exec(lineBefore),
             lineMatchIndent = lineMatch && lineMatch[1] || "";
         if (isInteger(charIndent)) {
             charIndent = ' '.repeat(charIndent);
         }
         if ('Enter' === keys) {
-            if (value) {
-                return;
-            }
             if (
                 // `<!--|-->`
                 /^[ \t]*-->/.test(after) && /<!--[ \t]*$/.test(before) ||
@@ -302,19 +300,15 @@
                 offEventDefault(e);
                 return $.trim('\n\n' + lineMatchIndent, '\n\n' + lineMatchIndent).record();
             }
-            var _tagStartMatch = before.match(toPattern(tagStart(tagName()) + '$', ""));
-            if (_tagStartMatch) {
+            if (m = toPattern(tagStart(tagName()) + '$', "").exec(before)) {
                 offEventDefault(e);
-                if (after.startsWith('</' + _tagStartMatch[1] + '>')) {
+                if (after.startsWith('</' + m[1] + '>')) {
                     return $.record().trim('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent).record();
                 }
-                return $.record().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent + '</' + _tagStartMatch[1] + '>').record();
+                return $.record().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent + '</' + m[1] + '>').record();
             }
         }
         if ('Backspace' === keys) {
-            if (value) {
-                return;
-            }
             // `<!--|`
             if ('<!--' === before.slice(-4)) {
                 offEventDefault(e);
@@ -379,8 +373,8 @@
                 return $.trim(_c2, _c2).record();
             }
             var tagPattern = toPattern(tagTokens() + '$', ""),
-                _tagMatch2 = tagPattern.exec(before);
-            if (_tagMatch2) {
+                tagMatch = tagPattern.exec(before);
+            if (tagMatch) {
                 offEventDefault(e);
                 // `<div />|`
                 if (' />' === before.slice(-3)) {
@@ -391,8 +385,8 @@
                     return $.replace(/\/>$/, '>', -1).record();
                 }
                 $.replace(tagPattern, "", -1);
-                var name = _tagMatch2[0].slice(1).split(/\s+|>/)[0];
-                if (_tagMatch2[0] && '/' !== _tagMatch2[0][1]) {
+                var name = tagMatch[0].slice(1).split(/\s+|>/)[0];
+                if (tagMatch[0] && '/' !== tagMatch[0][1]) {
                     if (after.startsWith('</' + name + '>')) {
                         $.replace(toPattern('^</' + name + '>', ""), "", 1);
                     }
@@ -405,9 +399,6 @@
             }
         }
         if ('Delete' === keys) {
-            if (value) {
-                return;
-            }
             // `|-->`
             if ('-->' === after.slice(0, 3)) {
                 offEventDefault(e);
@@ -419,8 +410,8 @@
                 return $.replace(/^\?>/, "", 1).record();
             }
             var _tagPattern = toPattern('^' + tagTokens(), ""),
-                _tagMatch3 = _tagPattern.exec(after);
-            if (_tagMatch3) {
+                _tagMatch = _tagPattern.exec(after);
+            if (_tagMatch) {
                 offEventDefault(e);
                 return $.replace(_tagPattern, "", 1).record();
             }
@@ -470,9 +461,8 @@
             // `$.insertElement(['asdf'])`
             if (isArray(value)) {
                 if (isSet(state.elements[value[0]])) {
-                    var _value$, _value$2;
-                    value[0] = (_value$ = value[0]) != null ? _value$ : state.elements[value[0]][0];
-                    value[1] = (_value$2 = value[1]) != null ? _value$2 : state.elements[value[0]][1];
+                    var _value$;
+                    value[1] = (_value$ = value[1]) != null ? _value$ : state.elements[value[0]][1];
                     value[2] = fromStates({}, state.elements[value[0]][2] || {}, value[2] || {});
                 }
                 value = '<' + value[0] + toAttributes(value[2]) + (false === value[1] ? ' />' : '>' + (value[1] || "") + '</' + value[0] + '>');
@@ -495,9 +485,8 @@
             // `$.peelElement(['asdf'], false)`
             if (isArray(open)) {
                 if (isSet(state.elements[open[0]])) {
-                    var _open$, _open$2;
-                    open[0] = (_open$ = open[0]) != null ? _open$ : state.elements[open[0]][0];
-                    open[1] = (_open$2 = open[1]) != null ? _open$2 : state.elements[open[0]][1];
+                    var _open$;
+                    open[1] = (_open$ = open[1]) != null ? _open$ : state.elements[open[0]][1];
                     open[2] = fromStates({}, state.elements[open[0]][2] || {}, open[2] || {});
                 }
                 wrap = close;
@@ -532,9 +521,8 @@
             // `$.toggleElement(['asdf'], false)`
             if (isArray(open)) {
                 if (isSet(state.elements[open[0]])) {
-                    var _open$3, _open$4;
-                    open[0] = (_open$3 = open[0]) != null ? _open$3 : state.elements[open[0]][0];
-                    open[1] = (_open$4 = open[1]) != null ? _open$4 : state.elements[open[0]][1];
+                    var _open$2;
+                    open[1] = (_open$2 = open[1]) != null ? _open$2 : state.elements[open[0]][1];
                     open[2] = fromStates({}, state.elements[open[0]][2] || {}, open[2] || {});
                 }
                 wrap = close;
@@ -567,9 +555,8 @@
             // `$.wrapElement(['asdf'], false)`
             if (isArray(open)) {
                 if (isSet(state.elements[open[0]])) {
-                    var _open$5, _open$6;
-                    open[0] = (_open$5 = open[0]) != null ? _open$5 : state.elements[open[0]][0];
-                    open[1] = (_open$6 = open[1]) != null ? _open$6 : state.elements[open[0]][1];
+                    var _open$3;
+                    open[1] = (_open$3 = open[1]) != null ? _open$3 : state.elements[open[0]][1];
                     open[2] = fromStates({}, state.elements[open[0]][2] || {}, open[2] || {});
                 }
                 wrap = close;
