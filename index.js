@@ -172,10 +172,7 @@
         var $ = this,
             key = $.k(false).pop(),
             keys = $.k();
-        if (!$ || e.defaultPrevented) {
-            return;
-        }
-        if ($.keys[keys]) {
+        if (e.defaultPrevented || $.keys[keys]) {
             return;
         }
         // Do nothing
