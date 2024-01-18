@@ -120,7 +120,7 @@ block content
       button(onclick='return editor.toggleData(true), false;') Test Toggle Data String #2
     h2 Strokes
     ul
-      li <code>&lt;!--<mark></mark>--&gt;</code> or <code>&lt;!-- <mark></mark> --&gt;</code> then press <kbd>Enter</kbd>.
+      li <code>&lt;!--<mark></mark>--&gt;</code> or <code>&lt;!--&nbsp;<mark></mark>&nbsp;--&gt;</code> then press <kbd>Enter</kbd>.
       li <code>&lt;!--<mark></mark>--&gt;</code> then press <kbd>&nbsp;</kbd> (Space).
       li <code>&lt;!--<mark></mark></code> or <code>&lt;!--<mark></mark>--&gt;</code> then press <kbd>Backspace</kbd>.
       li <code>&lt;!--asdf--&gt;<mark></mark></code> then press <kbd>ArrowLeft</kbd>.
@@ -287,7 +287,7 @@ block content
     h4: code editor.peelComment(wrap = false)
     p Unwrap current selection from an #[abbr(title='Extensible Markup Language') XML] comment.
     pre: code
-      | editor.peelCommet();
+      | editor.peelComment();
     h4: code editor.peelData(wrap = false)
     p Unwrap current selection from an #[abbr(title='Extensible Markup Language') XML] character data section.
     pre: code

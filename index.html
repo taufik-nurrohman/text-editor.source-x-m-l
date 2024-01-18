@@ -41,7 +41,7 @@
       <p role="group"><button onclick="return editor.wrapData(true), false;">Test Wrap Data String #2</button> <button onclick="return editor.peelData(true), false;">Test Peel Data String #2</button> <button onclick="return editor.toggleData(true), false;">Test Toggle Data String #2</button></p>
       <h2>Strokes</h2>
       <ul>
-        <li><code>&lt;!--<mark></mark>--&gt;</code> or <code>&lt;!-- <mark></mark> --&gt;</code> then press <kbd>Enter</kbd>.</li>
+        <li><code>&lt;!--<mark></mark>--&gt;</code> or <code>&lt;!--&nbsp;<mark></mark>&nbsp;--&gt;</code> then press <kbd>Enter</kbd>.</li>
         <li><code>&lt;!--<mark></mark>--&gt;</code> then press <kbd>&nbsp;</kbd> (Space).</li>
         <li><code>&lt;!--<mark></mark></code> or <code>&lt;!--<mark></mark>--&gt;</code> then press <kbd>Backspace</kbd>.</li>
         <li><code>&lt;!--asdf--&gt;<mark></mark></code> then press <kbd>ArrowLeft</kbd>.</li>
@@ -201,7 +201,7 @@ editor.insertElement(['input', false, {type: 'text'}], 0); // Replace selection 
 editor.insertElement(['input', false, {type: 'text'}], +1); // Delete selection and insert element after caret</code></pre>
       <h4><code>editor.peelComment(wrap = false)</code></h4>
       <p>Unwrap current selection from an <abbr title="Extensible Markup Language">XML</abbr> comment.</p>
-      <pre><code>editor.peelCommet();</code></pre>
+      <pre><code>editor.peelComment();</code></pre>
       <h4><code>editor.peelData(wrap = false)</code></h4>
       <p>Unwrap current selection from an <abbr title="Extensible Markup Language">XML</abbr> character data section.</p>
       <pre><code>editor.peelData();</code></pre>
