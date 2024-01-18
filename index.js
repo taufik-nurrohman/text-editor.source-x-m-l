@@ -452,7 +452,6 @@
     }
 
     function attach() {
-        var _$$state$source2;
         var $ = this,
             state,
             any = /^\s*([\s\S]*?)\s*$/,
@@ -583,10 +582,7 @@
             }
             return $.wrap(open, close, wrap);
         };
-        if ('XML' === ((_$$state$source2 = $.state.source) == null ? void 0 : _$$state$source2.type)) {
-            $.on('key.down', onKeyDown);
-        }
-        return $;
+        return $.on('key.down', onKeyDown);
     }
 
     function detach() {

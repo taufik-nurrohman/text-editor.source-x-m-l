@@ -411,10 +411,7 @@ function attach() {
         }
         return $.wrap(open, close, wrap);
     };
-    if ('XML' === $.state.source?.type) {
-        $.on('key.down', onKeyDown);
-    }
-    return $;
+    return $.on('key.down', onKeyDown);
 }
 
 function detach() {

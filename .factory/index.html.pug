@@ -29,9 +29,6 @@ block script
     |         'Control-y': 'redo',
     |         'Control-z': 'undo'
     |     },
-    |     source: {
-    |         type: 'XML'
-    |     },
     |     tab: 2,
     |     with: [TextEditor.History, TextEditor.Key, TextEditor.SourceXML, TextEditor.Source]
     | });
@@ -190,9 +187,6 @@ block content
       |           'Control-y': 'redo',
       |           'Control-z': 'undo'
       |       },
-      |       source: {
-      |           type: 'XML' // Set the current editor type as `XML`
-      |       },
       |       tab: 2,
       |       // Be sure to put `TextEditor.SourceXML` before `TextEditor.Source`
       |       with: [TextEditor.History, TextEditor.Key, TextEditor.SourceXML, TextEditor.Source]
@@ -228,9 +222,6 @@ block content
       |         'Control-y': 'redo',
       |         'Control-z': 'undo'
       |     },
-      |     source: {
-      |         type: 'XML' // Set the current editor type as `XML`
-      |     },
       |     tab: 2,
       |     // Be sure to put `TextEditorSourceXML` before `TextEditorSource`
       |     with: [TextEditorHistory, TextEditorKey, TextEditorSourceXML, TextEditorSource]
@@ -263,9 +254,6 @@ block content
       |         'Control-]': 'push',
       |         'Control-y': 'redo',
       |         'Control-z': 'undo'
-      |     },
-      |     source: {
-      |         type: 'XML' // Set the current editor type as `XML`
       |     },
       |     tab: 2,
       |     // Be sure to put `TextEditorSourceXML` before `TextEditorSource`
