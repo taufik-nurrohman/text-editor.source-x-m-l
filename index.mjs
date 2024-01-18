@@ -114,8 +114,7 @@ function onKeyDown(e) {
         return $.select(start, start + toCount(m[0]));
     }
     let charIndent = $.state.source?.tab || $.state.tab || '\t',
-        lineBefore = before.split('\n').pop(),
-        lineMatch = /^(\s+)/.exec(lineBefore),
+        lineMatch = /^(\s+)/.exec(before.split('\n').pop()),
         lineMatchIndent = lineMatch && lineMatch[1] || "";
     if (isInteger(charIndent)) {
         charIndent = ' '.repeat(charIndent);
