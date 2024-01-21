@@ -25,8 +25,24 @@ function onKeyDown(e) {
     if ('Alt' === keys || 'Control' === keys) {
         return;
     }
-    let {after, before, end, start, value} = $.$();
+    let {after, before, end, start, value} = $.$(),
+        charIndent = $.state.source?.tab || $.state.tab || '\t',
+        lineMatch = /^(\s+)/.exec(before.split('\n').pop()),
+        lineMatchIndent = lineMatch && lineMatch[1] || "";
+    if (isInteger(charIndent)) {
+        charIndent = ' '.repeat(charIndent);
+    }
     if (value) {
+        if ('Enter' === keys) {
+            m = toPattern(tagStart(tagName()) + '$', "").exec(before);
+            if (m && after.startsWith('</' + m[1] + '>')) {
+                let elements = $.state.elements || {};
+                if (isSet(elements[m[1]]) && value === elements[m[1]][1]) {
+                    offEventDefault(e);
+                    return $.record().insert("").trim('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent).record();
+                }
+            }
+        }
         return;
     }
     if ('-' === key) {
@@ -113,12 +129,8 @@ function onKeyDown(e) {
         offEventDefault(e);
         return $.select(start, start + toCount(m[0]));
     }
-    let charIndent = $.state.source?.tab || $.state.tab || '\t',
-        lineMatch = /^(\s+)/.exec(before.split('\n').pop()),
-        lineMatchIndent = lineMatch && lineMatch[1] || "";
-    if (isInteger(charIndent)) {
-        charIndent = ' '.repeat(charIndent);
-    }
+    lineMatch = /^(\s+)/.exec(before.split('\n').pop());
+    lineMatchIndent = lineMatch && lineMatch[1] || "";
     if ('Enter' === keys) {
         if (
             // `<!--|-->`
