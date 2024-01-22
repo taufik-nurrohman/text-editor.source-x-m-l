@@ -28,8 +28,8 @@ function onKeyDown(e) {
     let {after, before, end, start, value} = $.$(),
         charIndent = $.state.source?.tab || $.state.tab || '\t',
         elements = $.state.elements || {},
-        lineMatch = /^(\s+)/.exec(before.split('\n').pop()),
-        lineMatchIndent = lineMatch && lineMatch[1] || "";
+        lineMatch = /^\s+/.exec(before.split('\n').pop()),
+        lineMatchIndent = lineMatch && lineMatch[0] || "";
     if (isInteger(charIndent)) {
         charIndent = ' '.repeat(charIndent);
     }
@@ -142,8 +142,8 @@ function onKeyDown(e) {
         offEventDefault(e);
         return $.select(start, start + toCount(m[0]));
     }
-    lineMatch = /^(\s+)/.exec(before.split('\n').pop());
-    lineMatchIndent = lineMatch && lineMatch[1] || "";
+    lineMatch = /^\s+/.exec(before.split('\n').pop());
+    lineMatchIndent = lineMatch && lineMatch[0] || "";
     if ('Enter' === keys) {
         if (
             // `<!--|-->`
