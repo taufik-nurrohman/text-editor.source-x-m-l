@@ -27,6 +27,7 @@ function onKeyDown(e) {
     }
     let {after, before, end, start, value} = $.$(),
         charIndent = $.state.source?.tab || $.state.tab || '\t',
+        elements = $.state.elements || {},
         lineMatch = /^(\s+)/.exec(before.split('\n').pop()),
         lineMatchIndent = lineMatch && lineMatch[1] || "";
     if (isInteger(charIndent)) {
@@ -34,12 +35,19 @@ function onKeyDown(e) {
     }
     if (value) {
         if ('Enter' === keys) {
+            if ('<!-- ' === before.slice(-5) && ' -->' === after.slice(0, 4) && value === elements['#comment']) {
+                offEventDefault(e);
+                return $.insert("");
+            }
+            if ('<![CDATA[' === before.slice(-9) && ']]>' === after.slice(0, 3) && value === elements['#data']) {
+                offEventDefault(e);
+                return $.insert("");
+            }
             m = toPattern(tagStart(tagName()) + '$', "").exec(before);
             if (m && after.startsWith('</' + m[1] + '>')) {
-                let elements = $.state.elements || {};
                 if (isSet(elements[m[1]]) && value === elements[m[1]][1]) {
                     offEventDefault(e);
-                    return $.record().insert("").trim('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent).record();
+                    return $.insert("");
                 }
             }
         }
@@ -49,7 +57,7 @@ function onKeyDown(e) {
         // `<!-|`
         if ('<!-' === before.slice(-3)) {
             offEventDefault(e);
-            return $.wrap('- ', ' --' + ('>' === after[0] ? "" : '>')).record();
+            return $.insert(elements['#comment'] || "").wrap('- ', ' --' + ('>' === after[0] ? "" : '>')).record();
         }
         return;
     }
@@ -66,7 +74,6 @@ function onKeyDown(e) {
             }
             return $.trim("", false).insert(' />', -1).record();
         }
-        let elements = $.state.elements || {};
         if (isSet(elements[m[1]])) {
             value = elements[m[1]][1];
             if (false === value) {
@@ -94,6 +101,12 @@ function onKeyDown(e) {
         if ('<' === before.slice(-1)) {
             offEventDefault(e);
             return $.wrap('?', '?' + ('>' === after[0] ? "" : '>')).record();
+        }
+        return;
+    }
+    if ('[' === key) {
+        if ('<![CDATA' === before.slice(-8) && ']>' === after.slice(0, 2)) {
+            return $.insert(elements['#data'] || "");
         }
         return;
     }
@@ -302,13 +315,16 @@ function attach() {
         anyData = /^<!\[CDATA\[\s*([\s\S]*?)\s*\]\]>$/,
         anyDeclaration = /^<\?\s*([\s\S]*?)\s*\?>$/;
     $.state = state = fromStates({
-        elements: {}
+        elements: {
+            '#comment': 'Comment goes here…',
+            '#data': 'Data goes here…'
+        }
     }, $.state);
     $.insertComment = (value, mode, clear) => {
-        return $.insert('<!-- ' + value + ' -->', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
+        return $.insert('<!-- ' + (value || state.elements['#comment'] || "") + ' -->', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
     };
     $.insertData = (value, mode, clear) => {
-        return $.insert('<![CDATA[' + value + ']]>', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
+        return $.insert('<![CDATA[' + (value || state.elements['#data'] || "") + ']]>', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
     };
     $.insertElement = (value, mode, clear) => {
         // `$.insertElement(['asdf'])`
@@ -381,12 +397,22 @@ function attach() {
         return $.toggle(open, close, wrap);
     };
     $.wrapComment = wrap => {
+        let {value} = $.$(),
+            placeholder = state.elements['#comment'] || "";
+        if (!value && placeholder) {
+            $.insert(placeholder);
+        }
         if (wrap) {
             return $.replace(any, '<!-- $1 -->');
         }
         return $.trim(false, false).replace(/$/, '<!-- ', -1).replace(/^/, ' -->', 1);
     };
     $.wrapData = wrap => {
+        let {value} = $.$(),
+            placeholder = state.elements['#data'] || "";
+        if (!value && placeholder) {
+            $.insert(placeholder);
+        }
         if (wrap) {
             return $.replace(any, '<![CDATA[$1]]>');
         }

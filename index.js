@@ -187,6 +187,7 @@
         var start = _$$$.start,
             value = _$$$.value,
             charIndent = ((_$$state$source = $.state.source) == null ? void 0 : _$$state$source.tab) || $.state.tab || '\t',
+            elements = $.state.elements || {},
             lineMatch = /^(\s+)/.exec(before.split('\n').pop()),
             lineMatchIndent = lineMatch && lineMatch[1] || "";
         if (isInteger(charIndent)) {
@@ -194,12 +195,19 @@
         }
         if (value) {
             if ('Enter' === keys) {
+                if ('<!-- ' === before.slice(-5) && ' -->' === after.slice(0, 4) && value === elements['#comment']) {
+                    offEventDefault(e);
+                    return $.insert("");
+                }
+                if ('<![CDATA[' === before.slice(-9) && ']]>' === after.slice(0, 3) && value === elements['#data']) {
+                    offEventDefault(e);
+                    return $.insert("");
+                }
                 m = toPattern(tagStart(tagName()) + '$', "").exec(before);
                 if (m && after.startsWith('</' + m[1] + '>')) {
-                    var elements = $.state.elements || {};
                     if (isSet(elements[m[1]]) && value === elements[m[1]][1]) {
                         offEventDefault(e);
-                        return $.record().insert("").trim('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent).record();
+                        return $.insert("");
                     }
                 }
             }
@@ -209,7 +217,7 @@
             // `<!-|`
             if ('<!-' === before.slice(-3)) {
                 offEventDefault(e);
-                return $.wrap('- ', ' --' + ('>' === after[0] ? "" : '>')).record();
+                return $.insert(elements['#comment'] || "").wrap('- ', ' --' + ('>' === after[0] ? "" : '>')).record();
             }
             return;
         }
@@ -226,9 +234,8 @@
                 }
                 return $.trim("", false).insert(' />', -1).record();
             }
-            var _elements = $.state.elements || {};
-            if (isSet(_elements[m[1]])) {
-                value = _elements[m[1]][1];
+            if (isSet(elements[m[1]])) {
+                value = elements[m[1]][1];
                 if (false === value) {
                     if ('>' === after[0]) {
                         return $.trim("", false).insert(' /', -1).select($.$().start + 1).record();
@@ -254,6 +261,12 @@
             if ('<' === before.slice(-1)) {
                 offEventDefault(e);
                 return $.wrap('?', '?' + ('>' === after[0] ? "" : '>')).record();
+            }
+            return;
+        }
+        if ('[' === key) {
+            if ('<![CDATA' === before.slice(-8) && ']>' === after.slice(0, 2)) {
+                return $.insert(elements['#data'] || "");
             }
             return;
         }
@@ -460,13 +473,16 @@
             anyComment = /^<!--\s*([\s\S]*?)\s*-->$/,
             anyData = /^<!\[CDATA\[\s*([\s\S]*?)\s*\]\]>$/;
         $.state = state = fromStates({
-            elements: {}
+            elements: {
+                '#comment': 'Comment goes here…',
+                '#data': 'Data goes here…'
+            }
         }, $.state);
         $.insertComment = function (value, mode, clear) {
-            return $.insert('<!-- ' + value + ' -->', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
+            return $.insert('<!-- ' + (value || state.elements['#comment'] || "") + ' -->', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
         };
         $.insertData = function (value, mode, clear) {
-            return $.insert('<![CDATA[' + value + ']]>', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
+            return $.insert('<![CDATA[' + (value || state.elements['#data'] || "") + ']]>', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
         };
         $.insertElement = function (value, mode, clear) {
             // `$.insertElement(['asdf'])`
@@ -551,12 +567,24 @@
             return $.toggle(open, close, wrap);
         };
         $.wrapComment = function (wrap) {
+            var _$$$5 = $.$(),
+                value = _$$$5.value,
+                placeholder = state.elements['#comment'] || "";
+            if (!value && placeholder) {
+                $.insert(placeholder);
+            }
             if (wrap) {
                 return $.replace(any, '<!-- $1 -->');
             }
             return $.trim(false, false).replace(/$/, '<!-- ', -1).replace(/^/, ' -->', 1);
         };
         $.wrapData = function (wrap) {
+            var _$$$6 = $.$(),
+                value = _$$$6.value,
+                placeholder = state.elements['#data'] || "";
+            if (!value && placeholder) {
+                $.insert(placeholder);
+            }
             if (wrap) {
                 return $.replace(any, '<![CDATA[$1]]>');
             }
@@ -571,8 +599,8 @@
                     open[2] = fromStates({}, state.elements[open[0]][2] || {}, open[2] || {});
                 }
                 wrap = close;
-                var _$$$5 = $.$(),
-                    value = _$$$5.value;
+                var _$$$7 = $.$(),
+                    value = _$$$7.value;
                 if (wrap) {
                     return $.replace(any, '<' + open[0] + toAttributes(open[2]) + '>' + (value || open[1] || "").trim() + '</' + open[0] + '>');
                 }
