@@ -37,17 +37,17 @@ function onKeyDown(e) {
         if ('Enter' === keys) {
             if ('<!-- ' === before.slice(-5) && ' -->' === after.slice(0, 4) && value === elements['#comment']) {
                 offEventDefault(e);
-                return $.insert("");
+                return $.trim('\n' + lineMatchIndent, '\n' + lineMatchIndent).insert("").record();
             }
             if ('<![CDATA[' === before.slice(-9) && ']]>' === after.slice(0, 3) && value === elements['#data']) {
                 offEventDefault(e);
-                return $.insert("");
+                return $.trim('\n' + lineMatchIndent, '\n' + lineMatchIndent).insert("").record();
             }
             m = toPattern(tagStart(tagName()) + '$', "").exec(before);
             if (m && after.startsWith('</' + m[1] + '>')) {
                 if (isSet(elements[m[1]]) && value === elements[m[1]][1]) {
                     offEventDefault(e);
-                    return $.insert("");
+                    return $.trim('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent).insert("").record();
                 }
             }
         }
