@@ -34,6 +34,20 @@ function onKeyDown(e) {
         charIndent = ' '.repeat(charIndent);
     }
     if (value) {
+        if ('Backspace' === keys) {
+            if ('<![CDATA[' === before.slice(-9) && ']]>' === after.slice(0, 3) && value === elements['#data']) {
+                offEventDefault(e);
+                return $.insert("").record();
+            }
+            return;
+        }
+        if ('Delete' === keys) {
+            if ('<![CDATA[' === before.slice(-9) && ']]>' === after.slice(0, 3) && value === elements['#data']) {
+                offEventDefault(e);
+                return $.insert("").record();
+            }
+            return;
+        }
         if ('Enter' === keys) {
             if ('<!-- ' === before.slice(-5) && ' -->' === after.slice(0, 4) && value === elements['#comment']) {
                 offEventDefault(e);
@@ -144,37 +158,6 @@ function onKeyDown(e) {
     }
     lineMatch = /^\s+/.exec(before.split('\n').pop());
     lineMatchIndent = lineMatch && lineMatch[0] || "";
-    if ('Enter' === keys) {
-        if (
-            // `<!--|-->`
-            /^[ \t]*-->/.test(after) && /<!--[ \t]*$/.test(before) ||
-            // `<?asdf|?>`
-            /^[ \t]*\?>/.test(after) && /<\?\S*[ \t]*$/.test(before) ||
-            // `<![CDATA[|]]>`
-            /^[ \t]*\]\]>/.test(after) && /<!\[CDATA\[[ \t]*$/.test(before)
-        ) {
-            offEventDefault(e);
-            return $.trim('\n' + lineMatchIndent, '\n' + lineMatchIndent).record();
-        }
-        if (
-            // `<!--\n|\n-->`
-            /^(\n[ \t]*)-->/.test(after) && /<!--(\n[ \t]*)$/.test(before) ||
-            // `<?asdf\n|\n?>`
-            /^(\n[ \t]*)\?>/.test(after) && /<\?\S*(\n[ \t]*)$/.test(before) ||
-            // `<![CDATA[\n|\n]]>`
-            /^(\n[ \t]*)\]\]>/.test(after) && /<!\[CDATA\[(\n[ \t]*)$/.test(before)
-        ) {
-            offEventDefault(e);
-            return $.trim('\n\n' + lineMatchIndent, '\n\n' + lineMatchIndent).record();
-        }
-        if (m = toPattern(tagStart(tagName()) + '$', "").exec(before)) {
-            offEventDefault(e);
-            if (after.startsWith('</' + m[1] + '>')) {
-                return $.record().trim('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent).record();
-            }
-            return $.record().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent + '</' + m[1] + '>').record();
-        }
-    }
     if ('Backspace' === keys) {
         // `<!--|`
         if ('<!--' === before.slice(-4)) {
@@ -196,6 +179,16 @@ function onKeyDown(e) {
                 b = before.slice(-1),
                 c = ' ' === a && ' ' === b ? "" : ' ';
             return $.trim(c, c).record();
+        }
+        // `<![CDATA[|`
+        if ('<![CDATA[' === before.slice(-9)) {
+            offEventDefault(e);
+            $.replace(/<!\[CDATA\[$/, "", -1);
+            // `<![CDATA[|]]>`
+            if (']]>' === after.slice(0, 3)) {
+                $.replace(/^\]\]>/, "", 1);
+            }
+            return $.record();
         }
         // `<?|`
         if (/<\?\S*$/.test(before)) {
@@ -274,6 +267,11 @@ function onKeyDown(e) {
             offEventDefault(e);
             return $.replace(/^-->/, "", 1).record();
         }
+        // `|]]>`
+        if (']]>' === after.slice(0, 3)) {
+            offEventDefault(e);
+            return $.replace(/^\]\]>/, "", 1).record();
+        }
         // `|?>`
         if ('?>' === after.slice(0, 2)) {
             offEventDefault(e);
@@ -284,6 +282,37 @@ function onKeyDown(e) {
         if (tagMatch) {
             offEventDefault(e);
             return $.replace(tagPattern, "", 1).record();
+        }
+    }
+    if ('Enter' === keys) {
+        if (
+            // `<!--|-->`
+            /^[ \t]*-->/.test(after) && /<!--[ \t]*$/.test(before) ||
+            // `<?asdf|?>`
+            /^[ \t]*\?>/.test(after) && /<\?\S*[ \t]*$/.test(before) ||
+            // `<![CDATA[|]]>`
+            /^[ \t]*\]\]>/.test(after) && /<!\[CDATA\[[ \t]*$/.test(before)
+        ) {
+            offEventDefault(e);
+            return $.trim('\n' + lineMatchIndent, '\n' + lineMatchIndent).record();
+        }
+        if (
+            // `<!--\n|\n-->`
+            /^(\n[ \t]*)-->/.test(after) && /<!--(\n[ \t]*)$/.test(before) ||
+            // `<?asdf\n|\n?>`
+            /^(\n[ \t]*)\?>/.test(after) && /<\?\S*(\n[ \t]*)$/.test(before) ||
+            // `<![CDATA[\n|\n]]>`
+            /^(\n[ \t]*)\]\]>/.test(after) && /<!\[CDATA\[(\n[ \t]*)$/.test(before)
+        ) {
+            offEventDefault(e);
+            return $.trim('\n\n' + lineMatchIndent, '\n\n' + lineMatchIndent).record();
+        }
+        if (m = toPattern(tagStart(tagName()) + '$', "").exec(before)) {
+            offEventDefault(e);
+            if (after.startsWith('</' + m[1] + '>')) {
+                return $.record().trim('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent).record();
+            }
+            return $.record().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent + '</' + m[1] + '>').record();
         }
     }
 }
