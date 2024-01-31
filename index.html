@@ -27,18 +27,52 @@
     <main>
       <p><label><input checked onchange="return editor[this.checked ? 'attach' : 'detach'](), false;" type="checkbox"> <span>Enable <abbr title="Extensible Markup Language">XML</abbr> Source Editor</span></label></p>
       <p><textarea placeholder="Code goes here&hellip;" spellcheck="false" style="display:block;width:100%;"></textarea></p>
-      <p role="group"><button onclick="return editor.insertElement('&lt;time /&gt;'), false;">Test Insert Element String</button></p>
-      <p role="group"><button onclick="return editor.wrapElement('&lt;time&gt;', '&lt;/time&gt;'), false;">Test Wrap Element String #1</button> <button onclick="return editor.peelElement('&lt;time&gt;', '&lt;/time&gt;'), false;">Test Peel Element String #1</button> <button onclick="return editor.toggleElement('&lt;time&gt;', '&lt;/time&gt;'), false;">Test Toggle Element String #1</button></p>
-      <p role="group"><button onclick="return editor.wrapElement('&lt;time&gt;', '&lt;/time&gt;', true), false;">Test Wrap Element String #2</button> <button onclick="return editor.peelElement('&lt;time&gt;', '&lt;/time&gt;', true), false;">Test Peel Element String #2</button> <button onclick="return editor.toggleElement('&lt;time&gt;', '&lt;/time&gt;', true), false;">Test Toggle Element String #2</button></p>
-      <p role="group"><button onclick="return editor.insertElement(['time', false, {datetime: (new Date).toISOString()}]), false;">Test Insert Element Object</button></p>
-      <p role="group"><button onclick="return editor.wrapElement(['time', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}]), false;">Test Wrap Element Object #1</button> <button onclick="return editor.peelElement(['time']), false;">Test Peel Element Object #1</button> <button onclick="return editor.toggleElement(['time', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}]), false;">Test Toggle Element Object #1</button></p>
-      <p role="group"><button onclick="return editor.wrapElement(['time', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}], true), false;">Test Wrap Element Object #2</button> <button onclick="return editor.peelElement(['time'], true), false;">Test Peel Element Object #2</button> <button onclick="return editor.toggleElement(['time', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}], true), false;">Test Toggle Element Object #2</button></p>
-      <p role="group"><button onclick="return editor.insertComment('asdf'), false;">Test Insert Comment String</button></p>
-      <p role="group"><button onclick="return editor.wrapComment(), false;">Test Wrap Comment String #1</button> <button onclick="return editor.peelComment(), false;">Test Peel Comment String #1</button> <button onclick="return editor.toggleComment(), false;">Test Toggle Comment String #1</button></p>
-      <p role="group"><button onclick="return editor.wrapComment(true), false;">Test Wrap Comment String #2</button> <button onclick="return editor.peelComment(true), false;">Test Peel Comment String #2</button> <button onclick="return editor.toggleComment(true), false;">Test Toggle Comment String #2</button></p>
-      <p role="group"><button onclick="return editor.insertData('asdf'), false;">Test Insert Data String</button></p>
-      <p role="group"><button onclick="return editor.wrapData(), false;">Test Wrap Data String #1</button> <button onclick="return editor.peelData(), false;">Test Peel Data String #1</button> <button onclick="return editor.toggleData(), false;">Test Toggle Data String #1</button></p>
-      <p role="group"><button onclick="return editor.wrapData(true), false;">Test Wrap Data String #2</button> <button onclick="return editor.peelData(true), false;">Test Peel Data String #2</button> <button onclick="return editor.toggleData(true), false;">Test Toggle Data String #2</button></p>
+      <p role="group"><select style="flex:1;">
+          <option disabled selected>Test&hellip;</option>
+          <optgroup label="insert">
+            <option value="editor.insertComment('asdf')">insertComment('asdf')</option>
+            <option value="editor.insertComment('asdf', 0)">insertComment('asdf', 0)</option>
+            <option value="editor.insertComment('asdf', 1)">insertComment('asdf', 1)</option>
+            <option value="editor.insertData('asdf')">insertData('asdf')</option>
+            <option value="editor.insertData('asdf', 0)">insertData('asdf', 0)</option>
+            <option value="editor.insertData('asdf', 1)">insertData('asdf', 1)</option>
+            <option value="editor.insertElement('&lt;time&gt;&lt;/time&gt;')">insertElement('&lt;time&gt;&lt;/time&gt;')</option>
+            <option value="editor.insertElement('&lt;time&gt;&lt;/time&gt;', 0)">insertElement('&lt;time&gt;&lt;/time&gt;', 0)</option>
+            <option value="editor.insertElement('&lt;time&gt;&lt;/time&gt;', 1)">insertElement('&lt;time&gt;&lt;/time&gt;', 1)</option>
+            <option value="editor.insertElement(['time', (new Date).toLocaleString('en'), {datetime: (new Date).toISOString()}])">insertElement(['time', date.toLocaleString('en'), {datetime: date.toISOString()}])</option>
+            <option value="editor.insertElement(['time', (new Date).toLocaleString('en'), {datetime: (new Date).toISOString()}], 0)">insertElement(['time', date.toLocaleString('en'), {datetime: date.toISOString()}], 0)</option>
+            <option value="editor.insertElement(['time', (new Date).toLocaleString('en'), {datetime: (new Date).toISOString()}], 1)">insertElement(['time', date.toLocaleString('en'), {datetime: date.toISOString()}], 1)</option>
+            <option value="editor.insertInstruction('asdf')">insertInstruction('asdf')</option>
+            <option value="editor.insertInstruction('asdf', 0)">insertInstruction('asdf', 0)</option>
+            <option value="editor.insertInstruction('asdf', 1)">insertInstruction('asdf', 1)</option>
+            <option value="editor.insertInstruction(' ob_start(); ', -1, true, 'php')">insertInstruction(' ob_start(); ', -1, true, 'php')</option>
+            <option value="editor.insertInstruction(' $content = ob_get_contents(); ', 0, true, 'php')">insertInstruction(' $content = ob_get_contents(); ', 0, true, 'php')</option>
+            <option value="editor.insertInstruction(' ob_end_clean(); ', 1, true, 'php')">insertInstruction(' ob_end_clean(); ', 1, true, 'php')</option>
+          </optgroup>
+          <optgroup label="peel">
+            <option value="editor.peelComment()">peelComment()</option>
+            <option value="editor.peelComment(true)">peelComment(true)</option>
+            <option value="editor.peelData()">peelData()</option>
+            <option value="editor.peelData(true)">peelData(true)</option>
+            <option value="editor.peelElement('&lt;time&gt;', '&lt;/time&gt;')">peelElement('&lt;time&gt;', '&lt;/time&gt;')</option>
+            <option value="editor.peelElement('&lt;time&gt;', '&lt;/time&gt;', true)">peelElement('&lt;time&gt;', '&lt;/time&gt;', true)</option>
+            <option value="editor.peelElement(['time'])">peelElement(['time'])</option>
+            <option value="editor.peelElement(['time'], true)">peelElement(['time'], true)</option>
+            <option value="editor.peelInstruction()">peelInstruction()</option>
+            <option value="editor.peelInstruction(true)">peelInstruction(true)</option>
+          </optgroup>
+          <optgroup label="select">
+            <option value="editor.selectComment()">selectComment()</option>
+            <option value="editor.selectComment(true)">selectComment(true)</option>
+            <option value="editor.selectData()">selectData()</option>
+            <option value="editor.selectData(true)">selectData(true)</option>
+            <option disabled value="editor.selectElement()">selectElement()</option>
+            <option value="editor.selectInstruction()">selectInstruction()</option>
+            <option value="editor.selectInstruction(true)">selectInstruction(true)</option>
+          </optgroup>
+          <optgroup label="toggle"></optgroup>
+          <optgroup label="wrap"></optgroup>
+        </select><button onclick="return eval(this.previousElementSibling.value), false;">Execute</button></p>
       <h2>Strokes</h2>
       <ul>
         <li><code>&lt;!--<mark></mark>--&gt;</code> or <code>&lt;!--&nbsp;<mark></mark>&nbsp;--&gt;</code> then press <kbd>Enter</kbd>.</li>
@@ -210,6 +244,10 @@ editor.insertElement(['input', false, {type: 'text'}], +1); // Delete selection 
       <p>Unwrap current selection from an <abbr title="Extensible Markup Language">XML</abbr> element.</p>
       <pre><code>editor.peelElement('&lt;b&gt;', '&lt;/b&gt;');
 editor.peelElement(['b']);</code></pre>
+      <h4><code>editor.selectComment(wrap = false)</code></h4>
+      <h4><code>editor.selectData(wrap = false)</code></h4>
+      <h4><code>editor.selectElement(wrap = false)</code></h4>
+      <h4><code>editor.selectInstruction(wrap = false)</code></h4>
       <h4><code>editor.toggleComment(wrap = false)</code></h4>
       <p>Toggle wrap and peel selection of an <abbr title="Extensible Markup Language">XML</abbr> comment.</p>
       <pre><code>editor.toggleComment();</code></pre>

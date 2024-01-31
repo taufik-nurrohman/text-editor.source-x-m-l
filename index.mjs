@@ -7,12 +7,12 @@ import {toCount, toObjectKeys} from '@taufik-nurrohman/to';
 
 let tagComment = () => '<!--([\\s\\S](?!-->)*)-->',
     tagData = () => '<!((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)>',
-    tagDeclaration = () => '<\\?((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)\\?>',
     tagEnd = name => '</(' + name + ')>',
+    tagInstruction = () => '<\\?((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)\\?>',
     tagName = () => '[\\w:.-]+',
     tagStart = name => '<(' + name + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?>',
     tagVoid = name => '<(' + name + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?/?>',
-    tagTokens = () => '(?:' + tagComment() + '|' + tagData() + '|' + tagEnd(tagName()) + '|' + tagDeclaration() + '|' + tagVoid(tagName()) + '|' + tagStart(tagName()) + ')';
+    tagTokens = () => '(?:' + tagComment() + '|' + tagData() + '|' + tagEnd(tagName()) + '|' + tagInstruction() + '|' + tagVoid(tagName()) + '|' + tagStart(tagName()) + ')';
 
 function onKeyDown(e) {
     let $ = this, m,
@@ -132,6 +132,9 @@ function onKeyDown(e) {
             '?>' === after.slice(0, 2) && /<\?\S*$/.test(before)
         ) {
             offEventDefault(e);
+            if ('?>' === after.slice(0, 2)) {
+                $.insert(elements['#instruction'] || "");
+            }
             return $.wrap(' ', ' ').record();
         }
         return;
@@ -342,15 +345,16 @@ function attach() {
         any = /^\s*([\s\S]*?)\s*$/,
         anyComment = /^<!--\s*([\s\S]*?)\s*-->$/,
         anyData = /^<!\[CDATA\[\s*([\s\S]*?)\s*\]\]>$/,
-        anyDeclaration = /^<\?\s*([\s\S]*?)\s*\?>$/;
+        anyInstruction = /^<\?\S*\s*([\s\S]*?)\s*\?>$/;
     $.state = state = fromStates({
         elements: {
             '#comment': 'Comment goes here…',
-            '#data': 'Data goes here…'
+            '#data': 'Data goes here…',
+            '#instruction': 'Instruction goes here…'
         }
     }, $.state);
     $.insertComment = (value, mode, clear) => {
-        return $.insert('<!-- ' + (value || state.elements['#comment'] || "") + ' -->', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
+        return $.insert('<!--' + (value || state.elements['#comment'] || "") + '-->', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
     };
     $.insertData = (value, mode, clear) => {
         return $.insert('<![CDATA[' + (value || state.elements['#data'] || "") + ']]>', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
@@ -365,6 +369,9 @@ function attach() {
             value = '<' + value[0] + toAttributes(value[2]) + (false === value[1] ? ' />' : '>' + (value[1] || "") + '</' + value[0] + '>');
         }
         return $.insert(value, isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
+    };
+    $.insertInstruction = (value, mode, clear, name) => {
+        return $.insert('<?' + (name || "") + (value || state.elements['#instruction'] || "") + '?>', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
     };
     $.peelComment = wrap => {
         if (wrap) {
@@ -392,6 +399,93 @@ function attach() {
             return $.replace(toPattern(tagStart(open[0]) + '$', ""), "", -1).replace(toPattern('^' + tagEnd(open[0])), "", 1);
         }
         return $.peel(open, close, wrap);
+    };
+    $.peelInstruction = wrap => {
+        if (wrap) {
+            return $.replace(anyInstruction, '$1');
+        }
+        return $.replace(/<\?\S*\s*$/, "", -1).replace(/^\s*\?>/, "", 1);
+    };
+    $.selectComment = wrap => {
+        let {after, before, end, start, value} = $.$();
+        while (before && '<!--' !== value.slice(0, 4)) {
+            value = before.slice(-1) + value;
+            before = before.slice(0, -1);
+            start -= 1;
+        }
+        while (after && '-->' !== value.slice(-3)) {
+            value += after.slice(0, 1);
+            after = after.slice(1);
+            end += 1;
+        }
+        if (!wrap) {
+            let content = value.slice(4, -3),
+                spaceAfter = /\s+$/.exec(content),
+                spaceBefore = /^\s+/.exec(content);
+            if (spaceAfter) {
+                end -= (3 + toCount(spaceAfter[0]));
+            }
+            if (spaceBefore) {
+                start += (4 + toCount(spaceBefore[0]));
+            }
+        }
+        return '<!--' === value.slice(0, 4) && '-->' === value.slice(-3) ? $.select(start, end) : $.select();
+    };
+    $.selectData = wrap => {
+        let {after, before, end, start, value} = $.$();
+        while (before && '<![CDATA[' !== value.slice(0, 9)) {
+            value = before.slice(-1) + value;
+            before = before.slice(0, -1);
+            start -= 1;
+        }
+        while (after && ']]>' !== value.slice(-3)) {
+            value += after.slice(0, 1);
+            after = after.slice(1);
+            end += 1;
+        }
+        if (!wrap) {
+            let content = value.slice(9, -3),
+                spaceAfter = /\s+$/.exec(content),
+                spaceBefore = /^\s+/.exec(content);
+            if (spaceAfter) {
+                end -= (3 + toCount(spaceAfter[0]));
+            }
+            if (spaceBefore) {
+                start += (9 + toCount(spaceBefore[0]));
+            }
+        }
+        return '<![CDATA[' === value.slice(0, 9) && ']]>' === value.slice(-3) ? $.select(start, end) : $.select();
+    };
+    $.selectElement = wrap => {
+        let {after, before, end, start, value} = $.$();
+    };
+    $.selectInstruction = (wrap, name) => {
+        let {after, before, end, start, value} = $.$();
+        while (before && '<?' !== value.slice(0, 2)) {
+            value = before.slice(-1) + value;
+            before = before.slice(0, -1);
+            start -= 1;
+        }
+        while (after && '?>' !== value.slice(-2)) {
+            value += after.slice(0, 1);
+            after = after.slice(1);
+            end += 1;
+        }
+        if (!isSet(name)) {
+            name = value.slice(2).split(/\s+/).shift();
+        }
+        if (!wrap) {
+            let content = value.slice(2 + (name ? toCount(name) : 0), -2),
+                spaceAfter = /\s+$/.exec(content),
+                spaceBefore = /^\s+/.exec(content);
+            if (spaceAfter) {
+                end -= (2 + toCount(spaceAfter[0]));
+            }
+            if (spaceBefore) {
+                start += (2 + (name ? toCount(name) : 0) + toCount(spaceBefore[0]));
+            }
+        }
+        return '<?' === value.slice(0, 2) && '?>' === value.slice(-2) ? $.select(start, end) : $.select();
     };
     $.toggleComment = wrap => {
         let {after, before, value} = $.$();
@@ -425,6 +519,7 @@ function attach() {
         }
         return $.toggle(open, close, wrap);
     };
+    $.toggleInstruction = (wrap, name) => {};
     $.wrapComment = wrap => {
         let {value} = $.$(),
             placeholder = state.elements['#comment'] || "";
@@ -432,9 +527,9 @@ function attach() {
             $.insert(placeholder);
         }
         if (wrap) {
-            return $.replace(any, '<!-- $1 -->');
+            return $.replace(any, '<!--$1-->');
         }
-        return $.trim(false, false).replace(/$/, '<!-- ', -1).replace(/^/, ' -->', 1);
+        return $.trim(false, false).replace(/$/, '<!--', -1).replace(/^/, '-->', 1);
     };
     $.wrapData = wrap => {
         let {value} = $.$(),
@@ -463,6 +558,7 @@ function attach() {
         }
         return $.wrap(open, close, wrap);
     };
+    $.wrapInstruction = (wrap, name) => {};
     return $.on('key.down', onKeyDown);
 }
 

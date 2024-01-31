@@ -63,61 +63,51 @@ block content
         'width': '100%'
       })
     p(role='group')
-      button(onclick='return editor.insertElement(\'<time />\'), false;') Test Insert Element String
-    p(role='group')
-      button(onclick='return editor.wrapElement(\'<time>\', \'</time>\'), false;') Test Wrap Element String #1
-      = ' '
-      button(onclick='return editor.peelElement(\'<time>\', \'</time>\'), false;') Test Peel Element String #1
-      = ' '
-      button(onclick='return editor.toggleElement(\'<time>\', \'</time>\'), false;') Test Toggle Element String #1
-    p(role='group')
-      button(onclick='return editor.wrapElement(\'<time>\', \'</time>\', true), false;') Test Wrap Element String #2
-      = ' '
-      button(onclick='return editor.peelElement(\'<time>\', \'</time>\', true), false;') Test Peel Element String #2
-      = ' '
-      button(onclick='return editor.toggleElement(\'<time>\', \'</time>\', true), false;') Test Toggle Element String #2
-    p(role='group')
-      button(onclick='return editor.insertElement([\'time\', false, {datetime: (new Date).toISOString()}]), false;') Test Insert Element Object
-    p(role='group')
-      button(onclick='return editor.wrapElement([\'time\', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}]), false;') Test Wrap Element Object #1
-      = ' '
-      button(onclick='return editor.peelElement([\'time\']), false;') Test Peel Element Object #1
-      = ' '
-      button(onclick='return editor.toggleElement([\'time\', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}]), false;') Test Toggle Element Object #1
-    p(role='group')
-      button(onclick='return editor.wrapElement([\'time\', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}], true), false;') Test Wrap Element Object #2
-      = ' '
-      button(onclick='return editor.peelElement([\'time\'], true), false;') Test Peel Element Object #2
-      = ' '
-      button(onclick='return editor.toggleElement([\'time\', (new Date).toLocaleString(), {datetime: (new Date).toISOString()}], true), false;') Test Toggle Element Object #2
-    p(role='group')
-      button(onclick='return editor.insertComment(\'asdf\'), false;') Test Insert Comment String
-    p(role='group')
-      button(onclick='return editor.wrapComment(), false;') Test Wrap Comment String #1
-      = ' '
-      button(onclick='return editor.peelComment(), false;') Test Peel Comment String #1
-      = ' '
-      button(onclick='return editor.toggleComment(), false;') Test Toggle Comment String #1
-    p(role='group')
-      button(onclick='return editor.wrapComment(true), false;') Test Wrap Comment String #2
-      = ' '
-      button(onclick='return editor.peelComment(true), false;') Test Peel Comment String #2
-      = ' '
-      button(onclick='return editor.toggleComment(true), false;') Test Toggle Comment String #2
-    p(role='group')
-      button(onclick='return editor.insertData(\'asdf\'), false;') Test Insert Data String
-    p(role='group')
-      button(onclick='return editor.wrapData(), false;') Test Wrap Data String #1
-      = ' '
-      button(onclick='return editor.peelData(), false;') Test Peel Data String #1
-      = ' '
-      button(onclick='return editor.toggleData(), false;') Test Toggle Data String #1
-    p(role='group')
-      button(onclick='return editor.wrapData(true), false;') Test Wrap Data String #2
-      = ' '
-      button(onclick='return editor.peelData(true), false;') Test Peel Data String #2
-      = ' '
-      button(onclick='return editor.toggleData(true), false;') Test Toggle Data String #2
+      select(style={
+        'flex': '1'
+      })
+        option(disabled selected) Test&hellip;
+        optgroup(label='insert')
+          option(value='editor.insertComment(\'asdf\')') insertComment('asdf')
+          option(value='editor.insertComment(\'asdf\', 0)') insertComment('asdf', 0)
+          option(value='editor.insertComment(\'asdf\', 1)') insertComment('asdf', 1)
+          option(value='editor.insertData(\'asdf\')') insertData('asdf')
+          option(value='editor.insertData(\'asdf\', 0)') insertData('asdf', 0)
+          option(value='editor.insertData(\'asdf\', 1)') insertData('asdf', 1)
+          option(value='editor.insertElement(\'<time></time>\')') insertElement('&lt;time&gt;&lt;/time&gt;')
+          option(value='editor.insertElement(\'<time></time>\', 0)') insertElement('&lt;time&gt;&lt;/time&gt;', 0)
+          option(value='editor.insertElement(\'<time></time>\', 1)') insertElement('&lt;time&gt;&lt;/time&gt;', 1)
+          option(value='editor.insertElement([\'time\', (new Date).toLocaleString(\'en\'), {datetime: (new Date).toISOString()}])') insertElement(['time', date.toLocaleString('en'), {datetime: date.toISOString()}])
+          option(value='editor.insertElement([\'time\', (new Date).toLocaleString(\'en\'), {datetime: (new Date).toISOString()}], 0)') insertElement(['time', date.toLocaleString('en'), {datetime: date.toISOString()}], 0)
+          option(value='editor.insertElement([\'time\', (new Date).toLocaleString(\'en\'), {datetime: (new Date).toISOString()}], 1)') insertElement(['time', date.toLocaleString('en'), {datetime: date.toISOString()}], 1)
+          option(value='editor.insertInstruction(\'asdf\')') insertInstruction('asdf')
+          option(value='editor.insertInstruction(\'asdf\', 0)') insertInstruction('asdf', 0)
+          option(value='editor.insertInstruction(\'asdf\', 1)') insertInstruction('asdf', 1)
+          option(value='editor.insertInstruction(\' ob_start(); \', -1, true, \'php\')') insertInstruction(' ob_start(); ', -1, true, 'php')
+          option(value='editor.insertInstruction(\' $content = ob_get_contents(); \', 0, true, \'php\')') insertInstruction(' $content = ob_get_contents(); ', 0, true, 'php')
+          option(value='editor.insertInstruction(\' ob_end_clean(); \', 1, true, \'php\')') insertInstruction(' ob_end_clean(); ', 1, true, 'php')
+        optgroup(label='peel')
+          option(value='editor.peelComment()') peelComment()
+          option(value='editor.peelComment(true)') peelComment(true)
+          option(value='editor.peelData()') peelData()
+          option(value='editor.peelData(true)') peelData(true)
+          option(value='editor.peelElement(\'<time>\', \'</time>\')') peelElement('&lt;time&gt;', '&lt;/time&gt;')
+          option(value='editor.peelElement(\'<time>\', \'</time>\', true)') peelElement('&lt;time&gt;', '&lt;/time&gt;', true)
+          option(value='editor.peelElement([\'time\'])') peelElement(['time'])
+          option(value='editor.peelElement([\'time\'], true)') peelElement(['time'], true)
+          option(value='editor.peelInstruction()') peelInstruction()
+          option(value='editor.peelInstruction(true)') peelInstruction(true)
+        optgroup(label='select')
+          option(value='editor.selectComment()') selectComment()
+          option(value='editor.selectComment(true)') selectComment(true)
+          option(value='editor.selectData()') selectData()
+          option(value='editor.selectData(true)') selectData(true)
+          option(disabled value='editor.selectElement()') selectElement()
+          option(value='editor.selectInstruction()') selectInstruction()
+          option(value='editor.selectInstruction(true)') selectInstruction(true)
+        optgroup(label='toggle')
+        optgroup(label='wrap')
+      button(onclick='return eval(this.previousElementSibling.value), false;') Execute
     h2 Strokes
     ul
       li <code>&lt;!--<mark></mark>--&gt;</code> or <code>&lt;!--&nbsp;<mark></mark>&nbsp;--&gt;</code> then press <kbd>Enter</kbd>.
@@ -298,6 +288,10 @@ block content
     pre: code
       | editor.peelElement('&lt;b&gt;', '&lt;/b&gt;');
       | editor.peelElement(['b']);
+    h4: code editor.selectComment(wrap = false)
+    h4: code editor.selectData(wrap = false)
+    h4: code editor.selectElement(wrap = false)
+    h4: code editor.selectInstruction(wrap = false)
     h4: code editor.toggleComment(wrap = false)
     p Toggle wrap and peel selection of an #[abbr(title='Extensible Markup Language') XML] comment.
     pre: code

@@ -57,12 +57,29 @@
     var isSet = function isSet(x) {
         return isDefined(x) && !isNull(x);
     };
+    var toCount = function toCount(x) {
+        return x.length;
+    };
+    var toObjectKeys = function toObjectKeys(x) {
+        return Object.keys(x);
+    };
+    var isPattern = function isPattern(pattern) {
+        return isInstance(pattern, RegExp);
+    };
+    var toPattern = function toPattern(pattern, opt) {
+        if (isPattern(pattern)) {
+            return pattern;
+        }
+        // No need to escape `/` in the pattern string
+        pattern = pattern.replace(/\//g, '\\/');
+        return new RegExp(pattern, isSet(opt) ? opt : 'g');
+    };
     var hasValue = function hasValue(x, data) {
         return -1 !== data.indexOf(x);
     };
-    var fromHTML = function fromHTML(x, escapeQuote) {
+    var fromHTML = function fromHTML(x, quote) {
         x = x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;');
-        if (escapeQuote) {
+        if (quote) {
             x = x.replace(/'/g, '&apos;').replace(/"/g, '&quot;');
         }
         return x;
@@ -122,21 +139,6 @@
         }
         return "" + x;
     };
-    var toCount = function toCount(x) {
-        return x.length;
-    };
-    var toObjectKeys = function toObjectKeys(x) {
-        return Object.keys(x);
-    };
-    var isPattern = function isPattern(pattern) {
-        return isInstance(pattern, RegExp);
-    };
-    var toPattern = function toPattern(pattern, opt) {
-        if (isPattern(pattern)) {
-            return pattern;
-        }
-        return new RegExp(pattern, isSet(opt) ? opt : 'g');
-    };
     var offEventDefault = function offEventDefault(e) {
         return e && e.preventDefault();
     };
@@ -146,11 +148,11 @@
         tagData = function tagData() {
             return '<!((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)>';
         },
-        tagDeclaration = function tagDeclaration() {
-            return '<\\?((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)\\?>';
-        },
         tagEnd = function tagEnd(name) {
             return '</(' + name + ')>';
+        },
+        tagInstruction = function tagInstruction() {
+            return '<\\?((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)\\?>';
         },
         tagName = function tagName() {
             return '[\\w:.-]+';
@@ -162,7 +164,7 @@
             return '<(' + name + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?/?>';
         },
         tagTokens = function tagTokens() {
-            return '(?:' + tagComment() + '|' + tagData() + '|' + tagEnd(tagName()) + '|' + tagDeclaration() + '|' + tagVoid(tagName()) + '|' + tagStart(tagName()) + ')';
+            return '(?:' + tagComment() + '|' + tagData() + '|' + tagEnd(tagName()) + '|' + tagInstruction() + '|' + tagVoid(tagName()) + '|' + tagStart(tagName()) + ')';
         };
 
     function onKeyDown(e) {
@@ -289,6 +291,9 @@
                 // `<?asdf|?>`
                 '?>' === after.slice(0, 2) && /<\?\S*$/.test(before)) {
                 offEventDefault(e);
+                if ('?>' === after.slice(0, 2)) {
+                    $.insert(elements['#instruction'] || "");
+                }
                 return $.wrap(' ', ' ').record();
             }
             return;
@@ -498,15 +503,17 @@
             state,
             any = /^\s*([\s\S]*?)\s*$/,
             anyComment = /^<!--\s*([\s\S]*?)\s*-->$/,
-            anyData = /^<!\[CDATA\[\s*([\s\S]*?)\s*\]\]>$/;
+            anyData = /^<!\[CDATA\[\s*([\s\S]*?)\s*\]\]>$/,
+            anyInstruction = /^<\?\S*\s*([\s\S]*?)\s*\?>$/;
         $.state = state = fromStates({
             elements: {
                 '#comment': 'Comment goes here…',
-                '#data': 'Data goes here…'
+                '#data': 'Data goes here…',
+                '#instruction': 'Instruction goes here…'
             }
         }, $.state);
         $.insertComment = function (value, mode, clear) {
-            return $.insert('<!-- ' + (value || state.elements['#comment'] || "") + ' -->', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
+            return $.insert('<!--' + (value || state.elements['#comment'] || "") + '-->', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
         };
         $.insertData = function (value, mode, clear) {
             return $.insert('<![CDATA[' + (value || state.elements['#data'] || "") + ']]>', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
@@ -522,6 +529,9 @@
                 value = '<' + value[0] + toAttributes(value[2]) + (false === value[1] ? ' />' : '>' + (value[1] || "") + '</' + value[0] + '>');
             }
             return $.insert(value, isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
+        };
+        $.insertInstruction = function (value, mode, clear, name) {
+            return $.insert('<?' + (name || "") + (value || state.elements['#instruction'] || "") + '?>', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
         };
         $.peelComment = function (wrap) {
             if (wrap) {
@@ -551,21 +561,128 @@
             }
             return $.peel(open, close, wrap);
         };
-        $.toggleComment = function (wrap) {
+        $.peelInstruction = function (wrap) {
+            if (wrap) {
+                return $.replace(anyInstruction, '$1');
+            }
+            return $.replace(/<\?\S*\s*$/, "", -1).replace(/^\s*\?>/, "", 1);
+        };
+        $.selectComment = function (wrap) {
             var _$$$2 = $.$(),
                 after = _$$$2.after,
                 before = _$$$2.before,
+                end = _$$$2.end,
+                start = _$$$2.start,
                 value = _$$$2.value;
+            while (before && '<!--' !== value.slice(0, 4)) {
+                value = before.slice(-1) + value;
+                before = before.slice(0, -1);
+                start -= 1;
+            }
+            while (after && '-->' !== value.slice(-3)) {
+                value += after.slice(0, 1);
+                after = after.slice(1);
+                end += 1;
+            }
+            if (!wrap) {
+                var content = value.slice(4, -3),
+                    spaceAfter = /\s+$/.exec(content),
+                    spaceBefore = /^\s+/.exec(content);
+                if (spaceAfter) {
+                    end -= 3 + toCount(spaceAfter[0]);
+                }
+                if (spaceBefore) {
+                    start += 4 + toCount(spaceBefore[0]);
+                }
+            }
+            return '<!--' === value.slice(0, 4) && '-->' === value.slice(-3) ? $.select(start, end) : $.select();
+        };
+        $.selectData = function (wrap) {
+            var _$$$3 = $.$(),
+                after = _$$$3.after,
+                before = _$$$3.before,
+                end = _$$$3.end,
+                start = _$$$3.start,
+                value = _$$$3.value;
+            while (before && '<![CDATA[' !== value.slice(0, 9)) {
+                value = before.slice(-1) + value;
+                before = before.slice(0, -1);
+                start -= 1;
+            }
+            while (after && ']]>' !== value.slice(-3)) {
+                value += after.slice(0, 1);
+                after = after.slice(1);
+                end += 1;
+            }
+            if (!wrap) {
+                var content = value.slice(9, -3),
+                    spaceAfter = /\s+$/.exec(content),
+                    spaceBefore = /^\s+/.exec(content);
+                if (spaceAfter) {
+                    end -= 3 + toCount(spaceAfter[0]);
+                }
+                if (spaceBefore) {
+                    start += 9 + toCount(spaceBefore[0]);
+                }
+            }
+            return '<![CDATA[' === value.slice(0, 9) && ']]>' === value.slice(-3) ? $.select(start, end) : $.select();
+        };
+        $.selectElement = function (wrap) {
+            var _$$$4 = $.$();
+            _$$$4.after;
+            _$$$4.before;
+            _$$$4.end;
+            _$$$4.start;
+            _$$$4.value;
+        };
+        $.selectInstruction = function (wrap, name) {
+            var _$$$5 = $.$(),
+                after = _$$$5.after,
+                before = _$$$5.before,
+                end = _$$$5.end,
+                start = _$$$5.start,
+                value = _$$$5.value;
+            while (before && '<?' !== value.slice(0, 2)) {
+                value = before.slice(-1) + value;
+                before = before.slice(0, -1);
+                start -= 1;
+            }
+            while (after && '?>' !== value.slice(-2)) {
+                value += after.slice(0, 1);
+                after = after.slice(1);
+                end += 1;
+            }
+            if (!isSet(name)) {
+                name = value.slice(2).split(/\s+/).shift();
+            }
+            if (!wrap) {
+                var content = value.slice(2 + (name ? toCount(name) : 0), -2),
+                    spaceAfter = /\s+$/.exec(content),
+                    spaceBefore = /^\s+/.exec(content);
+                if (spaceAfter) {
+                    end -= 2 + toCount(spaceAfter[0]);
+                }
+                if (spaceBefore) {
+                    start += 2 + (name ? toCount(name) : 0) + toCount(spaceBefore[0]);
+                }
+            }
+            return '<?' === value.slice(0, 2) && '?>' === value.slice(-2) ? $.select(start, end) : $.select();
+        };
+        $.toggleComment = function (wrap) {
+            var _$$$6 = $.$(),
+                after = _$$$6.after,
+                before = _$$$6.before,
+                value = _$$$6.value;
             if (wrap) {
                 return $[(anyComment.test(value) ? 'peel' : 'wrap') + 'Comment'](wrap);
             }
             return $[(/<!--\s*$/.test(before) && /^\s*-->/.test(after) ? 'peel' : 'wrap') + 'Comment'](wrap);
         };
         $.toggleData = function (wrap) {
-            var _$$$3 = $.$(),
-                after = _$$$3.after,
-                before = _$$$3.before,
-                value = _$$$3.value;
+            var _$$$7 = $.$(),
+                after = _$$$7.after,
+                before = _$$$7.before,
+                value = _$$$7.value;
             if (wrap) {
                 return $[(anyData.test(value) ? 'peel' : 'wrap') + 'Data'](wrap);
             }
@@ -580,10 +697,10 @@
                     open[2] = fromStates({}, state.elements[open[0]][2] || {}, open[2] || {});
                 }
                 wrap = close;
-                var _$$$4 = $.$(),
-                    after = _$$$4.after,
-                    before = _$$$4.before,
-                    value = _$$$4.value,
+                var _$$$8 = $.$(),
+                    after = _$$$8.after,
+                    before = _$$$8.before,
+                    value = _$$$8.value,
                     tagStartOf = tagStart(open[0]),
                     tagEndOf = tagEnd(open[0]);
                 if (wrap) {
@@ -593,21 +710,22 @@
             }
             return $.toggle(open, close, wrap);
         };
+        $.toggleInstruction = function (wrap, name) {};
         $.wrapComment = function (wrap) {
-            var _$$$5 = $.$(),
-                value = _$$$5.value,
+            var _$$$9 = $.$(),
+                value = _$$$9.value,
                 placeholder = state.elements['#comment'] || "";
             if (!value && placeholder) {
                 $.insert(placeholder);
             }
             if (wrap) {
-                return $.replace(any, '<!-- $1 -->');
+                return $.replace(any, '<!--$1-->');
             }
-            return $.trim(false, false).replace(/$/, '<!-- ', -1).replace(/^/, ' -->', 1);
+            return $.trim(false, false).replace(/$/, '<!--', -1).replace(/^/, '-->', 1);
         };
         $.wrapData = function (wrap) {
-            var _$$$6 = $.$(),
-                value = _$$$6.value,
+            var _$$$10 = $.$(),
+                value = _$$$10.value,
                 placeholder = state.elements['#data'] || "";
             if (!value && placeholder) {
                 $.insert(placeholder);
@@ -626,8 +744,8 @@
                     open[2] = fromStates({}, state.elements[open[0]][2] || {}, open[2] || {});
                 }
                 wrap = close;
-                var _$$$7 = $.$(),
-                    value = _$$$7.value;
+                var _$$$11 = $.$(),
+                    value = _$$$11.value;
                 if (wrap) {
                     return $.replace(any, '<' + open[0] + toAttributes(open[2]) + '>' + (value || open[1] || "").trim() + '</' + open[0] + '>');
                 }
@@ -635,6 +753,7 @@
             }
             return $.wrap(open, close, wrap);
         };
+        $.wrapInstruction = function (wrap, name) {};
         return $.on('key.down', onKeyDown);
     }
 
