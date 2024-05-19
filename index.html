@@ -20,7 +20,7 @@
   </head>
   <body>
     <header>
-      <h1><a href="../text-editor/index.html">&laquo;</a> Text Editor Source XML 2.0.1</h1>
+      <h1><a href="../text-editor/index.html#extensions">&laquo;</a> Text Editor Source XML 2.0.1</h1>
       <p><abbr title="Extensible Markup Language">XML</abbr> source extension for <a href="../text-editor/index.html">Text Editor</a>. This extension provides a set of key strokes to generate responses like in a typical <abbr title="Extensible Markup Language">XML</abbr> source code editor.</p>
       <hr>
     </header>
@@ -70,8 +70,30 @@
             <option value="editor.selectInstruction()">selectInstruction()</option>
             <option value="editor.selectInstruction(true)">selectInstruction(true)</option>
           </optgroup>
-          <optgroup label="toggle"></optgroup>
-          <optgroup label="wrap"></optgroup>
+          <optgroup label="toggle">
+            <option value="editor.toggleComment()">toggleComment()</option>
+            <option value="editor.toggleComment(true)">toggleComment(true)</option>
+            <option value="editor.toggleData()">toggleData()</option>
+            <option value="editor.toggleData(true)">toggleData(true)</option>
+            <option value="editor.toggleElement('&lt;time&gt;', '&lt;/time&gt;')">toggleElement('&lt;time&gt;', '&lt;/time&gt;')</option>
+            <option value="editor.toggleElement('&lt;time&gt;', '&lt;/time&gt;', true)">toggleElement('&lt;time&gt;', '&lt;/time&gt;', true)</option>
+            <option value="editor.toggleElement(['time', (new Date).toLocaleString('en'), {datetime: (new Date).toISOString()}])">toggleElement(['time', date.toLocaleString('en'), {datetime: date.toISOString()}])</option>
+            <option value="editor.toggleElement(['time', (new Date).toLocaleString('en'), {datetime: (new Date).toISOString()}], true)">toggleElement(['time', date.toLocaleString('en'), {datetime: date.toISOString()}], true)</option>
+            <option disabled value="editor.toggleInstruction(false, 'xml')">toggleInstruction(false, 'xml')</option>
+            <option disabled value="editor.toggleInstruction(true, 'xml')">toggleInstruction(true, 'xml')</option>
+          </optgroup>
+          <optgroup label="wrap">
+            <option value="editor.wrapComment()">wrapComment()</option>
+            <option value="editor.wrapComment(true)">wrapComment(true)</option>
+            <option value="editor.wrapData()">wrapData()</option>
+            <option value="editor.wrapData(true)">wrapData(true)</option>
+            <option value="editor.wrapElement('&lt;time&gt;', '&lt;/time&gt;')">wrapElement('&lt;time&gt;', '&lt;/time&gt;')</option>
+            <option value="editor.wrapElement('&lt;time&gt;', '&lt;/time&gt;', true)">wrapElement('&lt;time&gt;', '&lt;/time&gt;', true)</option>
+            <option value="editor.wrapElement(['time', (new Date).toLocaleString('en'), {datetime: (new Date).toISOString()}])">wrapElement(['time', date.toLocaleString('en'), {datetime: date.toISOString()}])</option>
+            <option value="editor.wrapElement(['time', (new Date).toLocaleString('en'), {datetime: (new Date).toISOString()}], true)">wrapElement(['time', date.toLocaleString('en'), {datetime: date.toISOString()}], true)</option>
+            <option disabled value="editor.wrapInstruction(false, 'xml')">wrapInstruction(false, 'xml')</option>
+            <option disabled value="editor.wrapInstruction(true, 'xml')">wrapInstruction(true, 'xml')</option>
+          </optgroup>
         </select><button onclick="return eval(this.previousElementSibling.value), false;">Execute</button></p>
       <h2>Strokes</h2>
       <ul>
@@ -275,7 +297,6 @@ editor.wrapElement(['b']);</code></pre>
       <hr>
       <p>&copy; 2024 <a href="/">Taufik Nurrohman</a></p>
     </footer>
-    <script src="../key/index.min.js"></script>
     <script src="../text-editor/index.min.js"></script>
     <script src="../text-editor.history/index.min.js"></script>
     <script src="../text-editor.key/index.min.js"></script>

@@ -1,7 +1,7 @@
 extends _index.pug
 
 block state
-  - const scripts = ['../key/index.min.js', '../text-editor/index.min.js', '../text-editor.history/index.min.js', '../text-editor.key/index.min.js', '../text-editor.source/index.min.js', 'index.min.js']
+  - const scripts = ['../text-editor/index.min.js', '../text-editor.history/index.min.js', '../text-editor.key/index.min.js', '../text-editor.source/index.min.js', 'index.min.js']
   - const styles = ['../layout/index.min.css']
   - const theme = '#000'
   - const title = 'Text Editor Source XML ' + version
@@ -47,7 +47,7 @@ block style
 block content
   header
     h1
-      a(href='../text-editor/index.html') &laquo;
+      a(href='../text-editor/index.html#extensions') &laquo;
       = ' ' + title
     p #[abbr(title='Extensible Markup Language') XML] source extension for #[a(href='../text-editor/index.html') Text Editor]. This extension provides a set of key strokes to generate responses like in a typical #[abbr(title='Extensible Markup Language') XML] source code editor.
     hr
@@ -106,7 +106,27 @@ block content
           option(value='editor.selectInstruction()') selectInstruction()
           option(value='editor.selectInstruction(true)') selectInstruction(true)
         optgroup(label='toggle')
+          option(value='editor.toggleComment()') toggleComment()
+          option(value='editor.toggleComment(true)') toggleComment(true)
+          option(value='editor.toggleData()') toggleData()
+          option(value='editor.toggleData(true)') toggleData(true)
+          option(value='editor.toggleElement(\'<time>\', \'</time>\')') toggleElement('&lt;time&gt;', '&lt;/time&gt;')
+          option(value='editor.toggleElement(\'<time>\', \'</time>\', true)') toggleElement('&lt;time&gt;', '&lt;/time&gt;', true)
+          option(value='editor.toggleElement([\'time\', (new Date).toLocaleString(\'en\'), {datetime: (new Date).toISOString()}])') toggleElement(['time', date.toLocaleString('en'), {datetime: date.toISOString()}])
+          option(value='editor.toggleElement([\'time\', (new Date).toLocaleString(\'en\'), {datetime: (new Date).toISOString()}], true)') toggleElement(['time', date.toLocaleString('en'), {datetime: date.toISOString()}], true)
+          option(disabled value='editor.toggleInstruction(false, \'xml\')') toggleInstruction(false, 'xml')
+          option(disabled value='editor.toggleInstruction(true, \'xml\')') toggleInstruction(true, 'xml')
         optgroup(label='wrap')
+          option(value='editor.wrapComment()') wrapComment()
+          option(value='editor.wrapComment(true)') wrapComment(true)
+          option(value='editor.wrapData()') wrapData()
+          option(value='editor.wrapData(true)') wrapData(true)
+          option(value='editor.wrapElement(\'<time>\', \'</time>\')') wrapElement('&lt;time&gt;', '&lt;/time&gt;')
+          option(value='editor.wrapElement(\'<time>\', \'</time>\', true)') wrapElement('&lt;time&gt;', '&lt;/time&gt;', true)
+          option(value='editor.wrapElement([\'time\', (new Date).toLocaleString(\'en\'), {datetime: (new Date).toISOString()}])') wrapElement(['time', date.toLocaleString('en'), {datetime: date.toISOString()}])
+          option(value='editor.wrapElement([\'time\', (new Date).toLocaleString(\'en\'), {datetime: (new Date).toISOString()}], true)') wrapElement(['time', date.toLocaleString('en'), {datetime: date.toISOString()}], true)
+          option(disabled value='editor.wrapInstruction(false, \'xml\')') wrapInstruction(false, 'xml')
+          option(disabled value='editor.wrapInstruction(true, \'xml\')') wrapInstruction(true, 'xml')
       button(onclick='return eval(this.previousElementSibling.value), false;') Execute
     h2 Strokes
     ul

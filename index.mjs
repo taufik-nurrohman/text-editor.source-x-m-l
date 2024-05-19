@@ -1,9 +1,11 @@
 import {esc, toPattern} from '@taufik-nurrohman/pattern';
 import {fromHTML, fromStates, fromValue} from '@taufik-nurrohman/from';
 import {hasValue} from '@taufik-nurrohman/has';
-import {isArray, isInteger, isSet, isString} from '@taufik-nurrohman/is';
+import {isArray, isFunction, isInteger, isSet, isString} from '@taufik-nurrohman/is';
 import {onEvent, offEvent, offEventDefault} from '@taufik-nurrohman/event';
 import {toCount, toObjectKeys} from '@taufik-nurrohman/to';
+
+const name = 'TextEditor.SourceXML';
 
 let tagComment = () => '<!--([\\s\\S](?!-->)*)-->',
     tagData = () => '<!((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)>',
@@ -35,25 +37,25 @@ function onKeyDown(e) {
     }
     if (value) {
         if ('Backspace' === keys) {
-            if ('<![CDATA[' === before.slice(-9) && ']]>' === after.slice(0, 3) && value === elements['#data']) {
+            if ('<![CDATA[' === before.slice(-9) && ']]>' === after.slice(0, 3) && value === elements['![CDATA[']) {
                 offEventDefault(e);
                 return $.insert("").record();
             }
             return;
         }
         if ('Delete' === keys) {
-            if ('<![CDATA[' === before.slice(-9) && ']]>' === after.slice(0, 3) && value === elements['#data']) {
+            if ('<![CDATA[' === before.slice(-9) && ']]>' === after.slice(0, 3) && value === elements['![CDATA[']) {
                 offEventDefault(e);
                 return $.insert("").record();
             }
             return;
         }
         if ('Enter' === keys) {
-            if ('<!-- ' === before.slice(-5) && ' -->' === after.slice(0, 4) && value === elements['#comment']) {
+            if ('<!-- ' === before.slice(-5) && ' -->' === after.slice(0, 4) && value === elements['!--']) {
                 offEventDefault(e);
                 return $.trim('\n' + lineMatchIndent, '\n' + lineMatchIndent).insert("").record();
             }
-            if ('<![CDATA[' === before.slice(-9) && ']]>' === after.slice(0, 3) && value === elements['#data']) {
+            if ('<![CDATA[' === before.slice(-9) && ']]>' === after.slice(0, 3) && value === elements['![CDATA[']) {
                 offEventDefault(e);
                 return $.trim('\n' + lineMatchIndent, '\n' + lineMatchIndent).insert("").record();
             }
@@ -71,7 +73,7 @@ function onKeyDown(e) {
         // `<!-|`
         if ('<!-' === before.slice(-3)) {
             offEventDefault(e);
-            return $.insert(elements['#comment'] || "").wrap('- ', ' --' + ('>' === after[0] ? "" : '>')).record();
+            return $.insert(elements['!--'] || "").wrap('- ', ' --' + ('>' === after[0] ? "" : '>')).record();
         }
         return;
     }
@@ -120,7 +122,7 @@ function onKeyDown(e) {
     }
     if ('[' === key) {
         if ('<![CDATA' === before.slice(-8) && ']>' === after.slice(0, 2)) {
-            return $.insert(elements['#data'] || "");
+            return $.insert(elements['![CDATA['] || "");
         }
         return;
     }
@@ -133,7 +135,7 @@ function onKeyDown(e) {
         ) {
             offEventDefault(e);
             if ('?>' === after.slice(0, 2)) {
-                $.insert(elements['#instruction'] || "");
+                $.insert(elements['?'] || "");
             }
             return $.wrap(' ', ' ').record();
         }
@@ -341,56 +343,66 @@ function toAttributes(attributes) {
 }
 
 function attach() {
-    let $ = this, state,
+    let $ = this,
+        $$ = $.constructor.prototype,
         any = /^\s*([\s\S]*?)\s*$/,
         anyComment = /^<!--\s*([\s\S]*?)\s*-->$/,
         anyData = /^<!\[CDATA\[\s*([\s\S]*?)\s*\]\]>$/,
         anyInstruction = /^<\?\S*\s*([\s\S]*?)\s*\?>$/;
-    $.state = state = fromStates({
+    $.state = fromStates({
         elements: {
-            '#comment': 'Comment goes here…',
-            '#data': 'Data goes here…',
-            '#instruction': 'Instruction goes here…'
+            '!--': 'Comment goes here…',
+            '![CDATA[': 'Data goes here…',
+            '?': 'Instruction goes here…'
         }
     }, $.state);
-    $.insertComment = (value, mode, clear) => {
-        return $.insert('<!--' + (value || state.elements['#comment'] || "") + '-->', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
-    };
-    $.insertData = (value, mode, clear) => {
-        return $.insert('<![CDATA[' + (value || state.elements['#data'] || "") + ']]>', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
-    };
-    $.insertElement = (value, mode, clear) => {
+    !isFunction($$.insertComment) && ($$.insertComment = function (value, mode, clear) {
+        let $ = this;
+        return $.insert('<!--' + (value || $.state.elements['!--'] || "") + '-->', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
+    });
+    !isFunction($$.insertData) && ($$.insertData = function (value, mode, clear) {
+        let $ = this;
+        return $.insert('<![CDATA[' + (value || $.state.elements['![CDATA['] || "") + ']]>', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
+    });
+    !isFunction($$.insertElement) && ($$.insertElement = function (value, mode, clear) {
+        let $ = this,
+            elements = $.state.elements;
         // `$.insertElement(['asdf'])`
         if (isArray(value)) {
-            if (isSet(state.elements[value[0]])) {
-                value[1] = value[1] ?? state.elements[value[0]][1];
-                value[2] = fromStates({}, state.elements[value[0]][2] || {}, value[2] || {});
+            if (isSet(elements[value[0]])) {
+                value[1] = value[1] ?? elements[value[0]][1];
+                value[2] = fromStates({}, elements[value[0]][2] || {}, value[2] || {});
             }
             value = '<' + value[0] + toAttributes(value[2]) + (false === value[1] ? ' />' : '>' + (value[1] || "") + '</' + value[0] + '>');
         }
         return $.insert(value, isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
-    };
-    $.insertInstruction = (value, mode, clear, name) => {
-        return $.insert('<?' + (name || "") + (value || state.elements['#instruction'] || "") + '?>', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
-    };
-    $.peelComment = wrap => {
+    });
+    !isFunction($$.insertInstruction) && ($$.insertInstruction = function (value, mode, clear, name) {
+        let $ = this;
+        return $.insert('<?' + (name || "") + (value || $.state.elements['?'] || "") + '?>', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
+    });
+    !isFunction($$.peelComment) && ($$.peelComment = function (wrap) {
+        let $ = this;
         if (wrap) {
             return $.replace(anyComment, '$1');
         }
         return $.replace(/<!--\s*$/, "", -1).replace(/^\s*-->/, "", 1);
-    };
-    $.peelData = wrap => {
+    });
+    !isFunction($$.peelData) && ($$.peelData = function (wrap) {
+        let $ = this;
         if (wrap) {
             return $.replace(anyData, '$1');
         }
         return $.replace(/<!\[CDATA\[\s*$/, "", -1).replace(/^\s*\]\]>/, "", 1);
-    };
-    $.peelElement = (open, close, wrap) => {
+    });
+    !isFunction($$.peelElement) && ($$.peelElement = function (open, close, wrap) {
+        let $ = this,
+            elements = $.state.elements;
         // `$.peelElement(['asdf'], false)`
         if (isArray(open)) {
-            if (isSet(state.elements[open[0]])) {
-                open[1] = open[1] ?? state.elements[open[0]][1];
-                open[2] = fromStates({}, state.elements[open[0]][2] || {}, open[2] || {});
+            if (isSet(elements[open[0]])) {
+                open[1] = open[1] ?? elements[open[0]][1];
+                open[2] = fromStates({}, elements[open[0]][2] || {}, open[2] || {});
             }
             wrap = close;
             if (wrap) {
@@ -399,15 +411,17 @@ function attach() {
             return $.replace(toPattern(tagStart(open[0]) + '$', ""), "", -1).replace(toPattern('^' + tagEnd(open[0])), "", 1);
         }
         return $.peel(open, close, wrap);
-    };
-    $.peelInstruction = wrap => {
+    });
+    !isFunction($$.peelInstruction) && ($$.peelInstruction = function (wrap) {
+        let $ = this;
         if (wrap) {
             return $.replace(anyInstruction, '$1');
         }
         return $.replace(/<\?\S*\s*$/, "", -1).replace(/^\s*\?>/, "", 1);
-    };
-    $.selectComment = wrap => {
-        let {after, before, end, start, value} = $.$();
+    });
+    !isFunction($$.selectComment) && ($$.selectComment = function (wrap) {
+        let $ = this,
+            {after, before, end, start, value} = $.$();
         while (before && '<!--' !== value.slice(0, 4)) {
             value = before.slice(-1) + value;
             before = before.slice(0, -1);
@@ -430,9 +444,10 @@ function attach() {
             }
         }
         return '<!--' === value.slice(0, 4) && '-->' === value.slice(-3) ? $.select(start, end) : $.select();
-    };
-    $.selectData = wrap => {
-        let {after, before, end, start, value} = $.$();
+    });
+    !isFunction($$.selectData) && ($$.selectData = function (wrap) {
+        let $ = this,
+            {after, before, end, start, value} = $.$();
         while (before && '<![CDATA[' !== value.slice(0, 9)) {
             value = before.slice(-1) + value;
             before = before.slice(0, -1);
@@ -455,12 +470,17 @@ function attach() {
             }
         }
         return '<![CDATA[' === value.slice(0, 9) && ']]>' === value.slice(-3) ? $.select(start, end) : $.select();
-    };
-    $.selectElement = wrap => {
-        let {after, before, end, start, value} = $.$();
-    };
-    $.selectInstruction = (wrap, name) => {
-        let {after, before, end, start, value} = $.$();
+    });
+    !isFunction($$.selectElement) && ($$.selectElement = function (wrap) {
+        let $ = this,
+            {after, before, end, start, value} = $.$();
+        // TODO
+        console.log('TODO');
+        return $;
+    });
+    !isFunction($$.selectInstruction) && ($$.selectInstruction = function (wrap, name) {
+        let $ = this,
+            {after, before, end, start, value} = $.$();
         while (before && '<?' !== value.slice(0, 2)) {
             value = before.slice(-1) + value;
             before = before.slice(0, -1);
@@ -486,27 +506,31 @@ function attach() {
             }
         }
         return '<?' === value.slice(0, 2) && '?>' === value.slice(-2) ? $.select(start, end) : $.select();
-    };
-    $.toggleComment = wrap => {
-        let {after, before, value} = $.$();
+    });
+    !isFunction($$.toggleComment) && ($$.toggleComment = function (wrap) {
+        let $ = this,
+            {after, before, value} = $.$();
         if (wrap) {
             return $[(anyComment.test(value) ? 'peel' : 'wrap') + 'Comment'](wrap);
         }
         return $[(/<!--\s*$/.test(before) && /^\s*-->/.test(after) ? 'peel' : 'wrap') + 'Comment'](wrap);
-    };
-    $.toggleData = wrap => {
-        let {after, before, value} = $.$();
+    });
+    !isFunction($$.toggleData) && ($$.toggleData = function (wrap) {
+        let $ = this,
+            {after, before, value} = $.$();
         if (wrap) {
             return $[(anyData.test(value) ? 'peel' : 'wrap') + 'Data'](wrap);
         }
         return $[(/<!\[CDATA\[\s*$/.test(before) && /^\s*\]\]>/.test(after) ? 'peel' : 'wrap') + 'Data'](wrap);
-    };
-    $.toggleElement = (open, close, wrap) => {
+    });
+    !isFunction($$.toggleElement) && ($$.toggleElement = function (open, close, wrap) {
+        let $ = this,
+            elements = $.state.elements;
         // `$.toggleElement(['asdf'], false)`
         if (isArray(open)) {
-            if (isSet(state.elements[open[0]])) {
-                open[1] = open[1] ?? state.elements[open[0]][1];
-                open[2] = fromStates({}, state.elements[open[0]][2] || {}, open[2] || {});
+            if (isSet(elements[open[0]])) {
+                open[1] = open[1] ?? elements[open[0]][1];
+                open[2] = fromStates({}, elements[open[0]][2] || {}, open[2] || {});
             }
             wrap = close;
             let {after, before, value} = $.$(),
@@ -518,11 +542,17 @@ function attach() {
             return $[(toPattern(tagStartOf + '$', "").test(before) && toPattern('^' + tagEndOf, "").test(after) ? 'peel' : 'wrap') + 'Element'](open, close, wrap);
         }
         return $.toggle(open, close, wrap);
-    };
-    $.toggleInstruction = (wrap, name) => {};
-    $.wrapComment = wrap => {
-        let {value} = $.$(),
-            placeholder = state.elements['#comment'] || "";
+    });
+    !isFunction($$.toggleInstruction) && ($$.toggleInstruction = function (wrap, name) {
+        let $ = this;
+        // TODO
+        console.log('TODO');
+        return $;
+    });
+    !isFunction($$.wrapComment) && ($$.wrapComment = function (wrap) {
+        let $ = this,
+            {value} = $.$(),
+            placeholder = $.state.elements['!--'] || "";
         if (!value && placeholder) {
             $.insert(placeholder);
         }
@@ -530,10 +560,11 @@ function attach() {
             return $.replace(any, '<!--$1-->');
         }
         return $.trim(false, false).replace(/$/, '<!--', -1).replace(/^/, '-->', 1);
-    };
-    $.wrapData = wrap => {
-        let {value} = $.$(),
-            placeholder = state.elements['#data'] || "";
+    });
+    !isFunction($$.wrapData) && ($$.wrapData = function (wrap) {
+        let $ = this,
+            {value} = $.$(),
+            placeholder = $.state.elements['![CDATA['] || "";
         if (!value && placeholder) {
             $.insert(placeholder);
         }
@@ -541,13 +572,15 @@ function attach() {
             return $.replace(any, '<![CDATA[$1]]>');
         }
         return $.trim(false, false).replace(/$/, '<![CDATA[', -1).replace(/^/, ']]>', 1);
-    };
-    $.wrapElement = (open, close, wrap) => {
+    });
+    !isFunction($$.wrapElement) && ($$.wrapElement = function (open, close, wrap) {
+        let $ = this,
+            elements = $.state.elements;
         // `$.wrapElement(['asdf'], false)`
         if (isArray(open)) {
-            if (isSet(state.elements[open[0]])) {
-                open[1] = open[1] ?? state.elements[open[0]][1];
-                open[2] = fromStates({}, state.elements[open[0]][2] || {}, open[2] || {});
+            if (isSet(elements[open[0]])) {
+                open[1] = open[1] ?? elements[open[0]][1];
+                open[2] = fromStates({}, elements[open[0]][2] || {}, open[2] || {});
             }
             wrap = close;
             let {value} = $.$();
@@ -557,8 +590,13 @@ function attach() {
             return $.trim(false, false).replace(/$/, '<' + open[0] + toAttributes(open[2]) + '>', -1).replace(/^/, '</' + open[0] + '>', 1).insert(value || open[1] || "");
         }
         return $.wrap(open, close, wrap);
-    };
-    $.wrapInstruction = (wrap, name) => {};
+    });
+    !isFunction($$.wrapInstruction) && ($$.wrapInstruction = function (wrap, name) {
+        let $ = this;
+        // TODO
+        console.log('TODO');
+        return $;
+    });
     return $.on('key.down', onKeyDown);
 }
 
@@ -566,4 +604,4 @@ function detach() {
     return this.off('key.down', onKeyDown);
 }
 
-export default {attach, detach};
+export default {attach, detach, name};
