@@ -28,7 +28,7 @@ function onKeyDown(e) {
         return;
     }
     let {after, before, end, start, value} = $.$(),
-        charIndent = $.state.source?.tab || $.state.tab || '\t',
+        charIndent = $.state.tab || '\t',
         elements = $.state.elements || {},
         lineMatch = /^\s+/.exec(before.split('\n').pop()),
         lineMatchIndent = lineMatch && lineMatch[0] || "";
@@ -101,14 +101,14 @@ function onKeyDown(e) {
             value && $.insert(value);
             return $.wrap('>', '</' + m[1] + ('>' === after[0] ? "" : '>')).record();
         }
-        // `<div|></div>`
-        if (after.startsWith('></' + m[1] + '>')) {
-            return $.select(start + 1).record();
-        }
-        // `<div|</div>`
-        if (after.startsWith('</' + m[1] + '>')) {
-            return $.insert('>', -1).record();
-        }
+        // // `<div|></div>`
+        // if (after.startsWith('></' + m[1] + '>')) {
+        //     return $.select(start + 1).record();
+        // }
+        // // `<div|</div>`
+        // if (after.startsWith('</' + m[1] + '>')) {
+        //     return $.insert('>', -1).record();
+        // }
         // `<div|`
         return $.wrap('>', '</' + m[1] + ('>' === after[0] ? "" : '>')).record();
     }

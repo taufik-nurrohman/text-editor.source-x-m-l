@@ -172,7 +172,6 @@
         };
 
     function onKeyDown(e) {
-        var _$$state$source;
         var $ = this,
             m,
             key = $.k(false).pop(),
@@ -190,7 +189,7 @@
         _$$$.end;
         var start = _$$$.start,
             value = _$$$.value,
-            charIndent = ((_$$state$source = $.state.source) == null ? void 0 : _$$state$source.tab) || $.state.tab || '\t',
+            charIndent = $.state.tab || '\t',
             elements = $.state.elements || {},
             lineMatch = /^\s+/.exec(before.split('\n').pop()),
             lineMatchIndent = lineMatch && lineMatch[0] || "";
@@ -263,14 +262,14 @@
                 value && $.insert(value);
                 return $.wrap('>', '</' + m[1] + ('>' === after[0] ? "" : '>')).record();
             }
-            // `<div|></div>`
-            if (after.startsWith('></' + m[1] + '>')) {
-                return $.select(start + 1).record();
-            }
-            // `<div|</div>`
-            if (after.startsWith('</' + m[1] + '>')) {
-                return $.insert('>', -1).record();
-            }
+            // // `<div|></div>`
+            // if (after.startsWith('></' + m[1] + '>')) {
+            //     return $.select(start + 1).record();
+            // }
+            // // `<div|</div>`
+            // if (after.startsWith('</' + m[1] + '>')) {
+            //     return $.insert('>', -1).record();
+            // }
             // `<div|`
             return $.wrap('>', '</' + m[1] + ('>' === after[0] ? "" : '>')).record();
         }
