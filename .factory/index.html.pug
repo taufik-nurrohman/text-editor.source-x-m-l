@@ -102,7 +102,7 @@ block content
           option(value='editor.selectComment(true)') selectComment(true)
           option(value='editor.selectData()') selectData()
           option(value='editor.selectData(true)') selectData(true)
-          option(disabled value='editor.selectElement()') selectElement()
+          option(value='editor.selectElement()') selectElement()
           option(value='editor.selectInstruction()') selectInstruction()
           option(value='editor.selectInstruction(true)') selectInstruction(true)
         optgroup(label='toggle')
@@ -114,8 +114,8 @@ block content
           option(value='editor.toggleElement(\'<time>\', \'</time>\', true)') toggleElement('&lt;time&gt;', '&lt;/time&gt;', true)
           option(value='editor.toggleElement([\'time\', (new Date).toLocaleString(\'en\'), {datetime: (new Date).toISOString()}])') toggleElement(['time', date.toLocaleString('en'), {datetime: date.toISOString()}])
           option(value='editor.toggleElement([\'time\', (new Date).toLocaleString(\'en\'), {datetime: (new Date).toISOString()}], true)') toggleElement(['time', date.toLocaleString('en'), {datetime: date.toISOString()}], true)
-          option(disabled value='editor.toggleInstruction(false, \'xml\')') toggleInstruction(false, 'xml')
-          option(disabled value='editor.toggleInstruction(true, \'xml\')') toggleInstruction(true, 'xml')
+          option(value='editor.toggleInstruction(false, \'xml\')') toggleInstruction(false, 'xml')
+          option(value='editor.toggleInstruction(true, \'xml\')') toggleInstruction(true, 'xml')
         optgroup(label='wrap')
           option(value='editor.wrapComment()') wrapComment()
           option(value='editor.wrapComment(true)') wrapComment(true)
@@ -125,8 +125,8 @@ block content
           option(value='editor.wrapElement(\'<time>\', \'</time>\', true)') wrapElement('&lt;time&gt;', '&lt;/time&gt;', true)
           option(value='editor.wrapElement([\'time\', (new Date).toLocaleString(\'en\'), {datetime: (new Date).toISOString()}])') wrapElement(['time', date.toLocaleString('en'), {datetime: date.toISOString()}])
           option(value='editor.wrapElement([\'time\', (new Date).toLocaleString(\'en\'), {datetime: (new Date).toISOString()}], true)') wrapElement(['time', date.toLocaleString('en'), {datetime: date.toISOString()}], true)
-          option(disabled value='editor.wrapInstruction(false, \'xml\')') wrapInstruction(false, 'xml')
-          option(disabled value='editor.wrapInstruction(true, \'xml\')') wrapInstruction(true, 'xml')
+          option(value='editor.wrapInstruction(false, \'xml\')') wrapInstruction(false, 'xml')
+          option(value='editor.wrapInstruction(true, \'xml\')') wrapInstruction(true, 'xml')
       button(onclick='return eval(this.previousElementSibling.value), false;') Execute
     h2 Strokes
     ul
@@ -308,10 +308,28 @@ block content
     pre: code
       | editor.peelElement('&lt;b&gt;', '&lt;/b&gt;');
       | editor.peelElement(['b']);
+    h4: code editor.peelInstruction(wrap = false)
+    p Unwrap current selection from an #[abbr(title='Extensible Markup Language') XML] processing instruction.
+    pre: code
+      | editor.peelInstruction();
     h4: code editor.selectComment(wrap = false)
+    p Select an #[abbr(title='Extensible Markup Language') XML] comment.
+    pre: code
+      | editor.selectComment(); // Select comment content
+      | editor.selectComment(true); // Select comment node
     h4: code editor.selectData(wrap = false)
+    p Select an #[abbr(title='Extensible Markup Language') XML] character data section.
+    pre: code
+      | editor.selectData(); // Select character data section content
+      | editor.selectData(true); // Select character data section node
     h4: code editor.selectElement(wrap = false)
+    p Select an #[abbr(title='Extensible Markup Language') XML] element (tag).
+    pre: code
+      | editor.selectElement();
     h4: code editor.selectInstruction(wrap = false)
+    pre: code
+      | editor.selectInstruction(); // Select instruction content
+      | editor.selectInstruction(true); // Select instruction node
     h4: code editor.toggleComment(wrap = false)
     p Toggle wrap and peel selection of an #[abbr(title='Extensible Markup Language') XML] comment.
     pre: code
@@ -326,6 +344,10 @@ block content
     pre: code
       | editor.toggleElement('&lt;b&gt;', '&lt;/b&gt;');
       | editor.toggleElement(['b']);
+    h4: code editor.toggleInstruction(wrap = false, name = 'xml')
+    p Toggle wrap and peel selection of an #[abbr(title='Extensible Markup Language') XML] processing instruction.
+    pre: code
+      | editor.toggleInstruction(false, 'php');
     h4: code editor.wrapComment(wrap = false)
     p Wrap current selection with an #[abbr(title='Extensible Markup Language') XML] comment.
     pre: code
@@ -340,6 +362,10 @@ block content
     pre: code
       | editor.wrapElement('&lt;b&gt;', '&lt;/b&gt;');
       | editor.wrapElement(['b']);
+    h4: code editor.wrapInstruction(wrap = false, name = 'xml')
+    p Wrap current selection with an #[abbr(title='Extensible Markup Language') XML] processing instruction.
+    pre: code
+      | editor.wrapInstruction(false, 'php');
   footer
     hr
     p

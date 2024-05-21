@@ -60,29 +60,12 @@
     var isSet = function isSet(x) {
         return isDefined(x) && !isNull(x);
     };
-    var toCount = function toCount(x) {
-        return x.length;
-    };
-    var toObjectKeys = function toObjectKeys(x) {
-        return Object.keys(x);
-    };
-    var isPattern = function isPattern(pattern) {
-        return isInstance(pattern, RegExp);
-    };
-    var toPattern = function toPattern(pattern, opt) {
-        if (isPattern(pattern)) {
-            return pattern;
-        }
-        // No need to escape `/` in the pattern string
-        pattern = pattern.replace(/\//g, '\\/');
-        return new RegExp(pattern, isSet(opt) ? opt : 'g');
-    };
     var hasValue = function hasValue(x, data) {
         return -1 !== data.indexOf(x);
     };
-    var fromHTML = function fromHTML(x, quote) {
+    var fromHTML = function fromHTML(x, escapeQuote) {
         x = x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;');
-        if (quote) {
+        {
             x = x.replace(/'/g, '&apos;').replace(/"/g, '&quot;');
         }
         return x;
@@ -141,6 +124,21 @@
             return 'true';
         }
         return "" + x;
+    };
+    var toCount = function toCount(x) {
+        return x.length;
+    };
+    var toObjectKeys = function toObjectKeys(x) {
+        return Object.keys(x);
+    };
+    var isPattern = function isPattern(pattern) {
+        return isInstance(pattern, RegExp);
+    };
+    var toPattern = function toPattern(pattern, opt) {
+        if (isPattern(pattern)) {
+            return pattern;
+        }
+        return new RegExp(pattern, isSet(opt) ? opt : 'g');
     };
     var offEventDefault = function offEventDefault(e) {
         return e && e.preventDefault();
@@ -262,14 +260,6 @@
                 value && $.insert(value);
                 return $.wrap('>', '</' + m[1] + ('>' === after[0] ? "" : '>')).record();
             }
-            // // `<div|></div>`
-            // if (after.startsWith('></' + m[1] + '>')) {
-            //     return $.select(start + 1).record();
-            // }
-            // // `<div|</div>`
-            // if (after.startsWith('</' + m[1] + '>')) {
-            //     return $.insert('>', -1).record();
-            // }
             // `<div|`
             return $.wrap('>', '</' + m[1] + ('>' === after[0] ? "" : '>')).record();
         }
@@ -495,7 +485,7 @@
             }
             out += ' ' + attribute;
             if (true !== v) {
-                out += '="' + fromHTML(fromValue(v), true) + '"';
+                out += '="' + fromHTML(fromValue(v)) + '"';
             }
         }
         return out;
@@ -538,6 +528,9 @@
             return $.insert(value, isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
         });
         !isFunction($$.insertInstruction) && ($$.insertInstruction = function (value, mode, clear, name) {
+            if (name === void 0) {
+                name = 'xml';
+            }
             var $ = this;
             return $.insert('<?' + (name || "") + (value || $.state.elements['?'] || "") + '?>', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
         });
@@ -642,19 +635,30 @@
             }
             return '<![CDATA[' === value.slice(0, 9) && ']]>' === value.slice(-3) ? $.select(start, end) : $.select();
         });
-        !isFunction($$.selectElement) && ($$.selectElement = function (wrap) {
+        !isFunction($$.selectElement) && ($$.selectElement = function () {
             var $ = this,
-                _$$$4 = $.$();
-            _$$$4.after;
-            _$$$4.before;
-            _$$$4.end;
-            _$$$4.start;
-            _$$$4.value;
-            // TODO
-            console.log('TODO');
-            return $;
+                _$$$4 = $.$(),
+                after = _$$$4.after,
+                before = _$$$4.before,
+                end = _$$$4.end,
+                start = _$$$4.start,
+                value = _$$$4.value;
+            while (before && '<' !== value.slice(0, 1)) {
+                value = before.slice(-1) + value;
+                before = before.slice(0, -1);
+                start -= 1;
+            }
+            while (after && '>' !== value.slice(-1)) {
+                value += after.slice(0, 1);
+                after = after.slice(1);
+                end += 1;
+            }
+            return toPattern('^(' + tagEnd(tagName()) + '|' + tagStart(tagName()) + '|' + tagVoid(tagName()) + ')$').test(value) ? $.select(start, end) : $.select();
         });
         !isFunction($$.selectInstruction) && ($$.selectInstruction = function (wrap, name) {
+            if (name === void 0) {
+                name = 'xml';
+            }
             var $ = this,
                 _$$$5 = $.$(),
                 after = _$$$5.after,
@@ -749,9 +753,9 @@
                 $.insert(placeholder);
             }
             if (wrap) {
-                return $.replace(any, '<!--$1-->');
+                return $.replace(any, '<!-- $1 -->');
             }
-            return $.trim(false, false).replace(/$/, '<!--', -1).replace(/^/, '-->', 1);
+            return $.trim(false, false).replace(/$/, '<!-- ', -1).replace(/^/, ' -->', 1);
         });
         !isFunction($$.wrapData) && ($$.wrapData = function (wrap) {
             var $ = this,
@@ -787,10 +791,20 @@
             return $.wrap(open, close, wrap);
         });
         !isFunction($$.wrapInstruction) && ($$.wrapInstruction = function (wrap, name) {
-            var $ = this;
-            // TODO
-            console.log('TODO');
-            return $;
+            if (name === void 0) {
+                name = 'xml';
+            }
+            var $ = this,
+                _$$$12 = $.$(),
+                value = _$$$12.value,
+                placeholder = $.state.elements['?'] || "";
+            if (!value && placeholder) {
+                $.insert(placeholder);
+            }
+            if (wrap) {
+                return $.replace(any, '<?' + name + ' $1 ?>');
+            }
+            return $.trim(false, false).replace(/$/, '<?' + name + ' ', -1).replace(/^/, ' ?>', 1);
         });
         return $.on('key.down', onKeyDown);
     }

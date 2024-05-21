@@ -66,7 +66,7 @@
             <option value="editor.selectComment(true)">selectComment(true)</option>
             <option value="editor.selectData()">selectData()</option>
             <option value="editor.selectData(true)">selectData(true)</option>
-            <option disabled value="editor.selectElement()">selectElement()</option>
+            <option value="editor.selectElement()">selectElement()</option>
             <option value="editor.selectInstruction()">selectInstruction()</option>
             <option value="editor.selectInstruction(true)">selectInstruction(true)</option>
           </optgroup>
@@ -79,8 +79,8 @@
             <option value="editor.toggleElement('&lt;time&gt;', '&lt;/time&gt;', true)">toggleElement('&lt;time&gt;', '&lt;/time&gt;', true)</option>
             <option value="editor.toggleElement(['time', (new Date).toLocaleString('en'), {datetime: (new Date).toISOString()}])">toggleElement(['time', date.toLocaleString('en'), {datetime: date.toISOString()}])</option>
             <option value="editor.toggleElement(['time', (new Date).toLocaleString('en'), {datetime: (new Date).toISOString()}], true)">toggleElement(['time', date.toLocaleString('en'), {datetime: date.toISOString()}], true)</option>
-            <option disabled value="editor.toggleInstruction(false, 'xml')">toggleInstruction(false, 'xml')</option>
-            <option disabled value="editor.toggleInstruction(true, 'xml')">toggleInstruction(true, 'xml')</option>
+            <option value="editor.toggleInstruction(false, 'xml')">toggleInstruction(false, 'xml')</option>
+            <option value="editor.toggleInstruction(true, 'xml')">toggleInstruction(true, 'xml')</option>
           </optgroup>
           <optgroup label="wrap">
             <option value="editor.wrapComment()">wrapComment()</option>
@@ -91,8 +91,8 @@
             <option value="editor.wrapElement('&lt;time&gt;', '&lt;/time&gt;', true)">wrapElement('&lt;time&gt;', '&lt;/time&gt;', true)</option>
             <option value="editor.wrapElement(['time', (new Date).toLocaleString('en'), {datetime: (new Date).toISOString()}])">wrapElement(['time', date.toLocaleString('en'), {datetime: date.toISOString()}])</option>
             <option value="editor.wrapElement(['time', (new Date).toLocaleString('en'), {datetime: (new Date).toISOString()}], true)">wrapElement(['time', date.toLocaleString('en'), {datetime: date.toISOString()}], true)</option>
-            <option disabled value="editor.wrapInstruction(false, 'xml')">wrapInstruction(false, 'xml')</option>
-            <option disabled value="editor.wrapInstruction(true, 'xml')">wrapInstruction(true, 'xml')</option>
+            <option value="editor.wrapInstruction(false, 'xml')">wrapInstruction(false, 'xml')</option>
+            <option value="editor.wrapInstruction(true, 'xml')">wrapInstruction(true, 'xml')</option>
           </optgroup>
         </select><button onclick="return eval(this.previousElementSibling.value), false;">Execute</button></p>
       <h2>Strokes</h2>
@@ -266,10 +266,23 @@ editor.insertElement(['input', false, {type: 'text'}], +1); // Delete selection 
       <p>Unwrap current selection from an <abbr title="Extensible Markup Language">XML</abbr> element.</p>
       <pre><code>editor.peelElement('&lt;b&gt;', '&lt;/b&gt;');
 editor.peelElement(['b']);</code></pre>
+      <h4><code>editor.peelInstruction(wrap = false)</code></h4>
+      <p>Unwrap current selection from an <abbr title="Extensible Markup Language">XML</abbr> processing instruction.</p>
+      <pre><code>editor.peelInstruction();</code></pre>
       <h4><code>editor.selectComment(wrap = false)</code></h4>
+      <p>Select an <abbr title="Extensible Markup Language">XML</abbr> comment.</p>
+      <pre><code>editor.selectComment(); // Select comment content
+editor.selectComment(true); // Select comment node</code></pre>
       <h4><code>editor.selectData(wrap = false)</code></h4>
+      <p>Select an <abbr title="Extensible Markup Language">XML</abbr> character data section.</p>
+      <pre><code>editor.selectData(); // Select character data section content
+editor.selectData(true); // Select character data section node</code></pre>
       <h4><code>editor.selectElement(wrap = false)</code></h4>
+      <p>Select an <abbr title="Extensible Markup Language">XML</abbr> element (tag).</p>
+      <pre><code>editor.selectElement();</code></pre>
       <h4><code>editor.selectInstruction(wrap = false)</code></h4>
+      <pre><code>editor.selectInstruction(); // Select instruction content
+editor.selectInstruction(true); // Select instruction node</code></pre>
       <h4><code>editor.toggleComment(wrap = false)</code></h4>
       <p>Toggle wrap and peel selection of an <abbr title="Extensible Markup Language">XML</abbr> comment.</p>
       <pre><code>editor.toggleComment();</code></pre>
@@ -281,6 +294,9 @@ editor.peelElement(['b']);</code></pre>
       <p>Toggle wrap and peel selection of an <abbr title="Extensible Markup Language">XML</abbr> element.</p>
       <pre><code>editor.toggleElement('&lt;b&gt;', '&lt;/b&gt;');
 editor.toggleElement(['b']);</code></pre>
+      <h4><code>editor.toggleInstruction(wrap = false, name = 'xml')</code></h4>
+      <p>Toggle wrap and peel selection of an <abbr title="Extensible Markup Language">XML</abbr> processing instruction.</p>
+      <pre><code>editor.toggleInstruction(false, 'php');</code></pre>
       <h4><code>editor.wrapComment(wrap = false)</code></h4>
       <p>Wrap current selection with an <abbr title="Extensible Markup Language">XML</abbr> comment.</p>
       <pre><code>editor.wrapComment();</code></pre>
@@ -292,6 +308,9 @@ editor.toggleElement(['b']);</code></pre>
       <p>Wrap current selection with an <abbr title="Extensible Markup Language">XML</abbr> element.</p>
       <pre><code>editor.wrapElement('&lt;b&gt;', '&lt;/b&gt;');
 editor.wrapElement(['b']);</code></pre>
+      <h4><code>editor.wrapInstruction(wrap = false, name = 'xml')</code></h4>
+      <p>Wrap current selection with an <abbr title="Extensible Markup Language">XML</abbr> processing instruction.</p>
+      <pre><code>editor.wrapInstruction(false, 'php');</code></pre>
     </main>
     <footer>
       <hr>

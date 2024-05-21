@@ -101,14 +101,6 @@ function onKeyDown(e) {
             value && $.insert(value);
             return $.wrap('>', '</' + m[1] + ('>' === after[0] ? "" : '>')).record();
         }
-        // // `<div|></div>`
-        // if (after.startsWith('></' + m[1] + '>')) {
-        //     return $.select(start + 1).record();
-        // }
-        // // `<div|</div>`
-        // if (after.startsWith('</' + m[1] + '>')) {
-        //     return $.insert('>', -1).record();
-        // }
         // `<div|`
         return $.wrap('>', '</' + m[1] + ('>' === after[0] ? "" : '>')).record();
     }
@@ -377,7 +369,7 @@ function attach() {
         }
         return $.insert(value, isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
     });
-    !isFunction($$.insertInstruction) && ($$.insertInstruction = function (value, mode, clear, name) {
+    !isFunction($$.insertInstruction) && ($$.insertInstruction = function (value, mode, clear, name = 'xml') {
         let $ = this;
         return $.insert('<?' + (name || "") + (value || $.state.elements['?'] || "") + '?>', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
     });
@@ -471,14 +463,22 @@ function attach() {
         }
         return '<![CDATA[' === value.slice(0, 9) && ']]>' === value.slice(-3) ? $.select(start, end) : $.select();
     });
-    !isFunction($$.selectElement) && ($$.selectElement = function (wrap) {
+    !isFunction($$.selectElement) && ($$.selectElement = function () {
         let $ = this,
             {after, before, end, start, value} = $.$();
-        // TODO
-        console.log('TODO');
-        return $;
+        while (before && '<' !== value.slice(0, 1)) {
+            value = before.slice(-1) + value;
+            before = before.slice(0, -1);
+            start -= 1;
+        }
+        while (after && '>' !== value.slice(-1)) {
+            value += after.slice(0, 1);
+            after = after.slice(1);
+            end += 1;
+        }
+        return toPattern('^(' + tagEnd(tagName()) + '|' + tagStart(tagName()) + '|' + tagVoid(tagName()) + ')$').test(value) ? $.select(start, end) : $.select();
     });
-    !isFunction($$.selectInstruction) && ($$.selectInstruction = function (wrap, name) {
+    !isFunction($$.selectInstruction) && ($$.selectInstruction = function (wrap, name = 'xml') {
         let $ = this,
             {after, before, end, start, value} = $.$();
         while (before && '<?' !== value.slice(0, 2)) {
@@ -543,7 +543,7 @@ function attach() {
         }
         return $.toggle(open, close, wrap);
     });
-    !isFunction($$.toggleInstruction) && ($$.toggleInstruction = function (wrap, name) {
+    !isFunction($$.toggleInstruction) && ($$.toggleInstruction = function (wrap, name = 'xml') {
         let $ = this;
         // TODO
         console.log('TODO');
@@ -557,9 +557,9 @@ function attach() {
             $.insert(placeholder);
         }
         if (wrap) {
-            return $.replace(any, '<!--$1-->');
+            return $.replace(any, '<!-- $1 -->');
         }
-        return $.trim(false, false).replace(/$/, '<!--', -1).replace(/^/, '-->', 1);
+        return $.trim(false, false).replace(/$/, '<!-- ', -1).replace(/^/, ' -->', 1);
     });
     !isFunction($$.wrapData) && ($$.wrapData = function (wrap) {
         let $ = this,
@@ -591,11 +591,17 @@ function attach() {
         }
         return $.wrap(open, close, wrap);
     });
-    !isFunction($$.wrapInstruction) && ($$.wrapInstruction = function (wrap, name) {
-        let $ = this;
-        // TODO
-        console.log('TODO');
-        return $;
+    !isFunction($$.wrapInstruction) && ($$.wrapInstruction = function (wrap, name = 'xml') {
+        let $ = this,
+            {value} = $.$(),
+            placeholder = $.state.elements['?'] || "";
+        if (!value && placeholder) {
+            $.insert(placeholder);
+        }
+        if (wrap) {
+            return $.replace(any, '<?' + name + ' $1 ?>');
+        }
+        return $.trim(false, false).replace(/$/, '<?' + name + ' ', -1).replace(/^/, ' ?>', 1);
     });
     return $.on('key.down', onKeyDown);
 }
