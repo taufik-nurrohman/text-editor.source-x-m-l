@@ -35,6 +35,11 @@ block script
 
 block style
   style
+    | body {
+    |   margin-left: auto;
+    |   margin-right: auto;
+    |   max-width: 60rem;
+    | }
     | mark {
     |   border-left: 1px solid #f00;
     |   border-right: 1px solid #f00;
@@ -43,14 +48,17 @@ block style
     | mark:empty {
     |   border-right-width: 0;
     | }
+    | .text-editor__self {
+    |   background: #ccc;
+    | }
 
 block content
   header
-    h1
-      a(href='../text-editor/index.html#extensions') &laquo;
-      = ' ' + title
-    p #[abbr(title='Extensible Markup Language') XML] source extension for #[a(href='../text-editor/index.html') Text Editor]. This extension provides a set of key strokes to generate responses like in a typical #[abbr(title='Extensible Markup Language') XML] source code editor.
-    hr
+    hgroup
+      h1
+        a(href='../text-editor/index.html#extensions') &laquo;
+        = ' ' + title
+      p This extension provides a set of key strokes to generate responses like in a typical #[abbr(title='Extensible Markup Language') XML] source code editor.
   main
     p
       label
@@ -272,20 +280,20 @@ block content
     h2 Methods
     h3 Instance Methods
     h4: code editor.insertComment(value, mode = -1, clear = true)
-    p Insert an #[abbr(title='Extensible Markup Language') XML] comment.
+    p Inserts an #[abbr(title='Extensible Markup Language') XML] comment.
     pre: code
       | editor.insertComment('asdf'); // Delete selection and insert comment before caret
       | editor.insertComment('asdf', 0); // Replace selection with comment
       | editor.insertComment('asdf', +1); // Delete selection and insert comment after caret
     h4: code editor.insertData(value, mode = -1, clear = true)
-    p Insert an #[abbr(title='Extensible Markup Language') XML] character data section.
+    p Inserts an #[abbr(title='Extensible Markup Language') XML] character data section.
     pre: code
       | editor.insertData('asdf'); // Delete selection and insert character data section before caret
       | editor.insertData('asdf', 0); // Replace selection with character data section
       | editor.insertData('asdf', +1); // Delete selection and insert character data section after caret
     h4: code editor.insertElement(value, mode = -1, clear = true)
     h4: code editor.insertElement(of, mode = -1, clear = true)
-    p Insert an #[abbr(title='Extensible Markup Language') XML] element.
+    p Inserts an #[abbr(title='Extensible Markup Language') XML] element.
     pre: code
       | editor.insertElement('&lt;input type="text" /&gt;'); // Delete selection and insert element before caret
       | editor.insertElement('&lt;input type="text" /&gt;', 0); // Replace selection with element
@@ -295,35 +303,35 @@ block content
       | editor.insertElement(['input', false, {type: 'text'}], 0); // Replace selection with element
       | editor.insertElement(['input', false, {type: 'text'}], +1); // Delete selection and insert element after caret
     h4: code editor.peelComment(wrap = false)
-    p Unwrap current selection from an #[abbr(title='Extensible Markup Language') XML] comment.
+    p Unwraps current selection from an #[abbr(title='Extensible Markup Language') XML] comment.
     pre: code
       | editor.peelComment();
     h4: code editor.peelData(wrap = false)
-    p Unwrap current selection from an #[abbr(title='Extensible Markup Language') XML] character data section.
+    p Unwraps current selection from an #[abbr(title='Extensible Markup Language') XML] character data section.
     pre: code
       | editor.peelData();
     h4: code editor.peelElement(open, close, wrap = false)
     h4: code editor.peelElement(of, wrap = false)
-    p Unwrap current selection from an #[abbr(title='Extensible Markup Language') XML] element.
+    p Unwraps current selection from an #[abbr(title='Extensible Markup Language') XML] element.
     pre: code
       | editor.peelElement('&lt;b&gt;', '&lt;/b&gt;');
       | editor.peelElement(['b']);
     h4: code editor.peelInstruction(wrap = false)
-    p Unwrap current selection from an #[abbr(title='Extensible Markup Language') XML] processing instruction.
+    p Unwraps current selection from an #[abbr(title='Extensible Markup Language') XML] processing instruction.
     pre: code
       | editor.peelInstruction();
     h4: code editor.selectComment(wrap = false)
-    p Select an #[abbr(title='Extensible Markup Language') XML] comment.
+    p Selects an #[abbr(title='Extensible Markup Language') XML] comment.
     pre: code
       | editor.selectComment(); // Select comment content
       | editor.selectComment(true); // Select comment node
     h4: code editor.selectData(wrap = false)
-    p Select an #[abbr(title='Extensible Markup Language') XML] character data section.
+    p Selects an #[abbr(title='Extensible Markup Language') XML] character data section.
     pre: code
       | editor.selectData(); // Select character data section content
       | editor.selectData(true); // Select character data section node
     h4: code editor.selectElement(wrap = false)
-    p Select an #[abbr(title='Extensible Markup Language') XML] element (tag).
+    p Selects an #[abbr(title='Extensible Markup Language') XML] element (tag).
     pre: code
       | editor.selectElement();
     h4: code editor.selectInstruction(wrap = false)
@@ -331,39 +339,39 @@ block content
       | editor.selectInstruction(); // Select instruction content
       | editor.selectInstruction(true); // Select instruction node
     h4: code editor.toggleComment(wrap = false)
-    p Toggle wrap and peel selection of an #[abbr(title='Extensible Markup Language') XML] comment.
+    p Toggles wrap and peel selection of an #[abbr(title='Extensible Markup Language') XML] comment.
     pre: code
       | editor.toggleComment();
     h4: code editor.toggleData(wrap = false)
-    p Toggle wrap and peel selection of an #[abbr(title='Extensible Markup Language') XML] character data.
+    p Toggles wrap and peel selection of an #[abbr(title='Extensible Markup Language') XML] character data.
     pre: code
       | editor.toggleData();
     h4: code editor.toggleElement(open, close, wrap = false)
     h4: code editor.toggleElement(of, wrap = false)
-    p Toggle wrap and peel selection of an #[abbr(title='Extensible Markup Language') XML] element.
+    p Toggles wrap and peel selection of an #[abbr(title='Extensible Markup Language') XML] element.
     pre: code
       | editor.toggleElement('&lt;b&gt;', '&lt;/b&gt;');
       | editor.toggleElement(['b']);
     h4: code editor.toggleInstruction(wrap = false, name = 'xml')
-    p Toggle wrap and peel selection of an #[abbr(title='Extensible Markup Language') XML] processing instruction.
+    p Toggles wrap and peel selection of an #[abbr(title='Extensible Markup Language') XML] processing instruction.
     pre: code
       | editor.toggleInstruction(false, 'php');
     h4: code editor.wrapComment(wrap = false)
-    p Wrap current selection with an #[abbr(title='Extensible Markup Language') XML] comment.
+    p Wraps current selection with an #[abbr(title='Extensible Markup Language') XML] comment.
     pre: code
       | editor.wrapComment();
     h4: code editor.wrapData(wrap = false)
-    p Wrap current selection with an #[abbr(title='Extensible Markup Language') XML] character data.
+    p Wraps current selection with an #[abbr(title='Extensible Markup Language') XML] character data.
     pre: code
       | editor.wrapData();
     h4: code editor.wrapElement(open, close, wrap = false)
     h4: code editor.wrapElement(of, wrap = false)
-    p Wrap current selection with an #[abbr(title='Extensible Markup Language') XML] element.
+    p Wraps current selection with an #[abbr(title='Extensible Markup Language') XML] element.
     pre: code
       | editor.wrapElement('&lt;b&gt;', '&lt;/b&gt;');
       | editor.wrapElement(['b']);
     h4: code editor.wrapInstruction(wrap = false, name = 'xml')
-    p Wrap current selection with an #[abbr(title='Extensible Markup Language') XML] processing instruction.
+    p Wraps current selection with an #[abbr(title='Extensible Markup Language') XML] processing instruction.
     pre: code
       | editor.wrapInstruction(false, 'php');
   footer

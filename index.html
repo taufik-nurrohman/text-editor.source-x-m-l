@@ -5,9 +5,14 @@
     <meta content="#000" name="theme-color">
     <meta content="width=device-width" name="viewport">
     <meta content="Provides a set of key strokes to generate responses like in a typical XML source code editor." name="description">
-    <title>Text Editor Source XML 2.0.1</title>
+    <title>Text Editor Source XML 2.0.2</title>
     <link href="../layout/index.min.css" rel="stylesheet">
     <style>
+      body {
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 60rem;
+      }
       mark {
         border-left: 1px solid #f00;
         border-right: 1px solid #f00;
@@ -16,13 +21,17 @@
       mark:empty {
         border-right-width: 0;
       }
+      .text-editor__self {
+        background: #ccc;
+      }
     </style>
   </head>
   <body>
     <header>
-      <h1><a href="../text-editor/index.html#extensions">&laquo;</a> Text Editor Source XML 2.0.1</h1>
-      <p><abbr title="Extensible Markup Language">XML</abbr> source extension for <a href="../text-editor/index.html">Text Editor</a>. This extension provides a set of key strokes to generate responses like in a typical <abbr title="Extensible Markup Language">XML</abbr> source code editor.</p>
-      <hr>
+      <hgroup>
+        <h1><a href="../text-editor/index.html#extensions">&laquo;</a> Text Editor Source XML 2.0.2</h1>
+        <p>This extension provides a set of key strokes to generate responses like in a typical <abbr title="Extensible Markup Language">XML</abbr> source code editor.</p>
+      </hgroup>
     </header>
     <main>
       <p><label><input checked onchange="return editor[this.checked ? 'attach' : 'detach'](), false;" type="checkbox"> <span>Enable <abbr title="Extensible Markup Language">XML</abbr> Source Editor</span></label></p>
@@ -237,18 +246,18 @@ const editor = new TextEditor(document.querySelector('textarea'), {
       <h2>Methods</h2>
       <h3>Instance Methods</h3>
       <h4><code>editor.insertComment(value, mode = -1, clear = true)</code></h4>
-      <p>Insert an <abbr title="Extensible Markup Language">XML</abbr> comment.</p>
+      <p>Inserts an <abbr title="Extensible Markup Language">XML</abbr> comment.</p>
       <pre><code>editor.insertComment('asdf'); // Delete selection and insert comment before caret
 editor.insertComment('asdf', 0); // Replace selection with comment
 editor.insertComment('asdf', +1); // Delete selection and insert comment after caret</code></pre>
       <h4><code>editor.insertData(value, mode = -1, clear = true)</code></h4>
-      <p>Insert an <abbr title="Extensible Markup Language">XML</abbr> character data section.</p>
+      <p>Inserts an <abbr title="Extensible Markup Language">XML</abbr> character data section.</p>
       <pre><code>editor.insertData('asdf'); // Delete selection and insert character data section before caret
 editor.insertData('asdf', 0); // Replace selection with character data section
 editor.insertData('asdf', +1); // Delete selection and insert character data section after caret</code></pre>
       <h4><code>editor.insertElement(value, mode = -1, clear = true)</code></h4>
       <h4><code>editor.insertElement(of, mode = -1, clear = true)</code></h4>
-      <p>Insert an <abbr title="Extensible Markup Language">XML</abbr> element.</p>
+      <p>Inserts an <abbr title="Extensible Markup Language">XML</abbr> element.</p>
       <pre><code>editor.insertElement('&lt;input type="text" /&gt;'); // Delete selection and insert element before caret
 editor.insertElement('&lt;input type="text" /&gt;', 0); // Replace selection with element
 editor.insertElement('&lt;input type="text" /&gt;', +1); // Delete selection and insert element after caret</code></pre>
@@ -256,60 +265,60 @@ editor.insertElement('&lt;input type="text" /&gt;', +1); // Delete selection and
 editor.insertElement(['input', false, {type: 'text'}], 0); // Replace selection with element
 editor.insertElement(['input', false, {type: 'text'}], +1); // Delete selection and insert element after caret</code></pre>
       <h4><code>editor.peelComment(wrap = false)</code></h4>
-      <p>Unwrap current selection from an <abbr title="Extensible Markup Language">XML</abbr> comment.</p>
+      <p>Unwraps current selection from an <abbr title="Extensible Markup Language">XML</abbr> comment.</p>
       <pre><code>editor.peelComment();</code></pre>
       <h4><code>editor.peelData(wrap = false)</code></h4>
-      <p>Unwrap current selection from an <abbr title="Extensible Markup Language">XML</abbr> character data section.</p>
+      <p>Unwraps current selection from an <abbr title="Extensible Markup Language">XML</abbr> character data section.</p>
       <pre><code>editor.peelData();</code></pre>
       <h4><code>editor.peelElement(open, close, wrap = false)</code></h4>
       <h4><code>editor.peelElement(of, wrap = false)</code></h4>
-      <p>Unwrap current selection from an <abbr title="Extensible Markup Language">XML</abbr> element.</p>
+      <p>Unwraps current selection from an <abbr title="Extensible Markup Language">XML</abbr> element.</p>
       <pre><code>editor.peelElement('&lt;b&gt;', '&lt;/b&gt;');
 editor.peelElement(['b']);</code></pre>
       <h4><code>editor.peelInstruction(wrap = false)</code></h4>
-      <p>Unwrap current selection from an <abbr title="Extensible Markup Language">XML</abbr> processing instruction.</p>
+      <p>Unwraps current selection from an <abbr title="Extensible Markup Language">XML</abbr> processing instruction.</p>
       <pre><code>editor.peelInstruction();</code></pre>
       <h4><code>editor.selectComment(wrap = false)</code></h4>
-      <p>Select an <abbr title="Extensible Markup Language">XML</abbr> comment.</p>
+      <p>Selects an <abbr title="Extensible Markup Language">XML</abbr> comment.</p>
       <pre><code>editor.selectComment(); // Select comment content
 editor.selectComment(true); // Select comment node</code></pre>
       <h4><code>editor.selectData(wrap = false)</code></h4>
-      <p>Select an <abbr title="Extensible Markup Language">XML</abbr> character data section.</p>
+      <p>Selects an <abbr title="Extensible Markup Language">XML</abbr> character data section.</p>
       <pre><code>editor.selectData(); // Select character data section content
 editor.selectData(true); // Select character data section node</code></pre>
       <h4><code>editor.selectElement(wrap = false)</code></h4>
-      <p>Select an <abbr title="Extensible Markup Language">XML</abbr> element (tag).</p>
+      <p>Selects an <abbr title="Extensible Markup Language">XML</abbr> element (tag).</p>
       <pre><code>editor.selectElement();</code></pre>
       <h4><code>editor.selectInstruction(wrap = false)</code></h4>
       <pre><code>editor.selectInstruction(); // Select instruction content
 editor.selectInstruction(true); // Select instruction node</code></pre>
       <h4><code>editor.toggleComment(wrap = false)</code></h4>
-      <p>Toggle wrap and peel selection of an <abbr title="Extensible Markup Language">XML</abbr> comment.</p>
+      <p>Toggles wrap and peel selection of an <abbr title="Extensible Markup Language">XML</abbr> comment.</p>
       <pre><code>editor.toggleComment();</code></pre>
       <h4><code>editor.toggleData(wrap = false)</code></h4>
-      <p>Toggle wrap and peel selection of an <abbr title="Extensible Markup Language">XML</abbr> character data.</p>
+      <p>Toggles wrap and peel selection of an <abbr title="Extensible Markup Language">XML</abbr> character data.</p>
       <pre><code>editor.toggleData();</code></pre>
       <h4><code>editor.toggleElement(open, close, wrap = false)</code></h4>
       <h4><code>editor.toggleElement(of, wrap = false)</code></h4>
-      <p>Toggle wrap and peel selection of an <abbr title="Extensible Markup Language">XML</abbr> element.</p>
+      <p>Toggles wrap and peel selection of an <abbr title="Extensible Markup Language">XML</abbr> element.</p>
       <pre><code>editor.toggleElement('&lt;b&gt;', '&lt;/b&gt;');
 editor.toggleElement(['b']);</code></pre>
       <h4><code>editor.toggleInstruction(wrap = false, name = 'xml')</code></h4>
-      <p>Toggle wrap and peel selection of an <abbr title="Extensible Markup Language">XML</abbr> processing instruction.</p>
+      <p>Toggles wrap and peel selection of an <abbr title="Extensible Markup Language">XML</abbr> processing instruction.</p>
       <pre><code>editor.toggleInstruction(false, 'php');</code></pre>
       <h4><code>editor.wrapComment(wrap = false)</code></h4>
-      <p>Wrap current selection with an <abbr title="Extensible Markup Language">XML</abbr> comment.</p>
+      <p>Wraps current selection with an <abbr title="Extensible Markup Language">XML</abbr> comment.</p>
       <pre><code>editor.wrapComment();</code></pre>
       <h4><code>editor.wrapData(wrap = false)</code></h4>
-      <p>Wrap current selection with an <abbr title="Extensible Markup Language">XML</abbr> character data.</p>
+      <p>Wraps current selection with an <abbr title="Extensible Markup Language">XML</abbr> character data.</p>
       <pre><code>editor.wrapData();</code></pre>
       <h4><code>editor.wrapElement(open, close, wrap = false)</code></h4>
       <h4><code>editor.wrapElement(of, wrap = false)</code></h4>
-      <p>Wrap current selection with an <abbr title="Extensible Markup Language">XML</abbr> element.</p>
+      <p>Wraps current selection with an <abbr title="Extensible Markup Language">XML</abbr> element.</p>
       <pre><code>editor.wrapElement('&lt;b&gt;', '&lt;/b&gt;');
 editor.wrapElement(['b']);</code></pre>
       <h4><code>editor.wrapInstruction(wrap = false, name = 'xml')</code></h4>
-      <p>Wrap current selection with an <abbr title="Extensible Markup Language">XML</abbr> processing instruction.</p>
+      <p>Wraps current selection with an <abbr title="Extensible Markup Language">XML</abbr> processing instruction.</p>
       <pre><code>editor.wrapInstruction(false, 'php');</code></pre>
     </main>
     <footer>

@@ -16,6 +16,12 @@ let tagComment = () => '<!--([\\s\\S](?!-->)*)-->',
     tagVoid = name => '<(' + name + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?/?>',
     tagTokens = () => '(?:' + tagComment() + '|' + tagData() + '|' + tagEnd(tagName()) + '|' + tagInstruction() + '|' + tagVoid(tagName()) + '|' + tagStart(tagName()) + ')';
 
+const KEY_ARROW_LEFT = 'ArrowLeft';
+const KEY_ARROW_RIGHT = 'ArrowRight';
+const KEY_DELETE_LEFT = 'Backspace';
+const KEY_DELETE_RIGHT = 'Delete';
+const KEY_ENTER = 'Enter';
+
 function onKeyDown(e) {
     let $ = this, m,
         key = $.k(false).pop(),
@@ -36,21 +42,21 @@ function onKeyDown(e) {
         charIndent = ' '.repeat(charIndent);
     }
     if (value) {
-        if ('Backspace' === keys) {
+        if (KEY_DELETE_LEFT === keys) {
             if ('<![CDATA[' === before.slice(-9) && ']]>' === after.slice(0, 3) && value === elements['![CDATA[']) {
                 offEventDefault(e);
                 return $.insert("").record();
             }
             return;
         }
-        if ('Delete' === keys) {
+        if (KEY_DELETE_RIGHT === keys) {
             if ('<![CDATA[' === before.slice(-9) && ']]>' === after.slice(0, 3) && value === elements['![CDATA[']) {
                 offEventDefault(e);
                 return $.insert("").record();
             }
             return;
         }
-        if ('Enter' === keys) {
+        if (KEY_ENTER === keys) {
             if ('<!-- ' === before.slice(-5) && ' -->' === after.slice(0, 4) && value === elements['!--']) {
                 offEventDefault(e);
                 return $.trim('\n' + lineMatchIndent, '\n' + lineMatchIndent).insert("").record();
@@ -143,19 +149,19 @@ function onKeyDown(e) {
     if (value) {
         return;
     }
-    if ('ArrowLeft' === keys && (m = toPattern(tagTokens() + '$', "").exec(before))) {
+    if (KEY_ARROW_LEFT === keys && (m = toPattern(tagTokens() + '$', "").exec(before))) {
         // `<asdf>|asdf`
         offEventDefault(e);
         return $.select(start - toCount(m[0]), start);
     }
-    if ('ArrowRight' === keys && (m = toPattern('^' + tagTokens(), "").exec(after))) {
+    if (KEY_ARROW_RIGHT === keys && (m = toPattern('^' + tagTokens(), "").exec(after))) {
         // `asdf|<asdf>`
         offEventDefault(e);
         return $.select(start, start + toCount(m[0]));
     }
     lineMatch = /^\s+/.exec(before.split('\n').pop());
     lineMatchIndent = lineMatch && lineMatch[0] || "";
-    if ('Backspace' === keys) {
+    if (KEY_DELETE_LEFT === keys) {
         // `<!--|`
         if ('<!--' === before.slice(-4)) {
             offEventDefault(e);
@@ -258,7 +264,7 @@ function onKeyDown(e) {
             return $.trim().record(); // Collapse!
         }
     }
-    if ('Delete' === keys) {
+    if (KEY_DELETE_RIGHT === keys) {
         // `|-->`
         if ('-->' === after.slice(0, 3)) {
             offEventDefault(e);
@@ -281,7 +287,7 @@ function onKeyDown(e) {
             return $.replace(tagPattern, "", 1).record();
         }
     }
-    if ('Enter' === keys) {
+    if (KEY_ENTER === keys) {
         if (
             // `<!--|-->`
             /^[ \t]*-->/.test(after) && /<!--[ \t]*$/.test(before) ||
@@ -544,10 +550,12 @@ function attach() {
         return $.toggle(open, close, wrap);
     });
     !isFunction($$.toggleInstruction) && ($$.toggleInstruction = function (wrap, name = 'xml') {
-        let $ = this;
-        // TODO
-        console.log('TODO');
-        return $;
+        let $ = this,
+            {after, before, value} = $.$();
+        if (wrap) {
+            return $[(anyData.test(value) ? 'peel' : 'wrap') + 'Instruction'](wrap, name);
+        }
+        return $[(/<\?\S*\s*$/.test(before) && /^\s*\?>/.test(after) ? 'peel' : 'wrap') + 'Instruction'](wrap, name);
     });
     !isFunction($$.wrapComment) && ($$.wrapComment = function (wrap) {
         let $ = this,

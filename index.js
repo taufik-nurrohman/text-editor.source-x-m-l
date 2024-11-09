@@ -60,12 +60,29 @@
     var isSet = function isSet(x) {
         return isDefined(x) && !isNull(x);
     };
+    var toCount = function toCount(x) {
+        return x.length;
+    };
+    var toObjectKeys = function toObjectKeys(x) {
+        return Object.keys(x);
+    };
+    var isPattern = function isPattern(pattern) {
+        return isInstance(pattern, RegExp);
+    };
+    var toPattern = function toPattern(pattern, opt) {
+        if (isPattern(pattern)) {
+            return pattern;
+        }
+        // No need to escape `/` in the pattern string
+        pattern = pattern.replace(/\//g, '\\/');
+        return new RegExp(pattern, isSet(opt) ? opt : 'g');
+    };
     var hasValue = function hasValue(x, data) {
         return -1 !== data.indexOf(x);
     };
-    var fromHTML = function fromHTML(x, escapeQuote) {
+    var fromHTML = function fromHTML(x, quote) {
         x = x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;');
-        {
+        if (quote) {
             x = x.replace(/'/g, '&apos;').replace(/"/g, '&quot;');
         }
         return x;
@@ -125,21 +142,6 @@
         }
         return "" + x;
     };
-    var toCount = function toCount(x) {
-        return x.length;
-    };
-    var toObjectKeys = function toObjectKeys(x) {
-        return Object.keys(x);
-    };
-    var isPattern = function isPattern(pattern) {
-        return isInstance(pattern, RegExp);
-    };
-    var toPattern = function toPattern(pattern, opt) {
-        if (isPattern(pattern)) {
-            return pattern;
-        }
-        return new RegExp(pattern, isSet(opt) ? opt : 'g');
-    };
     var offEventDefault = function offEventDefault(e) {
         return e && e.preventDefault();
     };
@@ -168,6 +170,11 @@
         tagTokens = function tagTokens() {
             return '(?:' + tagComment() + '|' + tagData() + '|' + tagEnd(tagName()) + '|' + tagInstruction() + '|' + tagVoid(tagName()) + '|' + tagStart(tagName()) + ')';
         };
+    var KEY_ARROW_LEFT = 'ArrowLeft';
+    var KEY_ARROW_RIGHT = 'ArrowRight';
+    var KEY_DELETE_LEFT = 'Backspace';
+    var KEY_DELETE_RIGHT = 'Delete';
+    var KEY_ENTER = 'Enter';
 
     function onKeyDown(e) {
         var $ = this,
@@ -195,21 +202,21 @@
             charIndent = ' '.repeat(charIndent);
         }
         if (value) {
-            if ('Backspace' === keys) {
+            if (KEY_DELETE_LEFT === keys) {
                 if ('<![CDATA[' === before.slice(-9) && ']]>' === after.slice(0, 3) && value === elements['![CDATA[']) {
                     offEventDefault(e);
                     return $.insert("").record();
                 }
                 return;
             }
-            if ('Delete' === keys) {
+            if (KEY_DELETE_RIGHT === keys) {
                 if ('<![CDATA[' === before.slice(-9) && ']]>' === after.slice(0, 3) && value === elements['![CDATA[']) {
                     offEventDefault(e);
                     return $.insert("").record();
                 }
                 return;
             }
-            if ('Enter' === keys) {
+            if (KEY_ENTER === keys) {
                 if ('<!-- ' === before.slice(-5) && ' -->' === after.slice(0, 4) && value === elements['!--']) {
                     offEventDefault(e);
                     return $.trim('\n' + lineMatchIndent, '\n' + lineMatchIndent).insert("").record();
@@ -301,19 +308,19 @@
         if (value) {
             return;
         }
-        if ('ArrowLeft' === keys && (m = toPattern(tagTokens() + '$', "").exec(before))) {
+        if (KEY_ARROW_LEFT === keys && (m = toPattern(tagTokens() + '$', "").exec(before))) {
             // `<asdf>|asdf`
             offEventDefault(e);
             return $.select(start - toCount(m[0]), start);
         }
-        if ('ArrowRight' === keys && (m = toPattern('^' + tagTokens(), "").exec(after))) {
+        if (KEY_ARROW_RIGHT === keys && (m = toPattern('^' + tagTokens(), "").exec(after))) {
             // `asdf|<asdf>`
             offEventDefault(e);
             return $.select(start, start + toCount(m[0]));
         }
         lineMatch = /^\s+/.exec(before.split('\n').pop());
         lineMatchIndent = lineMatch && lineMatch[0] || "";
-        if ('Backspace' === keys) {
+        if (KEY_DELETE_LEFT === keys) {
             // `<!--|`
             if ('<!--' === before.slice(-4)) {
                 offEventDefault(e);
@@ -413,7 +420,7 @@
                 return $.trim().record(); // Collapse!
             }
         }
-        if ('Delete' === keys) {
+        if (KEY_DELETE_RIGHT === keys) {
             // `|-->`
             if ('-->' === after.slice(0, 3)) {
                 offEventDefault(e);
@@ -436,7 +443,7 @@
                 return $.replace(_tagPattern, "", 1).record();
             }
         }
-        if ('Enter' === keys) {
+        if (KEY_ENTER === keys) {
             if (
                 // `<!--|-->`
                 /^[ \t]*-->/.test(after) && /<!--[ \t]*$/.test(before) ||
@@ -485,7 +492,7 @@
             }
             out += ' ' + attribute;
             if (true !== v) {
-                out += '="' + fromHTML(fromValue(v)) + '"';
+                out += '="' + fromHTML(fromValue(v), true) + '"';
             }
         }
         return out;
@@ -739,15 +746,23 @@
             return $.toggle(open, close, wrap);
         });
         !isFunction($$.toggleInstruction) && ($$.toggleInstruction = function (wrap, name) {
-            var $ = this;
-            // TODO
-            console.log('TODO');
-            return $;
+            if (name === void 0) {
+                name = 'xml';
+            }
+            var $ = this,
+                _$$$9 = $.$(),
+                after = _$$$9.after,
+                before = _$$$9.before,
+                value = _$$$9.value;
+            if (wrap) {
+                return $[(anyData.test(value) ? 'peel' : 'wrap') + 'Instruction'](wrap, name);
+            }
+            return $[(/<\?\S*\s*$/.test(before) && /^\s*\?>/.test(after) ? 'peel' : 'wrap') + 'Instruction'](wrap, name);
         });
         !isFunction($$.wrapComment) && ($$.wrapComment = function (wrap) {
             var $ = this,
-                _$$$9 = $.$(),
-                value = _$$$9.value,
+                _$$$10 = $.$(),
+                value = _$$$10.value,
                 placeholder = $.state.elements['!--'] || "";
             if (!value && placeholder) {
                 $.insert(placeholder);
@@ -759,8 +774,8 @@
         });
         !isFunction($$.wrapData) && ($$.wrapData = function (wrap) {
             var $ = this,
-                _$$$10 = $.$(),
-                value = _$$$10.value,
+                _$$$11 = $.$(),
+                value = _$$$11.value,
                 placeholder = $.state.elements['![CDATA['] || "";
             if (!value && placeholder) {
                 $.insert(placeholder);
@@ -781,8 +796,8 @@
                     open[2] = fromStates({}, elements[open[0]][2] || {}, open[2] || {});
                 }
                 wrap = close;
-                var _$$$11 = $.$(),
-                    value = _$$$11.value;
+                var _$$$12 = $.$(),
+                    value = _$$$12.value;
                 if (wrap) {
                     return $.replace(any, '<' + open[0] + toAttributes(open[2]) + '>' + (value || open[1] || "").trim() + '</' + open[0] + '>');
                 }
@@ -795,8 +810,8 @@
                 name = 'xml';
             }
             var $ = this,
-                _$$$12 = $.$(),
-                value = _$$$12.value,
+                _$$$13 = $.$(),
+                value = _$$$13.value,
                 placeholder = $.state.elements['?'] || "";
             if (!value && placeholder) {
                 $.insert(placeholder);
