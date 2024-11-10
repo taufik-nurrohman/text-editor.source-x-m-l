@@ -356,7 +356,11 @@ function attach() {
     }, $.state);
     !isFunction($$.insertComment) && ($$.insertComment = function (value, mode, clear) {
         let $ = this;
-        return $.insert('<!--' + (value || $.state.elements['!--'] || "") + '-->', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
+        value = value || $.state.elements['!--'] || "";
+        if ('\n' !== value[0] && '\n' !== value.slice(-1)) {
+            value = ' ' + value + ' ';
+        }
+        return $.insert('<!--' + value + '-->', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
     });
     !isFunction($$.insertData) && ($$.insertData = function (value, mode, clear) {
         let $ = this;
@@ -377,7 +381,11 @@ function attach() {
     });
     !isFunction($$.insertInstruction) && ($$.insertInstruction = function (value, mode, clear, name = 'xml') {
         let $ = this;
-        return $.insert('<?' + (name || "") + (value || $.state.elements['?'] || "") + '?>', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
+        value = value || $.state.elements['?'] || "";
+        if ('\n' !== value[0] && '\n' !== value.slice(-1)) {
+            value = ' ' + value + ' ';
+        }
+        return $.insert('<?' + (name || "") + value + '?>', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
     });
     !isFunction($$.peelComment) && ($$.peelComment = function (wrap) {
         let $ = this;
@@ -553,7 +561,7 @@ function attach() {
         let $ = this,
             {after, before, value} = $.$();
         if (wrap) {
-            return $[(anyData.test(value) ? 'peel' : 'wrap') + 'Instruction'](wrap, name);
+            return $[(anyInstruction.test(value) ? 'peel' : 'wrap') + 'Instruction'](wrap, name);
         }
         return $[(/<\?\S*\s*$/.test(before) && /^\s*\?>/.test(after) ? 'peel' : 'wrap') + 'Instruction'](wrap, name);
     });

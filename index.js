@@ -514,7 +514,11 @@
         }, $.state);
         !isFunction($$.insertComment) && ($$.insertComment = function (value, mode, clear) {
             var $ = this;
-            return $.insert('<!--' + (value || $.state.elements['!--'] || "") + '-->', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
+            value = value || $.state.elements['!--'] || "";
+            if ('\n' !== value[0] && '\n' !== value.slice(-1)) {
+                value = ' ' + value + ' ';
+            }
+            return $.insert('<!--' + value + '-->', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
         });
         !isFunction($$.insertData) && ($$.insertData = function (value, mode, clear) {
             var $ = this;
@@ -539,7 +543,11 @@
                 name = 'xml';
             }
             var $ = this;
-            return $.insert('<?' + (name || "") + (value || $.state.elements['?'] || "") + '?>', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
+            value = value || $.state.elements['?'] || "";
+            if ('\n' !== value[0] && '\n' !== value.slice(-1)) {
+                value = ' ' + value + ' ';
+            }
+            return $.insert('<?' + (name || "") + value + '?>', isSet(mode) ? mode : -1, isSet(clear) ? clear : true);
         });
         !isFunction($$.peelComment) && ($$.peelComment = function (wrap) {
             var $ = this;
@@ -755,7 +763,7 @@
                 before = _$$$9.before,
                 value = _$$$9.value;
             if (wrap) {
-                return $[(anyData.test(value) ? 'peel' : 'wrap') + 'Instruction'](wrap, name);
+                return $[(anyInstruction.test(value) ? 'peel' : 'wrap') + 'Instruction'](wrap, name);
             }
             return $[(/<\?\S*\s*$/.test(before) && /^\s*\?>/.test(after) ? 'peel' : 'wrap') + 'Instruction'](wrap, name);
         });
