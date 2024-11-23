@@ -473,6 +473,10 @@
             }
         }
     }
+    // Partial mobile support
+    function onPutDown(e) {
+        onKeyDown.call(this, e);
+    }
 
     function toAttributes(attributes) {
         if (!attributes) {
@@ -829,11 +833,11 @@
             }
             return $.trim(false, false).replace(/$/, '<?' + name + ' ', -1).replace(/^/, ' ?>', 1);
         });
-        return $.on('key.down', onKeyDown);
+        return $.on('key.down', onKeyDown).on('put.down', onPutDown).record();
     }
 
     function detach() {
-        return this.off('key.down', onKeyDown);
+        return this.off('key.down', onKeyDown).off('put.down', onPutDown);
     }
     var index_js = {
         attach: attach,
