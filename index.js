@@ -145,7 +145,6 @@
     var offEventDefault = function offEventDefault(e) {
         return e && e.preventDefault();
     };
-    var name = 'TextEditor.SourceXML';
     var tagComment = function tagComment() {
             return '<!--([\\s\\S](?!-->)*)-->';
         },
@@ -175,6 +174,7 @@
     var KEY_DELETE_LEFT = 'Backspace';
     var KEY_DELETE_RIGHT = 'Delete';
     var KEY_ENTER = 'Enter';
+    var name = 'TextEditor.SourceXML';
 
     function onKeyDown(e) {
         var $ = this,
@@ -500,7 +500,7 @@
 
     function attach() {
         var $ = this,
-            $$ = $.constructor.prototype,
+            $$ = $.constructor._,
             any = /^\s*([\s\S]*?)\s*$/,
             anyComment = /^<!--\s*([\s\S]*?)\s*-->$/,
             anyData = /^<!\[CDATA\[\s*([\s\S]*?)\s*\]\]>$/,

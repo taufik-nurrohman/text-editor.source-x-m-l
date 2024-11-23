@@ -5,8 +5,6 @@ import {isArray, isFunction, isInteger, isSet, isString} from '@taufik-nurrohman
 import {onEvent, offEvent, offEventDefault} from '@taufik-nurrohman/event';
 import {toCount, toObjectKeys} from '@taufik-nurrohman/to';
 
-const name = 'TextEditor.SourceXML';
-
 let tagComment = () => '<!--([\\s\\S](?!-->)*)-->',
     tagData = () => '<!((?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^>\'"])*)>',
     tagEnd = name => '</(' + name + ')>',
@@ -21,6 +19,8 @@ const KEY_ARROW_RIGHT = 'ArrowRight';
 const KEY_DELETE_LEFT = 'Backspace';
 const KEY_DELETE_RIGHT = 'Delete';
 const KEY_ENTER = 'Enter';
+
+const name = 'TextEditor.SourceXML';
 
 function onKeyDown(e) {
     let $ = this, m,
@@ -342,7 +342,7 @@ function toAttributes(attributes) {
 
 function attach() {
     let $ = this,
-        $$ = $.constructor.prototype,
+        $$ = $.constructor._,
         any = /^\s*([\s\S]*?)\s*$/,
         anyComment = /^<!--\s*([\s\S]*?)\s*-->$/,
         anyData = /^<!\[CDATA\[\s*([\s\S]*?)\s*\]\]>$/,
