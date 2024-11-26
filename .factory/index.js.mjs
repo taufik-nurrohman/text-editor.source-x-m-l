@@ -14,15 +14,18 @@ let tagComment = () => '<!--([\\s\\S](?!-->)*)-->',
     tagVoid = name => '<(' + name + ')(\\s(?:\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*"|[^/>\'"])*)?/?>',
     tagTokens = () => '(?:' + tagComment() + '|' + tagData() + '|' + tagEnd(tagName()) + '|' + tagInstruction() + '|' + tagVoid(tagName()) + '|' + tagStart(tagName()) + ')';
 
+const KEY_ALT = 'Alt';
 const KEY_ARROW_LEFT = 'ArrowLeft';
 const KEY_ARROW_RIGHT = 'ArrowRight';
+const KEY_CONTROL = 'Control';
 const KEY_DELETE_LEFT = 'Backspace';
 const KEY_DELETE_RIGHT = 'Delete';
 const KEY_ENTER = 'Enter';
+const KEY_SHIFT = 'Shift';
 
 const name = 'TextEditor.SourceXML';
 
-function onKeyDown(e) {
+function onKeyDownOrPutDown(e) {
     let $ = this, m,
         key = $.k(false).pop(),
         keys = $.k();
@@ -30,7 +33,7 @@ function onKeyDown(e) {
         return;
     }
     // Do nothing
-    if ('Alt' === keys || 'Control' === keys) {
+    if (KEY_ALT === keys || KEY_CONTROL === keys) {
         return;
     }
     let {after, before, end, start, value} = $.$(),
@@ -318,11 +321,6 @@ function onKeyDown(e) {
             return $.record().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent + '</' + m[1] + '>').record();
         }
     }
-}
-
-// Partial mobile support
-function onPutDown(e) {
-    onKeyDown.call(this, e);
 }
 
 function toAttributes(attributes) {
@@ -624,11 +622,11 @@ function attach() {
         }
         return $.trim(false, false).replace(/$/, '<?' + name + ' ', -1).replace(/^/, ' ?>', 1);
     });
-    return $.on('key.down', onKeyDown).on('put.down', onPutDown).record();
+    return $.on('key.down', onKeyDownOrPutDown).on('put.down', onKeyDownOrPutDown).record();
 }
 
 function detach() {
-    return this.off('key.down', onKeyDown).off('put.down', onPutDown);
+    return this.off('key.down', onKeyDownOrPutDown).off('put.down', onKeyDownOrPutDown);
 }
 
 export default {attach, detach, name};

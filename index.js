@@ -169,14 +169,16 @@
         tagTokens = function tagTokens() {
             return '(?:' + tagComment() + '|' + tagData() + '|' + tagEnd(tagName()) + '|' + tagInstruction() + '|' + tagVoid(tagName()) + '|' + tagStart(tagName()) + ')';
         };
+    var KEY_ALT = 'Alt';
     var KEY_ARROW_LEFT = 'ArrowLeft';
     var KEY_ARROW_RIGHT = 'ArrowRight';
+    var KEY_CONTROL = 'Control';
     var KEY_DELETE_LEFT = 'Backspace';
     var KEY_DELETE_RIGHT = 'Delete';
     var KEY_ENTER = 'Enter';
     var name = 'TextEditor.SourceXML';
 
-    function onKeyDown(e) {
+    function onKeyDownOrPutDown(e) {
         var $ = this,
             m,
             key = $.k(false).pop(),
@@ -185,7 +187,7 @@
             return;
         }
         // Do nothing
-        if ('Alt' === keys || 'Control' === keys) {
+        if (KEY_ALT === keys || KEY_CONTROL === keys) {
             return;
         }
         var _$$$ = $.$(),
@@ -472,10 +474,6 @@
                 return $.record().wrap('\n' + lineMatchIndent + charIndent, '\n' + lineMatchIndent + '</' + m[1] + '>').record();
             }
         }
-    }
-    // Partial mobile support
-    function onPutDown(e) {
-        onKeyDown.call(this, e);
     }
 
     function toAttributes(attributes) {
@@ -833,11 +831,11 @@
             }
             return $.trim(false, false).replace(/$/, '<?' + name + ' ', -1).replace(/^/, ' ?>', 1);
         });
-        return $.on('key.down', onKeyDown).on('put.down', onPutDown).record();
+        return $.on('key.down', onKeyDownOrPutDown).on('put.down', onKeyDownOrPutDown).record();
     }
 
     function detach() {
-        return this.off('key.down', onKeyDown).off('put.down', onPutDown);
+        return this.off('key.down', onKeyDownOrPutDown).off('put.down', onKeyDownOrPutDown);
     }
     var index_js = {
         attach: attach,
